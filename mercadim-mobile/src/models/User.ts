@@ -23,3 +23,16 @@ export interface PasswordResetVerify {
   code: string;
   newPassword: string;
 }
+
+export interface EmailVerificationRequest {
+  email: string;
+}
+
+export interface EmailVerificationCode {
+  email: string;
+  code: string;
+}
+
+export interface RegisterRequest extends LoginCredentials {
+  name: string;
+}
