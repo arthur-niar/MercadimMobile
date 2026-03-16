@@ -8,7 +8,6 @@ Sistema de gestão de estoque e produtos para pequenos negócios.
 - React Native (Expo)
 - TypeScript
 - NativeWind (Tailwind CSS)
-- Axios
 
 ### Backend
 - Node.js + Express
@@ -22,7 +21,6 @@ Sistema de gestão de estoque e produtos para pequenos negócios.
 ```bash
 cd backend
 npm install
-cp .env.example .env
 npm run dev
 ```
 
@@ -30,7 +28,7 @@ npm run dev
 ```bash
 cd mercadim-mobile
 npm install
-npm run android
+npx expo start
 ```
 
 ## Credenciais de Teste
