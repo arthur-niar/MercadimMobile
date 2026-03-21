@@ -3,7 +3,7 @@ import { authService } from '@/services/auth.service';
 import { validateEmail, validateCode, validatePassword } from '@/utils/validation';
 import { PasswordResetRequest, PasswordResetVerify } from '@/models';
 
-type Step = 'email' | 'code' | 'success';
+type Step = 'email' | 'code' | 'newPassword' | 'success';
 
 export const useForgotPasswordViewModel = () => {
   const [step, setStep] = useState<Step>('email');
@@ -11,7 +11,6 @@ export const useForgotPasswordViewModel = () => {
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
   const [emailError, setEmailError] = useState('');
   const [codeError, setCodeError] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -30,15 +29,12 @@ export const useForgotPasswordViewModel = () => {
 
   const requestPasswordReset = async (): Promise<boolean> => {
     clearErrors();
-
     const emailValidation = validateEmail(email);
     if (!emailValidation.isValid) {
       setEmailError(emailValidation.error || '');
       return false;
     }
-
     setLoading(true);
-
     try {
       const data: PasswordResetRequest = { email };
       await authService.requestPasswordReset(data);
@@ -52,29 +48,29 @@ export const useForgotPasswordViewModel = () => {
     }
   };
 
-  const verifyResetCode = async (): Promise<boolean> => {
+  const verifyCode = async (): Promise<boolean> => {
     clearErrors();
-
     const codeValidation = validateCode(code);
-    const passwordValidation = validatePassword(newPassword);
-
     if (!codeValidation.isValid) {
       setCodeError(codeValidation.error || '');
       return false;
     }
+    setStep('newPassword');
+    return true;
+  };
 
+  const verifyResetCode = async (): Promise<boolean> => {
+    clearErrors();
+    const passwordValidation = validatePassword(newPassword);
     if (!passwordValidation.isValid) {
       setPasswordError(passwordValidation.error || '');
       return false;
     }
-
     if (newPassword !== confirmPassword) {
       setConfirmPasswordError('As senhas não coincidem');
       return false;
     }
-
     setLoading(true);
-
     try {
       const data: PasswordResetVerify = { email, code, newPassword };
       await authService.verifyResetCode(data);
@@ -88,35 +84,16 @@ export const useForgotPasswordViewModel = () => {
     }
   };
 
-  const goBackToEmail = () => {
-    setStep('email');
-    clearErrors();
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const goBackToEmail = () => { setStep('email'); clearErrors(); };
+  const goBackToCode = () => { setStep('code'); clearErrors(); };
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   return {
-    step,
-    email,
-    setEmail,
-    code,
-    setCode,
-    newPassword,
-    setNewPassword,
-    confirmPassword,
-    setConfirmPassword,
-    emailError,
-    codeError,
-    passwordError,
-    confirmPasswordError,
-    generalError,
-    loading,
-    showPassword,
-    requestPasswordReset,
-    verifyResetCode,
-    goBackToEmail,
-    togglePasswordVisibility,
+    step, email, setEmail, code, setCode,
+    newPassword, setNewPassword, confirmPassword, setConfirmPassword,
+    emailError, codeError, passwordError, confirmPasswordError, generalError,
+    loading, showPassword,
+    requestPasswordReset, verifyCode, verifyResetCode,
+    goBackToEmail, goBackToCode, togglePasswordVisibility,
   };
 };

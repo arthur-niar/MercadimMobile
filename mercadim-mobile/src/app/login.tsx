@@ -14,7 +14,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <LoginView 
+    <LoginView
       onLoginSuccess={handleLoginSuccess}
       onForgotPassword={handleForgotPassword}
     />
