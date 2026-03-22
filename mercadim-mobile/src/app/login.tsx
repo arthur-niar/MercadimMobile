@@ -17,6 +17,7 @@ export default function LoginScreen() {
     <LoginView
       onLoginSuccess={handleLoginSuccess}
       onForgotPassword={handleForgotPassword}
+      onRegister={() => router.push('/register')}
     />
   );
 }
