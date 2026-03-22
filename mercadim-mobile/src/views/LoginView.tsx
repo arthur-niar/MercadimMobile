@@ -9,9 +9,10 @@ import { useLoginViewModel } from '@/viewmodels';
 interface LoginViewProps {
   onLoginSuccess: () => void;
   onForgotPassword: () => void;
+  onRegister: () => void; 
 }
 
-export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onForgotPassword }) => {
+export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onForgotPassword, onRegister }) => {
   const viewModel = useLoginViewModel();
 
   const handleLogin = async () => {
@@ -94,7 +95,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onForgotPa
 
               <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                 <Text style={{ color: '#6B7280', fontSize: 14 }}>Realize seu </Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={onRegister}>
                   <Text style={{ color: '#FF662A', fontSize: 14, fontWeight: '700' }}>cadastro</Text>
                 </TouchableOpacity>
               </View>
