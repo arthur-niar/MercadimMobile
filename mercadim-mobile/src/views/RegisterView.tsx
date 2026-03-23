@@ -35,7 +35,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
       case 'code':
         return {
           title: 'Código\nenviado.',
-          subtitle: 'Verifique seu email'
+          subtitle: 'Verifique o seu email com o codigo previsto'
         };
       default:
         return { title: '', subtitle: '' };
@@ -113,6 +113,12 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
               shadowRadius: 24,
               elevation: 16
             }}>
+
+              {viewModel.generalError ? (
+                <View style={{ backgroundColor: '#FEF2F2', borderLeftWidth: 3, borderLeftColor: '#EF4444', borderRadius: 10, padding: 14, marginBottom: 20 }}>
+                  <Text style={{ color: '#B91C1C', fontSize: 13, fontWeight: '500' }}>{viewModel.generalError}</Text>
+                </View>
+              ) : null}
 
               {viewModel.step === 'credentials' && (
                 <>
