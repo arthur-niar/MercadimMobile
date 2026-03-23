@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { authService } from '@/services/auth.service';
 import { validateEmail, validatePassword, validateCode } from '@/utils/validation';
+import { RegisterCredentials, RegisterVerifyRequest } from '@/models';
 
 type RegisterStep = 'credentials' | 'confirmPassword' | 'code' | 'success';
 
@@ -42,8 +44,8 @@ export const useRegisterViewModel = () => {
       return;
     }
 
-    if (!username) {
-      setUsernameError('Nome de usuário é obrigatório');
+    if (!username || username.trim().length < 2) {
+      setUsernameError('Nome deve ter no mínimo 2 caracteres');
       return;
     }
 
@@ -70,7 +72,22 @@ export const useRegisterViewModel = () => {
       return;
     }
 
-    setStep('code');
+    setLoading(true);
+
+    try {
+      const credentials: RegisterCredentials = {
+        email: email.trim(),
+        password,
+        name: username.trim(),
+      };
+
+      await authService.requestRegister(credentials);
+      setStep('code');
+    } catch (error: any) {
+      setGeneralError(error.message || 'Erro ao solicitar registro');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleVerifyCode = async () => {
@@ -85,11 +102,20 @@ export const useRegisterViewModel = () => {
 
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      setSuccessMessage('Conta verificada com sucesso!');
+    try {
+      const verifyData: RegisterVerifyRequest = {
+        email: email.trim(),
+        code,
+      };
+
+      await authService.verifyRegister(verifyData);
+      setSuccessMessage('Conta criada com sucesso!');
       setStep('success');
-    }, 1000);
+    } catch (error: any) {
+      setCodeError(error.message || 'Código inválido ou expirado');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const goBack = () => {

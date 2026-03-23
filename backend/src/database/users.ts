@@ -4,6 +4,44 @@ import { hashPassword } from '../utils/password';
 const users: User[] = [];
 const resetCodes: PasswordResetCode[] = [];
 
+interface PendingUser {
+  email: string;
+  password: string;
+  name: string;
+  code: string;
+  expiresAt: Date;
+}
+
+const pendingUsers: PendingUser[] = [];
+
+export const savePendingUser = (email: string, password: string, name: string, code: string): void => {
+  const expiresAt = new Date();
+  expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+  
+  const existingIndex = pendingUsers.findIndex(pu => pu.email === email);
+  if (existingIndex !== -1) {
+    pendingUsers.splice(existingIndex, 1);
+  }
+  
+  pendingUsers.push({ email, password, name, code, expiresAt });
+};
+
+export const getPendingUser = (email: string, code: string): PendingUser | undefined => {
+  const pendingUser = pendingUsers.find(pu => pu.email === email && pu.code === code);
+  
+  if (!pendingUser) return undefined;
+  if (new Date() > pendingUser.expiresAt) return undefined;
+  
+  return pendingUser;
+};
+
+export const deletePendingUser = (email: string): void => {
+  const index = pendingUsers.findIndex(pu => pu.email === email);
+  if (index !== -1) {
+    pendingUsers.splice(index, 1);
+  }
+};
+
 export const createUser = async (email: string, password: string, name: string): Promise<User> => {
   const hashedPassword = await hashPassword(password);
   const user: User = {

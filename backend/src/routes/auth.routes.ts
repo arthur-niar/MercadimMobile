@@ -5,6 +5,25 @@ import * as authController from '../controllers/auth.controller';
 const router = Router();
 
 router.post(
+  '/register/request',
+  [
+    body('email').isEmail().withMessage('Email inválido'),
+    body('password').isLength({ min: 6 }).withMessage('Senha deve ter no mínimo 6 caracteres'),
+    body('name').notEmpty().withMessage('Nome é obrigatório').trim(),
+  ],
+  authController.requestRegister
+);
+
+router.post(
+  '/register/verify',
+  [
+    body('email').isEmail().withMessage('Email inválido'),
+    body('code').isLength({ min: 6, max: 6 }).withMessage('Código deve ter 6 dígitos'),
+  ],
+  authController.verifyRegister
+);
+
+router.post(
   '/login',
   [
     body('email').isEmail().withMessage('Email inválido'),
