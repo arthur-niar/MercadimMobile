@@ -4,11 +4,11 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import {createClient} from '@supabase/supabase-js';
 
+dotenv.config();
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,7 +28,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Mercadim API funcionando' });
 });
 
-app.get('/usuarios', async (_req, res) => {
+app.get('/usuario', async (_req, res) => {
 
   res.status(200).json({ message: 'Lista de usuários' });
   const { data, error } = await supabase.from('usuarios').select('*');
@@ -40,15 +40,22 @@ app.get('/usuarios', async (_req, res) => {
   res.json(data);
 });
 
-app.put('/usuarios/:id', async (req, _res) => {
+app.post('/usuario/:id', async (req, _res) => {
+  const { id } = req.params;
+  const { nome, email, senha, url } = req.body;
 
-  const {id} = req.params;
-  const {nome, email, senha, url} = req.body;
+  if(!nome || !email || !senha || !url) {
+        return _res.status(400).json({error: "preencha todos os campos"})
+    }
 
-  const { data, error } = await supabase
-    .from('usuarios')
-    .update({ nome, email, senha, url })
-    .eq('id', id);
+    const {data, error} = await supabase.from('/usuario').insert([{nome, email, senha, url}])
+    
+    if(error){
+        return _res.status(500).json({error: error.message})
+    }
+    return _res.status(201).json({message: "Usuario criado com sucesso!", data})
+
+  //const { data, error } = await supabase
 });
 
   
