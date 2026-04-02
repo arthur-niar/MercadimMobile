@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StatusBar, SafeAreaView,
+  View, Text, ScrollView, TouchableOpacity, StatusBar, SafeAreaView, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 
@@ -17,6 +17,9 @@ interface HomeViewProps {
   itemsReceived: number;
   averageTicket: number;
   salesItems: SaleItem[];
+  loading?: boolean;
+  error?: string | null;
+  onRefresh?: () => void;
   onSettingsPress: () => void;
   onReportPress: () => void;
 }
@@ -75,6 +78,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
   itemsReceived,
   averageTicket,
   salesItems,
+  loading = false,
+  error = null,
+  onRefresh,
   onSettingsPress,
   onReportPress,
 }) => {
@@ -83,6 +89,28 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   const formatCurrency = (value: number) =>
     value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const handleRefresh = async () => {
+    if (onRefresh) {
+      setRefreshing(true);
+      await onRefresh();
+      setRefreshing(false);
+    }
+  };
+
+  if (loading && !refreshing) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#FF662A" />
+          <Text style={{ marginTop: 12, fontSize: 14, color: '#9CA3AF' }}>Carregando dados...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -130,7 +158,31 @@ export const HomeView: React.FC<HomeViewProps> = ({
         style={{ flex: 1, backgroundColor: '#F5F5F5' }}
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#FF662A']}
+            tintColor="#FF662A"
+          />
+        }
       >
+        {error && (
+          <View style={{
+            backgroundColor: '#FEE2E2',
+            borderRadius: 12,
+            padding: 14,
+            marginBottom: 16,
+            borderLeftWidth: 4,
+            borderLeftColor: '#EF4444',
+          }}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#991B1B', marginBottom: 4 }}>
+              Erro ao carregar dados
+            </Text>
+            <Text style={{ fontSize: 12, color: '#7F1D1D' }}>{error}</Text>
+          </View>
+        )}
+
         <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
           <SummaryCard value={formatCurrency(totalSales)} label="Vendas Totais (Semana)" color="#FF8C3A" />
           <SummaryCard value={`${itemsSold} Unid.`} label="Itens Vendidos (Semana)" color="#FCA53A" />

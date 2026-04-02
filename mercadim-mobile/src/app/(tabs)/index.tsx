@@ -15,6 +15,9 @@ export default function HomeScreen() {
       itemsReceived={viewModel.itemsReceived}
       averageTicket={viewModel.averageTicket}
       salesItems={viewModel.salesItems}
+      loading={viewModel.loading}
+      error={viewModel.error}
+      onRefresh={viewModel.refresh}
       onSettingsPress={() => router.push('/(tabs)/perfil' as any)}
       onReportPress={() => {}}
     />

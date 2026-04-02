@@ -21,3 +21,31 @@ export interface AuthPayload {
   userId: string;
   email: string;
 }
+
+export interface Sale {
+  id: string;
+  userId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  createdAt: Date;
+}
+
+export interface HomeSummary {
+  totalSales: number;
+  itemsSold: number;
+  itemsReceived: number;
+  averageTicket: number;
+}
+
+export interface SalesItem {
+  name: string;
+  quantity: number;
+  color: string;
+}
+
+export interface HomeResponse {
+  summary: HomeSummary;
+  salesItems: SalesItem[];
+}
