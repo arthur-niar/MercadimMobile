@@ -1,0 +1,284 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-04-02T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_login",
+      "parentId": "fld_auth",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "url": "{{ _.base_url }}/auth/login",
+      "name": "Login",
+      "description": "Faz login e retorna o token JWT",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"teste@mercadim.com\",\n  \"password\": \"senha123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1680000000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_seed",
+      "parentId": "fld_utils",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "url": "{{ _.base_url }}/seed",
+      "name": "Criar Dados de Teste",
+      "description": "Cria 7 vendas de exemplo para o usuário teste",
+      "method": "POST",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1680000000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_home_summary",
+      "parentId": "fld_home",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "url": "{{ _.base_url }}/home/summary",
+      "name": "Buscar Resumo da Home",
+      "description": "Retorna resumo de vendas e produtos mais vendidos (PROTEGIDO)",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1680000000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_home_summary_no_auth",
+      "parentId": "fld_home",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "url": "{{ _.base_url }}/home/summary",
+      "name": "Buscar Resumo SEM Token (deve falhar)",
+      "description": "Testa segurança - deve retornar 401",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1679999999000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_create_sale",
+      "parentId": "fld_sales",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "url": "{{ _.base_url }}/sales",
+      "name": "Criar Nova Venda",
+      "description": "Cria uma nova venda (PROTEGIDO)",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"productName\": \"Produto Teste\",\n  \"quantity\": 5,\n  \"unitPrice\": 10.50\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1680000000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_list_sales",
+      "parentId": "fld_sales",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "url": "{{ _.base_url }}/sales",
+      "name": "Listar Minhas Vendas",
+      "description": "Lista todas as vendas do usuário autenticado (PROTEGIDO)",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1679999999000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_health",
+      "parentId": "fld_utils",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "url": "{{ _.base_url }}/health",
+      "name": "Health Check",
+      "description": "Verifica se a API está funcionando",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1679999999000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_mercadim",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "name": "Authentication",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1680000000000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_home",
+      "parentId": "wrk_mercadim",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "name": "Home",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1679999000000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_sales",
+      "parentId": "wrk_mercadim",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "name": "Sales",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1679998000000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_utils",
+      "parentId": "wrk_mercadim",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "name": "Utilities",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1679997000000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "wrk_mercadim",
+      "parentId": null,
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "name": "Mercadim API",
+      "description": "API do sistema Mercadim - Integração Home",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_base",
+      "parentId": "wrk_mercadim",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3000/api",
+        "token": "COLE_SEU_TOKEN_AQUI"
+      },
+      "dataPropertyOrder": {
+        "&": ["base_url", "token"]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1680000000000,
+      "_type": "environment"
+    },
+    {
+      "_id": "jar_cookies",
+      "parentId": "wrk_mercadim",
+      "modified": 1680000000000,
+      "created": 1680000000000,
+      "name": "Default Jar",
+      "cookies": [],
+      "_type": "cookie_jar"
+    }
+  ]
+}
