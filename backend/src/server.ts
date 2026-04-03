@@ -30,7 +30,7 @@ app.get('/health', (_req, res) => {
 
 app.get('/usuario', async (_req, res) => {
 
-  const { data, error } = await supabase.from('usuarios').select('*');
+  const { data, error } = await supabase.from('usuario').select('*');
 
   if (error) {
     console.error('Erro ao buscar usuários:', error);
@@ -54,8 +54,6 @@ app.post('/usuario', async (req, _res) => {
         return _res.status(500).json({error: error.message})
     }
     return _res.status(201).json({message: "Usuario criado com sucesso!", data})
-
-  //const { data, error } = await supabase
 });
 
   
