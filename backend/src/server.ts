@@ -30,18 +30,18 @@ app.get('/health', (_req, res) => {
 
 app.get('/usuario', async (_req, res) => {
 
-  res.status(200).json({ message: 'Lista de usuários' });
   const { data, error } = await supabase.from('usuarios').select('*');
 
   if (error) {
     console.error('Erro ao buscar usuários:', error);
     return res.status(500).json({ error: 'Erro ao buscar usuários' });
   }
-  res.json(data);
+  return res.status(200).json({ usuario: data });
+
 });
 
-app.post('/usuario/:id', async (req, _res) => {
-  const { id } = req.params;
+app.post('/usuario', async (req, _res) => {
+  //const { id } = req.params;
   const { nome, email, senha, url } = req.body;
 
   if(!nome || !email || !senha || !url) {
