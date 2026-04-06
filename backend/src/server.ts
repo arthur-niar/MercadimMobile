@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import homeRoutes from './routes/home.routes';
 import salesRoutes from './routes/sales.routes';
+import profileRoutes from './routes/profile.routes';
 import { seedSalesData } from './database/seed';
 
 dotenv.config();
@@ -22,6 +23,7 @@ app.use((req, _res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/home', homeRoutes);
 app.use('/api/sales', salesRoutes);
+app.use('/api/profile', profileRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Mercadim API funcionando' });
