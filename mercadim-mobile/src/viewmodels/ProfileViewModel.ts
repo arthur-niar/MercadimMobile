@@ -1,22 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'expo-router';
 import { validateEmail } from '@/utils/validation';
+import { getProfile, updateProfile } from '@/services/profile.service';
+import { authService } from '@/services/auth.service';
 
 export const useProfileViewModel = () => {
-  const [name, setName] = useState('Test User');
-  const [email, setEmail] = useState('teste@mercadim.com');
+  const router = useRouter();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
 
-  const [editName, setEditName] = useState(name);
-  const [editEmail, setEditEmail] = useState(email);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
 
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  const fetchProfile = async () => {
+    try {
+      setLoadingProfile(true);
+      const profileData = await getProfile();
+      setName(profileData.name);
+      setEmail(profileData.email);
+      setEditName(profileData.name);
+      setEditEmail(profileData.email);
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Erro ao carregar perfil';
+      setErrorMessage(message);
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
   const clearErrors = () => {
     setNameError('');
     setEmailError('');
+    setErrorMessage('');
   };
 
   const openModal = () => {
@@ -31,7 +59,7 @@ export const useProfileViewModel = () => {
     setSuccessMessage('');
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     clearErrors();
     setSuccessMessage('');
 
@@ -47,10 +75,32 @@ export const useProfileViewModel = () => {
       return;
     }
 
-    setName(editName);
-    setEmail(editEmail);
-    setSuccessMessage('Dados atualizados com sucesso!');
-    closeModal();
+    try {
+      setLoading(true);
+      const response = await updateProfile({
+        name: editName,
+        email: editEmail,
+      });
+
+      setName(response.user.name);
+      setEmail(response.user.email);
+      setSuccessMessage('Dados atualizados com sucesso!');
+      closeModal();
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Erro ao atualizar perfil';
+      setErrorMessage(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      router.replace('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return {
@@ -65,10 +115,16 @@ export const useProfileViewModel = () => {
     nameError,
     emailError,
     successMessage,
+    errorMessage,
 
     modalVisible,
     openModal,
     closeModal,
     handleSave,
+
+    loading,
+    loadingProfile,
+    refreshProfile: fetchProfile,
+    handleLogout,
   };
 };

@@ -1,13 +1,21 @@
 import React from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, StatusBar, Modal
+  KeyboardAvoidingView, Platform, StatusBar, Modal, ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useProfileViewModel } from '@/viewmodels';
 
 export const ProfileView: React.FC = () => {
   const viewModel = useProfileViewModel();
+
+  if (viewModel.loadingProfile) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <ActivityIndicator size="large" color="#FF662A" />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
@@ -22,7 +30,7 @@ export const ProfileView: React.FC = () => {
             alignItems: 'center',
           }}>
 
-            <View style={{ // ícone do usuário
+            <View style={{
               width: 110,
               height: 110,
               borderRadius: 55,
@@ -65,6 +73,16 @@ export const ProfileView: React.FC = () => {
               </View>
             </View>
 
+            {viewModel.errorMessage ? (
+              <Text style={{
+                color: '#EF4444',
+                marginBottom: 12,
+                textAlign: 'center'
+              }}>
+                {viewModel.errorMessage}
+              </Text>
+            ) : null}
+
             <TouchableOpacity onPress={viewModel.openModal}>
               <LinearGradient
                 colors={['#FCA537', '#FF662A']}
@@ -89,7 +107,7 @@ export const ProfileView: React.FC = () => {
               </LinearGradient>
             </TouchableOpacity>
 
-            <TouchableOpacity style={{ marginTop: 20 }}>
+            <TouchableOpacity style={{ marginTop: 20 }} onPress={viewModel.handleLogout}>
               <Text style={{
                 textAlign: 'center',
                 color: '#FF662A',
@@ -141,6 +159,7 @@ export const ProfileView: React.FC = () => {
                     style={inputText}
                     value={viewModel.editName}
                     onChangeText={viewModel.setEditName}
+                    editable={!viewModel.loading}
                   />
                 </View>
                 {viewModel.nameError && <Text style={errText}>{viewModel.nameError}</Text>}
@@ -154,27 +173,44 @@ export const ProfileView: React.FC = () => {
                     value={viewModel.editEmail}
                     onChangeText={viewModel.setEditEmail}
                     autoCapitalize="none"
+                    editable={!viewModel.loading}
                   />
                 </View>
                 {viewModel.emailError && <Text style={errText}>{viewModel.emailError}</Text>}
               </View>
 
-              <TouchableOpacity onPress={viewModel.handleSave}>
+              {viewModel.errorMessage ? (
+                <Text style={{
+                  color: '#EF4444',
+                  marginBottom: 12,
+                  textAlign: 'center',
+                  fontSize: 13
+                }}>
+                  {viewModel.errorMessage}
+                </Text>
+              ) : null}
+
+              <TouchableOpacity onPress={viewModel.handleSave} disabled={viewModel.loading}>
                 <LinearGradient
                   colors={['#FCA537', '#FF662A']}
                   style={{
                     padding: 14,
                     borderRadius: 14,
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    opacity: viewModel.loading ? 0.6 : 1
                   }}
                 >
-                  <Text style={{ color: '#fff', fontWeight: '700' }}>
-                    Salvar
-                  </Text>
+                  {viewModel.loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={{ color: '#fff', fontWeight: '700' }}>
+                      Salvar
+                    </Text>
+                  )}
                 </LinearGradient>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={viewModel.closeModal} style={{ marginTop: 12 }}>
+              <TouchableOpacity onPress={viewModel.closeModal} style={{ marginTop: 12 }} disabled={viewModel.loading}>
                 <Text style={{
                   textAlign: 'center',
                   color: '#6B7280'
