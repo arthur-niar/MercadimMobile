@@ -98,4 +98,14 @@ export const updateUserPassword = async (email: string, newPassword: string): Pr
   }
 };
 
+export const updateUserProfile = (userId: string, name: string, email: string): User | undefined => {
+  const user = findUserById(userId);
+  if (user) {
+    user.name = name;
+    user.email = email;
+    return user;
+  }
+  return undefined;
+};
+
 createUser('teste@mercadim.com', 'senha123', 'Usuário Teste');
