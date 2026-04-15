@@ -4,6 +4,7 @@ export interface User {
   password: string;
   name: string;
   createdAt: Date;
+  url: string;
 }
 
 export interface LoginRequest {

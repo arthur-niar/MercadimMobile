@@ -48,7 +48,7 @@ export const deletePendingUser = (email: string): void => {
   }
 };
 
-export const createUser = async (email: string, password: string, name: string): Promise<User> => {
+export const createUser = async (email: string, password: string, name: string, url: string): Promise<User> => {
   const hashedPassword = await hashPassword(password);
   const user: User = {
     id: Date.now().toString(),
@@ -56,6 +56,7 @@ export const createUser = async (email: string, password: string, name: string):
     password: hashedPassword,
     name,
     createdAt: new Date(),
+    url
   };
 
   const { data, error } = await supabase.from('usuario').insert([{
@@ -85,6 +86,7 @@ export const getAllUsers = async (): Promise<User[]> => {
     password: u.senha,
     name: u.nome,
     createdAt: new Date(u.created_at || Date.now()),
+    url: u.url || ''
   }));
 };
 
@@ -99,6 +101,7 @@ export const findUserByEmail = async (email: string): Promise<User | undefined> 
     password: data.senha,
     name: data.nome,
     createdAt: new Date(data.created_at || Date.now()),
+    url: data.url || ''
   };
 };
 
@@ -113,6 +116,7 @@ export const findUserById = async (id: string): Promise<User | undefined> => {
     password: data.senha,
     name: data.nome,
     createdAt: new Date(data.created_at || Date.now()),
+    url: data.url || ''
   };
 };
 

@@ -39,14 +39,14 @@ app.get('/usuario', async (_req, res) => {
 });
 
 app.post('/usuario', async (req, res) => {
-  const { nome, email, senha } = req.body;
+  const { nome, email, senha, url } = req.body;
 
   if (!nome || !email || !senha) {
     return res.status(400).json({ error: 'Preencha nome, email e senha' });
   }
 
   try {
-    const user = await createUser(email, senha, nome);
+    const user = await createUser(email, senha, nome, url);
     return res.status(201).json({ message: 'Usuário criado com sucesso!', user });
   } catch (error) {
     return res.status(500).json({ error: 'Erro ao criar usuário' });
