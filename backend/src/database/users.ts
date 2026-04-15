@@ -1,7 +1,13 @@
 import { User, PasswordResetCode } from '../types';
 import { hashPassword } from '../utils/password';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
 
-const users: User[] = [];
+dotenv.config();
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 const resetCodes: PasswordResetCode[] = [];
 
 interface PendingUser {
@@ -42,7 +48,7 @@ export const deletePendingUser = (email: string): void => {
   }
 };
 
-export const createUser = async (email: string, password: string, name: string): Promise<User> => {
+export const createUser = async (email: string, password: string, name: string, url: string): Promise<User> => {
   const hashedPassword = await hashPassword(password);
   const user: User = {
     id: Date.now().toString(),
@@ -50,17 +56,68 @@ export const createUser = async (email: string, password: string, name: string):
     password: hashedPassword,
     name,
     createdAt: new Date(),
+    url
   };
-  users.push(user);
+
+  const { data, error } = await supabase.from('usuario').insert([{
+    nome: user.name,
+    email: user.email,
+    senha: user.password,
+    url: '' // Adicione se necessário
+  }]);
+
+  if (error) {
+    throw new Error(`Erro ao salvar usuário: ${error.message}`);
+  }
+
   return user;
 };
 
-export const findUserByEmail = (email: string): User | undefined => {
-  return users.find(user => user.email.toLowerCase() === email.toLowerCase());
+export const getAllUsers = async (): Promise<User[]> => {
+  const { data, error } = await supabase.from('usuario').select('*');
+
+  if (error) {
+    throw new Error(`Erro ao buscar usuários: ${error.message}`);
+  }
+
+  return data.map((u: any) => ({
+    id: u.id.toString(),
+    email: u.email,
+    password: u.senha,
+    name: u.nome,
+    createdAt: new Date(u.created_at || Date.now()),
+    url: u.url || ''
+  }));
 };
 
-export const findUserById = (id: string): User | undefined => {
-  return users.find(user => user.id === id);
+export const findUserByEmail = async (email: string): Promise<User | undefined> => {
+  const { data, error } = await supabase.from('usuario').select('*').eq('email', email.toLowerCase()).single();
+
+  if (error || !data) return undefined;
+
+  return {
+    id: data.id.toString(),
+    email: data.email,
+    password: data.senha,
+    name: data.nome,
+    createdAt: new Date(data.created_at || Date.now()),
+    url: data.url || ''
+  };
+};
+
+export const findUserById = async (id: string): Promise<User | undefined> => {
+  const { data, error } = await supabase.from('usuario').select('*').eq('id', id).single();
+
+  if (error || !data) return undefined;
+
+  return {
+    id: data.id.toString(),
+    email: data.email,
+    password: data.senha,
+    name: data.nome,
+    createdAt: new Date(data.created_at || Date.now()),
+    url: data.url || ''
+  };
 };
 
 export const saveResetCode = (email: string, code: string): void => {
@@ -92,9 +149,11 @@ export const deleteResetCode = (email: string): void => {
 };
 
 export const updateUserPassword = async (email: string, newPassword: string): Promise<void> => {
-  const user = findUserByEmail(email);
-  if (user) {
-    user.password = await hashPassword(newPassword);
+  const hashedPassword = await hashPassword(newPassword);
+  const { error } = await supabase.from('usuario').update({ senha: hashedPassword }).eq('email', email.toLowerCase());
+
+  if (error) {
+    throw new Error(`Erro ao atualizar senha: ${error.message}`);
   }
 };
 
