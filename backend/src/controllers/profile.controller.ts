@@ -11,7 +11,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ message: 'Usuário não autenticado' });
     }
 
-    const user = findUserById(userId);
+    const user = await findUserById(userId);
 
     if (!user) {
       return res.status(404).json({ message: 'Usuário não encontrado' });
@@ -47,20 +47,20 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: 'Nome e email são obrigatórios' });
     }
 
-    const user = findUserById(userId);
+    const user = await findUserById(userId);
 
     if (!user) {
       return res.status(404).json({ message: 'Usuário não encontrado' });
     }
 
     if (email !== user.email) {
-      const existingUser = findUserByEmail(email);
+      const existingUser = await findUserByEmail(email);
       if (existingUser && existingUser.id !== userId) {
         return res.status(409).json({ message: 'Email já está em uso' });
       }
     }
 
-    const updatedUser = updateUserProfile(userId, name, email);
+    const updatedUser = await updateUserProfile(userId, name, email);
 
     if (!updatedUser) {
       return res.status(500).json({ message: 'Erro ao atualizar perfil' });

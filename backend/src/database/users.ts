@@ -1,20 +1,18 @@
+import { supabase } from '../config/supabase';
 import { User, PasswordResetCode } from '../types';
 import { hashPassword } from '../utils/password';
 
-const users: User[] = [];
-const resetCodes: PasswordResetCode[] = [];
-
-interface PendingUser {
+export interface PendingUser {
   email: string;
-  password: string;
-  name: string;
+  password?: string;
+  name?: string;
   code: string;
   expiresAt: Date;
 }
 
 const pendingUsers: PendingUser[] = [];
 
-export const savePendingUser = (email: string, password: string, name: string, code: string): void => {
+export const savePendingUser = (email: string, password?: string, name?: string, code?: string): void => {
   const expiresAt = new Date();
   expiresAt.setMinutes(expiresAt.getMinutes() + 15);
   
@@ -23,7 +21,7 @@ export const savePendingUser = (email: string, password: string, name: string, c
     pendingUsers.splice(existingIndex, 1);
   }
   
-  pendingUsers.push({ email, password, name, code, expiresAt });
+  pendingUsers.push({ email, password, name, code: code || '', expiresAt });
 };
 
 export const getPendingUser = (email: string, code: string): PendingUser | undefined => {
@@ -42,70 +40,110 @@ export const deletePendingUser = (email: string): void => {
   }
 };
 
-export const createUser = async (email: string, password: string, name: string): Promise<User> => {
-  const hashedPassword = await hashPassword(password);
-  const user: User = {
-    id: Date.now().toString(),
-    email,
-    password: hashedPassword,
-    name,
-    createdAt: new Date(),
+
+export const findUserByEmail = async (email: string): Promise<User | undefined> => {
+  const { data, error } = await supabase
+    .from('usuario')
+    .select('*')
+    .eq('email', email)
+    .single();
+
+  if (error || !data) return undefined;
+  
+  return {
+    id: data.idusuario.toString(),
+    email: data.email,
+    name: data.nome,
+    password: data.senha,
+    createdAt: new Date(), 
   };
-  users.push(user);
-  return user;
 };
 
-export const findUserByEmail = (email: string): User | undefined => {
-  return users.find(user => user.email.toLowerCase() === email.toLowerCase());
+export const findUserById = async (id: string): Promise<User | undefined> => {
+  const { data, error } = await supabase
+    .from('usuario')
+    .select('*')
+    .eq('idusuario', parseInt(id))
+    .single();
+
+  if (error || !data) return undefined;
+
+  return {
+     id: data.idusuario.toString(),
+     email: data.email,
+     name: data.nome,
+     password: data.senha,
+     createdAt: new Date(), 
+  };
 };
 
-export const findUserById = (id: string): User | undefined => {
-  return users.find(user => user.id === id);
+export const createUser = async (email: string, plainPassword?: string, name?: string): Promise<User> => {
+   const hashedPassword = plainPassword ? await hashPassword(plainPassword) : undefined;
+   
+   const { data, error } = await supabase
+    .from('usuario')
+    .insert([{ email, senha: hashedPassword, nome: name }])
+    .select()
+    .single();
+    
+    if (error) {
+        console.error("Error creating user:", error);
+        throw error;
+    }
+
+    return {
+         id: data.idusuario.toString(),
+         email: data.email,
+         name: data.nome,
+         password: data.senha,
+         createdAt: new Date(), 
+    };
+};
+
+export const updateUserPassword = async (email: string, newPassword?: string): Promise<void> => {
+   const hashedPassword = newPassword ? await hashPassword(newPassword) : undefined;
+   
+   const { error } = await supabase
+    .from('usuario')
+    .update({ senha: hashedPassword })
+    .eq('email', email);
+
+   if (error) {
+       console.error("Error updating user password:", error);
+       throw error;
+   }
+};
+
+export const updateUserProfile = async (userId: string, name: string, email: string): Promise<User | undefined> => {
+   const { data, error } = await supabase
+    .from('usuario')
+    .update({ nome: name, email: email })
+    .eq('idusuario', parseInt(userId))
+    .select()
+    .single();
+
+   if (error || !data) {
+       console.error("Error updating user profile:", error);
+       return undefined;
+   }
+
+   return {
+         id: data.idusuario.toString(),
+         email: data.email,
+         name: data.nome,
+         password: data.senha,
+         createdAt: new Date(), 
+    };
 };
 
 export const saveResetCode = (email: string, code: string): void => {
-  const expiresAt = new Date();
-  expiresAt.setMinutes(expiresAt.getMinutes() + 15);
-  
-  const existingIndex = resetCodes.findIndex(rc => rc.email === email);
-  if (existingIndex !== -1) {
-    resetCodes.splice(existingIndex, 1);
-  }
-  
-  resetCodes.push({ email, code, expiresAt });
+   savePendingUser(email, undefined, undefined, code);
 };
 
 export const verifyResetCode = (email: string, code: string): boolean => {
-  const resetCode = resetCodes.find(rc => rc.email === email && rc.code === code);
-  
-  if (!resetCode) return false;
-  if (new Date() > resetCode.expiresAt) return false;
-  
-  return true;
+  return getPendingUser(email, code) !== undefined;
 };
 
 export const deleteResetCode = (email: string): void => {
-  const index = resetCodes.findIndex(rc => rc.email === email);
-  if (index !== -1) {
-    resetCodes.splice(index, 1);
-  }
+  deletePendingUser(email);
 };
-
-export const updateUserPassword = async (email: string, newPassword: string): Promise<void> => {
-  const user = findUserByEmail(email);
-  if (user) {
-    user.password = await hashPassword(newPassword);
-  }
-};
-
-export const updateUserProfile = (userId: string, name: string, email: string): User | undefined => {
-  const user = findUserById(userId);
-  if (user) {
-    user.name = name;
-    user.email = email;
-    return user;
-  }
-  return undefined;
-};
-
-createUser('teste@mercadim.com', 'senha123', 'Usuário Teste');

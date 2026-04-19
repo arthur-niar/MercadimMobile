@@ -29,9 +29,9 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Mercadim API funcionando' });
 });
 
-app.post('/api/seed', (_req, res) => {
+app.post('/api/seed', async (_req, res) => {
   try {
-    seedSalesData();
+    await seedSalesData();
     res.json({ message: 'Dados de teste criados com sucesso' });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao criar dados de teste' });
@@ -43,13 +43,13 @@ app.listen(PORT, () => {
   console.log(`Teste: teste@mercadim.com / senha123`);
   console.log(`Seed: POST http://localhost:${PORT}/api/seed`);
   
- 
-  setTimeout(() => {
+  setTimeout(async () => {
     try {
-      seedSalesData();
+      await seedSalesData();
       console.log('Dados de exemplo carregados automaticamente');
     } catch (error) {
       console.log('Aviso: Não foi possível carregar dados de exemplo');
+      console.error(error);
     }
   }, 100);
 });

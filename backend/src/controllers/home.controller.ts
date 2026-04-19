@@ -3,7 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import { getSalesByUserId } from '../database/sales';
 import { HomeResponse, SalesItem } from '../types';
 
-export const getHomeSummary = (req: AuthRequest, res: Response) => {
+export const getHomeSummary = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user) {
       console.log('Usuário não autenticado');
@@ -13,7 +13,7 @@ export const getHomeSummary = (req: AuthRequest, res: Response) => {
     const userId = req.user.userId;
     console.log('Buscando resumo para usuário:', userId);
 
-    const userSales = getSalesByUserId(userId);
+    const userSales = await getSalesByUserId(userId);
 
     if (userSales.length === 0) {
       console.log('Nenhuma venda encontrada para o usuário');
