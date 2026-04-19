@@ -110,7 +110,7 @@ export const ProfileView: React.FC = () => {
             <TouchableOpacity style={{ marginTop: 20 }} onPress={viewModel.handleLogout}>
               <Text style={{
                 textAlign: 'center',
-                color: '#FF662A',
+                color: '#EF4444',
                 fontWeight: '600'
               }}>
                 Fazer Log out

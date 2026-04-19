@@ -101,7 +101,7 @@ export default function TabsLayout() {
         name="nova-venda"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon={<NovaVendaIcon active={focused} />} label="Nova Venda" active={focused} lines={2} />
+            <TabIcon icon={<NovaVendaIcon active={focused} />} label="Venda" active={focused} lines={2} />
           ),
         }}
       />

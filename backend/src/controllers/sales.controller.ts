@@ -3,7 +3,7 @@ import { body, validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth';
 import { createSale, getSalesByUserId } from '../database/sales';
 
-export const createSaleHandler = (req: AuthRequest, res: Response) => {
+export const createSaleHandler = async (req: AuthRequest, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -18,7 +18,7 @@ export const createSaleHandler = (req: AuthRequest, res: Response) => {
     const { productName, quantity, unitPrice } = req.body;
     const totalPrice = quantity * unitPrice;
 
-    const sale = createSale({
+    const sale = await createSale({
       userId: req.user.userId,
       productName,
       quantity,
@@ -34,14 +34,14 @@ export const createSaleHandler = (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getUserSales = (req: AuthRequest, res: Response) => {
+export const getUserSales = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user) {
       console.log('Usuário não autenticado');
       return res.status(401).json({ message: 'Usuário não autenticado' });
     }
 
-    const sales = getSalesByUserId(req.user.userId);
+    const sales = await getSalesByUserId(req.user.userId);
     console.log(`${sales.length} vendas encontradas`);
     return res.json(sales);
   } catch (error) {

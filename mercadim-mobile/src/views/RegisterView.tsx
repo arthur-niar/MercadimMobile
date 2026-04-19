@@ -222,20 +222,36 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
               )}
 
               {viewModel.step !== 'success' && (
-                <TouchableOpacity onPress={handleAction} style={{ marginTop: 20 }}>
-                  <LinearGradient
-                    colors={['#FCA537', '#FF662A']}
-                    style={{ padding: 16, borderRadius: 14, alignItems: 'center' }}
-                  >
-                    {viewModel.loading ? (
-                      <ActivityIndicator color="#fff" />
-                    ) : (
-                      <Text style={{ color: '#fff', fontWeight: '700' }}>
-                        Continuar
+                <>
+                  <TouchableOpacity onPress={handleAction} style={{ marginTop: 20 }}>
+                    <LinearGradient
+                      colors={['#FCA537', '#FF662A']}
+                      style={{ padding: 16, borderRadius: 14, alignItems: 'center' }}
+                    >
+                      {viewModel.loading ? (
+                        <ActivityIndicator color="#fff" />
+                      ) : (
+                        <Text style={{ color: '#fff', fontWeight: '700' }}>
+                          Continuar
+                        </Text>
+                      )}
+                    </LinearGradient>
+                  </TouchableOpacity>
+                  
+                  {viewModel.step === 'credentials' && (
+                    <View style={{ alignItems: 'center', marginTop: 20 }}>
+                      <Text style={{ color: '#6B7280', fontSize: 13 }}>
+                        Já possui uma conta?{' '}
+                        <Text 
+                          style={{ color: '#FF662A', fontWeight: '700' }}
+                          onPress={onBackToLogin}
+                        >
+                          Entrar
+                        </Text>
                       </Text>
-                    )}
-                  </LinearGradient>
-                </TouchableOpacity>
+                    </View>
+                  )}
+                </>
               )}
             </View>
 
