@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 const getApiUrl = () => {
-    return 'http://192.168.3.39:3000/api';
+    return 'http:// 192.168.15.10:3000/api';
 };
 
 const API_URL = getApiUrl();
