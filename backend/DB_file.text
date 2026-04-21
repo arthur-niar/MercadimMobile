@@ -1,1 +1,74 @@
-//adicionar criação das entidades
+use mercadim_db;
+
+CREATE TABLE Usuario(
+    idUsuario INT NOT NULL generated always as identity primary key,
+    nome VARCHAR (20) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE Produto(
+    idProduto INT NOT NULL generated always as identity primary key,
+    idEstoque INT NOT NULL,
+    nome VARCHAR (20) NOT NULL,
+    categoria VARCHAR(255) NULL,
+    preco DECIMAL (5, 2) NOT NULL,
+    dataCriacao DATE NOT NULL,
+    dataAtualizacao DATE NOT NULL,
+
+    FOREIGN KEY (idEstoque) REFERENCES Estoque(idEstoque)
+);
+
+CREATE TABLE Estoque(
+    idEstoque INT NOT NULL generated always as identity primary key,
+    QuantProdutos INT NOT NULL,
+    QuantBaixoEstoque INT NOT NULL
+);
+
+CREATE TABLE Venda(
+    idVenda INT NOT NULL generated always as identity primary key,
+    idUsuario INT NOT NULL,
+    precoTotal DECIMAL (10, 2) NOT NULL,
+    dataVenda DATE NOT NULL,
+
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario)
+);
+
+CREATE TABLE ProdutoVenda(
+    idProdutoVenda INT NOT NULL generated always as identity primary key,
+    idProduto INT NOT NULL,
+    idVenda INT NOT NULL,
+    quantidade INT NOT NULL,
+    precoUnitario INT NOT NULL,
+
+    FOREIGN KEY (idProduto) REFERENCES Produto(idProduto),
+    FOREIGN KEY (idVenda) REFERENCES Venda(idVenda)
+);
+
+
+CREATE TABLE Relatorio(
+    idRelatorio INT NOT NULL generated always as identity primary key,
+    idProdutoVenda INT NOT NULL,
+    nomeProduto VARCHAR (20) NOT NULL,
+    lucroTotal DECIMAL (10,2) NOT NULL,
+    vendasTotais INT NOT NULL,
+    vendasSemanais INT NOT NULL,
+    aumentoEstoque INT NOT NULL,
+
+    FOREIGN KEY (idProdutoVenda) REFERENCES ProdutoVenda(idProdutoVenda)
+);
+
+
+--DROP TABLE usuario;
+ALTER TABLE Produto 
+--DROP COLUMN idEstoque,
+ADD COLUMN idEstoque INT NOT NULL REFERENCES Estoque(idEstoque);
+
+ALTER TABLE ProdutoVenda 
+--DROP COLUMN idEstoque,
+ADD COLUMN idProdutoVenda INT NOT NULL generated always as identity primary key
+
+--DROP TABLE relatorio;
+
+ALTER TABLE usuario
+ADD COLUMN url VARCHAR(100) NULL

@@ -2,12 +2,18 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
+import {createClient} from '@supabase/supabase-js';
 import homeRoutes from './routes/home.routes';
 import salesRoutes from './routes/sales.routes';
 import profileRoutes from './routes/profile.routes';
 import { seedSalesData } from './database/seed';
+import { createUser, getAllUsers, findUserByEmail } from './database/users';
 
 dotenv.config();
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +25,7 @@ app.use((req, _res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
 });
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/home', homeRoutes);
@@ -38,6 +45,21 @@ app.post('/api/seed', async (_req, res) => {
   }
 });
 
+
+app.get('/venda', async (_req, res) => {
+
+  const { data, error } = await supabase.from('venda').select('*');
+
+  if (error) {
+    console.error('Erro ao buscar vendas:', error);
+    return res.status(500).json({ error: 'Erro ao buscar vendas' });
+  }
+  return res.status(200).json({ venda: data });
+
+});
+
+
+
 app.listen(PORT, () => {
   console.log(`Servidor: http://localhost:${PORT}`);
   console.log(`Teste: teste@mercadim.com / senha123`);
@@ -53,3 +75,17 @@ app.listen(PORT, () => {
     }
   }, 100);
 });
+
+/* Criar usuário de teste se não existir
+
+  try {
+    const existing = await findUserByEmail('teste@mercadim.com');
+    if (!existing) {
+      await createUser('teste@mercadim.com', 'senha123', 'Usuário Teste');
+      console.log('Usuário de teste criado.');
+    }
+  } catch (error) {
+    console.error('Erro ao criar usuário de teste:', error);
+  }
+});
+*/
