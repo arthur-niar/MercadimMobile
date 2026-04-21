@@ -13,7 +13,7 @@ export const requestRegister = async (req: Request, res: Response) => {
 
     const { email, password, name } = req.body;
 
-    const existingUser = findUserByEmail(email);
+    const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.status(409).json({ message: 'Email já cadastrado' });
     }
@@ -77,7 +77,7 @@ export const login = async (req: Request, res: Response) => {
 
     const { email, password } = req.body;
 
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
     if (!user) {
       return res.status(401).json({ message: 'Email ou senha incorretos' });
     }
@@ -114,7 +114,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
     const { email } = req.body;
 
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
     if (!user) {
       return res.status(404).json({ message: 'Email não encontrado' });
     }
@@ -140,7 +140,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 
     const { email, code, newPassword } = req.body;
 
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
     if (!user) {
       return res.status(404).json({ message: 'Email não encontrado' });
     }

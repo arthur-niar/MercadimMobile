@@ -36,52 +36,9 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Mercadim API funcionando' });
 });
 
-app.get('/usuario', async (_req, res) => {
+app.post('/api/seed', async (_req, res) => {
   try {
-    const users = await getAllUsers();
-    return res.status(200).json({ usuario: users });
-  } catch (error) {
-    return res.status(500).json({ error: 'Erro ao buscar usuários' });
-  }
-});
-
-app.post('/usuario', async (req, res) => {
-  const { nome, email, senha, url } = req.body;
-
-  if (!nome || !email || !senha) {
-    return res.status(400).json({ error: 'Preencha nome, email e senha' });
-  }
-
-  try {
-    const user = await createUser(email, senha, nome, url);
-    return res.status(201).json({ message: 'Usuário criado com sucesso!', user });
-  } catch (error) {
-    return res.status(500).json({ error: 'Erro ao criar usuário' });
-  }
-});
-
-
-
-app.post('/venda', async (req, _res) => {
-  //const { id } = req.params;
-  const { quantproduto, precototal, datavenda} = req.body;
-
-  if(!quantproduto || !precototal || !datavenda) {
-        return _res.status(400).json({error: "preencha todos os campos"})
-    }
-
-    const {data, error} = await supabase.from('venda').insert([{quantproduto, precototal, datavenda}])
-    
-    if(error){
-        return _res.status(500).json({error: error.message})
-    }
-    return _res.status(201).json({message: "Venda criada com sucesso!", data})
-});
-
-  
-app.post('/api/seed', (_req, res) => {
-  try {
-    seedSalesData();
+    await seedSalesData();
     res.json({ message: 'Dados de teste criados com sucesso' });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao criar dados de teste' });
@@ -108,13 +65,13 @@ app.listen(PORT, () => {
   console.log(`Teste: teste@mercadim.com / senha123`);
   console.log(`Seed: POST http://localhost:${PORT}/api/seed`);
   
- 
-  setTimeout(() => {
+  setTimeout(async () => {
     try {
-      seedSalesData();
+      await seedSalesData();
       console.log('Dados de exemplo carregados automaticamente');
     } catch (error) {
       console.log('Aviso: Não foi possível carregar dados de exemplo');
+      console.error(error);
     }
   }, 100);
 });

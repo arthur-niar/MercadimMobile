@@ -1,17 +1,17 @@
 import { createSale, hasSales } from './sales';
-import { findUserByEmail } from './users';
+import { findUserByEmail, createUser } from './users';
 
-export const seedSalesData = () => {
-  if (hasSales()) {
+export const seedSalesData = async () => {
+  if (await hasSales()) {
     console.log('Dados de vendas já existem. Seed ignorado.');
     return;
   }
 
-  const testUser = findUserByEmail('teste@mercadim.com');
+  let testUser = await findUserByEmail('teste@mercadim.com');
   
   if (!testUser) {
-    console.log('Usuário de teste não encontrado. Execute o login primeiro.');
-    return;
+    console.log('Criando usuário de teste...');
+    testUser = await createUser('teste@mercadim.com', 'senha123', 'Usuário Teste');
   }
 
   const products = [
@@ -24,16 +24,16 @@ export const seedSalesData = () => {
     { name: 'Leite 1L', unitPrice: 5.20 },
   ];
 
-  products.forEach(product => {
+  for(const product of products) {
     const quantity = Math.floor(Math.random() * 15) + 5;
-    createSale({
+    await createSale({
       userId: testUser.id,
       productName: product.name,
       quantity,
       unitPrice: product.unitPrice,
       totalPrice: product.unitPrice * quantity,
     });
-  });
+  }
 
   console.log('Dados de vendas criados com sucesso!');
 };

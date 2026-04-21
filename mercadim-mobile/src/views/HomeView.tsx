@@ -3,6 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, StatusBar, SafeAreaView, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
+import { formatCurrency } from '@/utils';
 
 interface SaleItem {
   name: string;
@@ -86,9 +87,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
 }) => {
   const hasSales = salesItems.length > 0 && salesItems.some(i => i.quantity > 0);
   const totalQuantity = salesItems.reduce((sum, item) => sum + item.quantity, 0);
-
-  const formatCurrency = (value: number) =>
-    value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const [refreshing, setRefreshing] = React.useState(false);
 
