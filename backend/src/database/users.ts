@@ -1,13 +1,6 @@
 import { supabase } from '../config/supabase';
 import { User, PasswordResetCode } from '../types';
 import { hashPassword } from '../utils/password';
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-
-dotenv.config();
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export interface PendingUser {
   email: string;
