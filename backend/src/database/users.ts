@@ -55,7 +55,8 @@ export const findUserByEmail = async (email: string): Promise<User | undefined> 
     email: data.email,
     name: data.nome,
     password: data.senha,
-    createdAt: new Date(), 
+    createdAt: new Date(),
+    url: data.url || '', 
   };
 };
 
@@ -73,7 +74,8 @@ export const findUserById = async (id: string): Promise<User | undefined> => {
      email: data.email,
      name: data.nome,
      password: data.senha,
-     createdAt: new Date(), 
+     createdAt: new Date(),
+     url: data.url || '', 
   };
 };
 
@@ -96,6 +98,7 @@ export const createUser = async (email: string, plainPassword?: string, name?: s
          email: data.email,
          name: data.nome,
          password: data.senha,
+         url: data.url || '',
          createdAt: new Date(), 
     };
 };
@@ -132,7 +135,54 @@ export const updateUserProfile = async (userId: string, name: string, email: str
          email: data.email,
          name: data.nome,
          password: data.senha,
-         createdAt: new Date(), 
+         createdAt: new Date(),
+         url: data.url || '', 
+    };
+};
+
+export const updateUserProfilePhoto = async (userId: string, photoUrl: string): Promise<User | undefined> => {
+   const { data, error } = await supabase
+    .from('usuario')
+    .update({ url: photoUrl })
+    .eq('idusuario', parseInt(userId))
+    .select()
+    .single();
+
+   if (error || !data) {
+       console.error("Erro para a atualização de foto do Usuário:", error);
+       return undefined;
+   }
+
+   return {
+         id: data.idusuario.toString(),
+         email: data.email,
+         name: data.nome,
+         password: data.senha,
+         createdAt: new Date(),
+         url: data.url || '', 
+    };
+};
+
+export const removeUserProfilePhoto = async (userId: string): Promise<User | undefined> => {
+   const { data, error } = await supabase
+    .from('usuario')
+    .update({ url: null })
+    .eq('idusuario', parseInt(userId))
+    .select()
+    .single();
+
+   if (error || !data) {
+       console.error("Erro removendo a foto do Usuário:", error);
+       return undefined;
+   }
+
+   return {
+         id: data.idusuario.toString(),
+         email: data.email,
+         name: data.nome,
+         password: data.senha,
+         createdAt: new Date(),
+         url: data.url || '',
     };
 };
 

@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../config/jwt';
+import { Express } from 'express';
 
 export interface AuthRequest extends Request {
   user?: {
     userId: string;
     email: string;
   };
+  file?: Express.Multer.File;
 }
 
 export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {

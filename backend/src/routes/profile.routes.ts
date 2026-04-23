@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
+import multer from 'multer';
 import { authMiddleware } from '../middleware/auth';
-import { getProfile, updateProfile } from '../controllers/profile.controller';
+import { getProfile, updateProfile, uploadProfilePhoto, removeProfilePhoto } from '../controllers/profile.controller';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/', authMiddleware, getProfile);
 
@@ -16,5 +18,9 @@ router.put(
   ],
   updateProfile
 );
+
+router.post('/photo', authMiddleware, upload.single('photo'), uploadProfilePhoto);
+
+router.delete('/photo', authMiddleware, removeProfilePhoto);
 
 export default router;

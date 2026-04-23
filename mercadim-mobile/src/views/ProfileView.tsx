@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, StatusBar, Modal, ActivityIndicator
+  KeyboardAvoidingView, Platform, StatusBar, Modal, ActivityIndicator, Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useProfileViewModel } from '@/viewmodels';
@@ -39,10 +39,74 @@ export const ProfileView: React.FC = () => {
               alignItems: 'center',
               borderWidth: 4,
               borderColor: '#fff',
-              zIndex: 2
+              zIndex: 2,
+              overflow: 'hidden',
             }}>
-              <Text style={{ fontSize: 42 }}>👤</Text>
+              {viewModel.profilePhotoUrl ? (
+                <Image 
+                  source={{ uri: viewModel.profilePhotoUrl }}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              ) : (
+                <Text style={{ fontSize: 42 }}>👤</Text>
+              )}
             </View>
+
+            {/* Botões de ação para foto */}
+            {!viewModel.uploadingPhoto ? (
+              <View style={{
+                flexDirection: 'row',
+                marginTop: 16,
+                gap: 12,
+                justifyContent: 'center',
+              }}>
+                <TouchableOpacity 
+                  onPress={viewModel.handlePickImage}
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                  }}
+                >
+                  <Text style={{
+                    color: '#fff',
+                    fontSize: 12,
+                    fontWeight: '600',
+                  }}>
+                    📷 Alterar
+                  </Text>
+                </TouchableOpacity>
+
+                {viewModel.profilePhotoUrl && (
+                  <TouchableOpacity 
+                    onPress={viewModel.handleRemovePhoto}
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                    }}
+                  >
+                    <Text style={{
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontSize: 12,
+                      fontWeight: '600',
+                    }}>
+                      ✕ Remover
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : (
+              <View style={{ marginTop: 16 }}>
+                <ActivityIndicator size="small" color="#fff" />
+              </View>
+            )}
           </View>
 
           <View style={{
@@ -83,6 +147,16 @@ export const ProfileView: React.FC = () => {
               </Text>
             ) : null}
 
+            {viewModel.successMessage ? (
+              <Text style={{
+                color: '#22C55E',
+                marginBottom: 12,
+                textAlign: 'center'
+              }}>
+                {viewModel.successMessage}
+              </Text>
+            ) : null}
+
             <TouchableOpacity onPress={viewModel.openModal}>
               <LinearGradient
                 colors={['#FCA537', '#FF662A']}
@@ -116,16 +190,6 @@ export const ProfileView: React.FC = () => {
                 Fazer Log out
               </Text>
             </TouchableOpacity>
-
-            {viewModel.successMessage ? (
-              <Text style={{
-                color: '#22C55E',
-                marginTop: 12,
-                textAlign: 'center'
-              }}>
-                {viewModel.successMessage}
-              </Text>
-            ) : null}
 
           </View>
 
