@@ -2,17 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
-import {createClient} from '@supabase/supabase-js';
+import { supabase } from './config/supabase';
 import homeRoutes from './routes/home.routes';
 import salesRoutes from './routes/sales.routes';
 import profileRoutes from './routes/profile.routes';
 import { seedSalesData } from './database/seed';
-import { createUser, getAllUsers, findUserByEmail } from './database/users';
+import { createUser, findUserByEmail } from './database/users';
 
 dotenv.config();
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 
 const app = express();
@@ -60,7 +57,7 @@ app.get('/venda', async (_req, res) => {
 
 
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Servidor: http://localhost:${PORT}`);
   console.log(`Teste: teste@mercadim.com / senha123`);
   console.log(`Seed: POST http://localhost:${PORT}/api/seed`);
@@ -74,9 +71,6 @@ app.listen(PORT, () => {
       console.error(error);
     }
   }, 100);
-});
-
-/* Criar usuário de teste se não existir
 
   try {
     const existing = await findUserByEmail('teste@mercadim.com');
@@ -88,4 +82,3 @@ app.listen(PORT, () => {
     console.error('Erro ao criar usuário de teste:', error);
   }
 });
-*/
