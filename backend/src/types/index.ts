@@ -50,3 +50,11 @@ export interface HomeResponse {
   summary: HomeSummary;
   salesItems: SalesItem[];
 }
+
+export interface Notification {
+  id: string;
+  userId: string;
+  titulo: string;
+  descricao: string;
+  createdAt: Date;
+}
