@@ -22,7 +22,7 @@ export const savePendingUser = (email: string, password?: string, name?: string,
     pendingUsers.splice(existingIndex, 1);
   }
   
-  pendingUsers.push({ email, password, name, url: '', code: code || '', expiresAt });
+  pendingUsers.push({ email, password, name, url: '0', code: code || '', expiresAt });
 };
 
 export const getPendingUser = (email: string, code: string): PendingUser | undefined => {
@@ -85,7 +85,7 @@ export const createUser = async (email: string, plainPassword?: string, name?: s
    
    const { data, error } = await supabase
     .from('usuario')
-    .insert([{ email, senha: hashedPassword, nome: name,url: url || '' }])
+    .insert([{ email, senha: hashedPassword, nome: name,url: url || '0', dataCriacao: new Date() }])
     .select()
     .single();
     
@@ -100,7 +100,7 @@ export const createUser = async (email: string, plainPassword?: string, name?: s
          name: data.nome,
          password: data.senha,
          url: data.url,
-         createdAt: new Date(), 
+         createdAt: new Date(data.dataCriacao),
     };
 };
 
