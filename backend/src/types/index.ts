@@ -50,3 +50,34 @@ export interface HomeResponse {
   summary: HomeSummary;
   salesItems: SalesItem[];
 }
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  stock: number;
+  category?: string;
+  createdAt: string;
+  ativo?: boolean;
+}
+
+export interface CreateProductRequest {
+  name: string;
+  price: number;
+  stock: number;
+  category?: string;
+}
+
+export interface UpdateProductRequest {
+  name?: string;
+  price?: number;
+  stock?: number;
+  category?: string;
+}
+
+export interface ProductsListResponse {
+  products: Product[];
+  total: number;
+  page: number;
+  limit: number;
+}
