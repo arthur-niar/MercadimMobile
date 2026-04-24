@@ -113,7 +113,7 @@ export const ProfileView: React.FC = () => {
                 color: '#EF4444',
                 fontWeight: '600'
               }}>
-                Fazer Log out
+                Sair Do Aplicativo
               </Text>
             </TouchableOpacity>
 

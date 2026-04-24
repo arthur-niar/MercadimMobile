@@ -45,7 +45,7 @@ const PerfilIcon = ({ active }: { active: boolean }) => (
   </Svg>
 );
 
-const TabIcon = ({ icon, label, active, lines = 1 }: { icon: React.ReactNode; label: string; active: boolean; lines?: number }) => (
+const TabIcon = ({ icon, label, active }: { icon: React.ReactNode; label: string; active: boolean }) => (
   <View style={{ alignItems: 'center', gap: 3, paddingTop: 4, width: '100%' }}>
     <View style={{
       width: 44, height: 44, borderRadius: 14,
@@ -55,9 +55,9 @@ const TabIcon = ({ icon, label, active, lines = 1 }: { icon: React.ReactNode; la
       {icon}
     </View>
     <Text
-      numberOfLines={lines}
+      numberOfLines={1}
       adjustsFontSizeToFit
-      minimumFontScale={0.6}
+      minimumFontScale={0.7}
       style={{
         fontSize: 9,
         fontWeight: active ? '700' : '500',
@@ -101,7 +101,7 @@ export default function TabsLayout() {
         name="nova-venda"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon={<NovaVendaIcon active={focused} />} label="Venda" active={focused} lines={2} />
+            <TabIcon icon={<NovaVendaIcon active={focused} />} label="Venda" active={focused} />
           ),
         }}
       />

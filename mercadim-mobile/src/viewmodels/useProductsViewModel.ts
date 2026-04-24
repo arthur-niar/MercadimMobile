@@ -56,9 +56,11 @@ export const useProductsViewModel = () => {
       setError(null);
       setProducts(prev => prev.filter(p => p.id !== id));
       await deleteProduct(id);
-    } catch (err: unknown) {
+    } catch (err: any) {
       setProducts(snapshot);
-      setError('Não foi possível remover o produto. Tente novamente.');
+      // Extrair mensagem de erro do backend
+      const errorMessage = err.message || 'Não foi possível remover o produto. Tente novamente.';
+      setError(errorMessage);
       throw err;
     }
   };
