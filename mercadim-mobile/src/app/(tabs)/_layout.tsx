@@ -98,7 +98,7 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="nova-venda"
+        name="sales"
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon icon={<NovaVendaIcon active={focused} />} label="Venda" active={focused} />
