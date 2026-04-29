@@ -1,30 +1,48 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { Alert } from 'react-native';
+import api from '../services/api';
+import { authService } from '../services/auth.service';
 
 export type Product = {
   id: string;
   name: string;
   price: number;
+  stock: number;
 };
 
 export type CartItem = Product & {
   quantity: number;
 };
 
-const PRODUCTS: Product[] = [
-  { id: '1', name: 'Presunto', price: 13.5 },
-  { id: '2', name: 'Queijo', price: 14.5 },
-  { id: '3', name: 'Arroz 5kg', price: 25.9 },
-  { id: '4', name: 'Feijão 1kg', price: 8.99 },
-];
-
 export const useSalesViewModel = () => {
-  const [products] = useState<Product[]>(PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [quantity, setQuantity] = useState('1');
   const [modalVisible, setModalVisible] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [username, setUsername] = useState('');
+
+  const loadData = async () => {
+    try {
+      const name = await authService.getUserName();
+      setUsername(name ?? '');
+      
+      const response = await api.get('/products');
+      const stockProducts = response.data.products.filter((p: Product) => p.stock > 0);
+      setProducts(stockProducts);
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   const total = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -35,6 +53,10 @@ export const useSalesViewModel = () => {
   }, [cart]);
 
   const openAddProduct = () => {
+    if (products.length === 0) {
+        Alert.alert('Sem produtos', 'Não há produtos disponíveis no estoque.');
+        return;
+    }
     setEditingItem(null);
     setSelectedProduct(products[0]);
     setQuantity('1');
@@ -57,7 +79,15 @@ export const useSalesViewModel = () => {
     if (!selectedProduct) return;
 
     const qtd = Number(quantity);
-    if (!qtd || qtd <= 0) return;
+    if (!qtd || qtd <= 0) {
+      Alert.alert('Quantidade inválida', 'Informe uma quantidade maior que zero.');
+      return;
+    }
+
+    if (qtd > selectedProduct.stock) {
+      Alert.alert('Estoque insuficiente', `O produto ${selectedProduct.name} possui apenas ${selectedProduct.stock} unidades disponíveis.`);
+      return;
+    }
 
     if (editingItem) {
       setCart((prev) =>
@@ -73,9 +103,15 @@ export const useSalesViewModel = () => {
       const existing = prev.find((item) => item.id === selectedProduct.id);
 
       if (existing) {
+        const newTotalQtd = existing.quantity + qtd;
+        if (newTotalQtd > selectedProduct.stock) {
+           Alert.alert('Estoque insuficiente', `O produto ${selectedProduct.name} possui apenas ${selectedProduct.stock} unidades disponíveis.`);
+           return prev;
+        }
+
         return prev.map((item) =>
           item.id === selectedProduct.id
-            ? { ...item, quantity: item.quantity + qtd }
+            ? { ...item, quantity: newTotalQtd }
             : item
         );
       }
@@ -96,21 +132,41 @@ export const useSalesViewModel = () => {
   };
 
   const increaseQuantity = () => {
-    setQuantity(String(Number(quantity || 0) + 1));
+    const value = Number(quantity || 0) + 1;
+    if (selectedProduct && value > selectedProduct.stock) {
+       Alert.alert('Atenção', 'Limite do estoque atingido.');
+       return;
+    }
+    setQuantity(String(value));
   };
 
-  const finalizeSale = () => {
+  const finalizeSale = async () => {
     if (cart.length === 0) return;
 
-    setSuccessMessage('Venda realizada com sucesso!');
-    setCart([]);
+    const items = cart.map((item) => ({
+      productId: item.id,
+      quantity: item.quantity
+    }));
 
-    setTimeout(() => {
-      setSuccessMessage('');
-    }, 1800);
+    try {
+      await api.post('/sales', { items });
+      
+      setSuccessMessage('Venda realizada com sucesso!');
+      setCart([]);
+      
+
+      loadData();
+
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
+    } catch (error: any) {
+       Alert.alert('Erro na venda', error.response?.data?.message || 'Não foi possível concluir a venda.');
+    }
   };
 
   return {
+    username,
     products,
     cart,
     selectedProduct,
@@ -131,5 +187,6 @@ export const useSalesViewModel = () => {
     decreaseQuantity,
     increaseQuantity,
     finalizeSale,
+    refresh: loadData,
   };
 };

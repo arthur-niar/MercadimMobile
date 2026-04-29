@@ -23,14 +23,29 @@ export interface AuthPayload {
   email: string;
 }
 
-export interface Sale {
-  id: string;
-  userId: string;
+export interface SaleItem {
+  productId: string;
   productName: string;
   quantity: number;
   unitPrice: number;
+}
+
+export interface Sale {
+  id: string;
+  userId: string;
+  items: SaleItem[];
   totalPrice: number;
   createdAt: Date;
+}
+
+export interface SaleItemRequest {
+  productId: string;
+  quantity: number;
+}
+
+export interface CreateSaleRequest {
+  userId: string;
+  items: SaleItemRequest[];
 }
 
 export interface HomeSummary {
