@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { Product } from '@/models/Product';
 import {
   listProducts,
@@ -56,16 +57,19 @@ export const useProductsViewModel = () => {
       setError(null);
       setProducts(prev => prev.filter(p => p.id !== id));
       await deleteProduct(id);
-    } catch (err: unknown) {
+    } catch (err: any) {
       setProducts(snapshot);
-      setError('Não foi possível remover o produto. Tente novamente.');
+      const errorMessage = err.message || 'Não foi possível remover o produto. Tente novamente.';
+      setError(errorMessage);
       throw err;
     }
   };
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadProducts();
+    }, [])
+  );
 
   return {
     products,

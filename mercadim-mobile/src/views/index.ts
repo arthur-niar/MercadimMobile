@@ -4,3 +4,4 @@ export * from './ForgotPasswordView';
 export * from './HomeView';
 export * from './ProfileView';
 export * from './EstoqueView';
+export * from './SalesView';

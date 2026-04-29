@@ -109,7 +109,7 @@ interface EstoqueViewProps {
   totalProducts: number;
   lowStockCount: number;
   onEditPress: (product: Product) => void;
-  onDeletePress: (id: string) => void;
+  onDeletePress: (id: string) => Promise<void>;
   onRefresh: () => void;
   onRetry: () => void;
 }
@@ -147,14 +147,36 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
 
   const closeMenu = () => setMenuOpenId(null);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     closeMenu();
     Alert.alert(
       'Excluir produto',
       'Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: () => onDeletePress(id) },
+        { 
+          text: 'Excluir', 
+          style: 'destructive', 
+          onPress: async () => {
+            try {
+              await onDeletePress(id);
+              // Mostrar mensagem de sucesso
+              Alert.alert(
+                'Sucesso',
+                'Produto excluído com sucesso!',
+                [{ text: 'OK' }]
+              );
+            } catch (error: any) {
+              // Mostrar mensagem de erro amigável
+              const errorMessage = error.message || 'Não foi possível excluir o produto';
+              Alert.alert(
+                'Erro ao excluir',
+                errorMessage,
+                [{ text: 'OK' }]
+              );
+            }
+          }
+        },
       ],
     );
   };
@@ -162,43 +184,43 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
   // ── Loading inicial ────────────────────────────────────────────────────────
   if (loading && products.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
         <StatusBar barStyle="dark-content" backgroundColor="#fff" />
         <Header username={username} onSettingsPress={onSettingsPress} />
-        <View className="flex-1 items-center justify-center">
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator size="large" color="#FF8C3A" />
-          <Text className="mt-3 text-sm text-gray-400">Carregando produtos...</Text>
+          <Text style={{ marginTop: 12, fontSize: 14, color: '#9CA3AF' }}>Carregando produtos...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <Header username={username} onSettingsPress={onSettingsPress} />
 
-      <View className="flex-1">
+      <View style={{ flex: 1 }}>
 
         {/* ── Estado A — vazio ─────────────────────────────────────────────── */}
         {isEmpty && (
           <ScrollView
-            className="flex-1 bg-[#F5F5F5]"
-            contentContainerClassName="flex-grow p-4 justify-center"
+            style={{ flex: 1, backgroundColor: '#F5F5F5' }}
+            contentContainerStyle={{ flexGrow: 1, padding: 16, justifyContent: 'center' }}
             showsVerticalScrollIndicator={false}
           >
             {error && <ErrorBanner message={error} onRetry={onRetry} />}
-            <View className="bg-white rounded-2xl p-8 w-full items-center gap-5">
-              <Text className="text-lg font-extrabold text-gray-900 text-center leading-6">
+            <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 32, width: '100%', alignItems: 'center', gap: 20 }}>
+              <Text style={{ fontSize: 18, fontWeight: '800', color: '#111827', textAlign: 'center', lineHeight: 24 }}>
                 Crie o seu Primeiro{'\n'}Produto!
               </Text>
               <BagIcon />
               <TouchableOpacity
                 onPress={onCreatePress}
-                className="bg-[#FF8C3A] rounded-full py-3 w-full"
+                style={{ backgroundColor: '#FF8C3A', borderRadius: 999, paddingVertical: 12, width: '100%' }}
                 activeOpacity={0.8}
               >
-                <Text className="text-white text-sm font-bold text-center">Criar Produto</Text>
+                <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700', textAlign: 'center' }}>Criar Produto</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -210,23 +232,30 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
             {error && <ErrorBanner message={error} onRetry={onRetry} />}
 
             <ScrollView
-              className="flex-1 bg-[#F5F5F5]"
-              contentContainerStyle={{ paddingBottom: 112 }}
+              style={{ flex: 1, backgroundColor: '#F5F5F5' }}
+              contentContainerStyle={{ paddingBottom: 180 }}
               showsVerticalScrollIndicator={false}
             >
               {/* Cards de resumo */}
-              <View className="flex-row gap-3 px-4 pt-4 pb-2">
+              <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
                 <SummaryCardBase value={totalProducts} label="Total de Produtos" className="bg-orange" />
                 <SummaryCardBase value={lowStockCount} label="Baixo Estoque(<5)" className="bg-orange-light" />
               </View>
 
               {/* Cabeçalho da seção */}
-              <View className="flex-row justify-between items-center px-4 py-3">
-                <Text className="text-base font-extrabold text-gray-900">Seus Produtos</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}>
+                <Text style={{ fontSize: 16, fontWeight: '800', color: '#111827' }}>Seus Produtos</Text>
                 <TouchableOpacity
                   onPress={onRefresh}
                   disabled={loading}
-                  className={`w-8 h-8 rounded-lg items-center justify-center ${loading ? 'bg-gray-50' : 'bg-gray-100'}`}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: loading ? '#F9FAFB' : '#F3F4F6'
+                  }}
                   activeOpacity={0.7}
                 >
                   {loading
@@ -237,26 +266,43 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
               </View>
 
               {/* Lista de produtos */}
-              <View className="px-4 gap-2">
+              <View style={{ paddingHorizontal: 16, gap: 8 }}>
                 {products.map(item => (
                   <View
                     key={item.id}
                     ref={el => { rowRefs.current[item.id] = el; }}
-                    className="bg-white rounded-xl px-4 py-3 flex-row justify-between items-center border border-gray-100"
+                    style={{
+                      backgroundColor: '#fff',
+                      borderRadius: 12,
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      borderWidth: 1,
+                      borderColor: '#F3F4F6'
+                    }}
                   >
-                    <View className="flex-1 mr-3">
-                      <Text className="text-sm font-bold text-gray-900">{item.name}</Text>
-                      <Text className="text-xs text-gray-500 mt-0.5">
+                    <View style={{ flex: 1, marginRight: 12 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '700', color: '#111827' }}>{item.name}</Text>
+                      <Text style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
                         {formatCurrency(item.price)}
                         {'  |  Estoque: '}
-                        <Text className={item.stock < 5 ? 'text-red-500 font-bold' : ''}>
+                        <Text style={item.stock < 5 ? { color: '#EF4444', fontWeight: '700' } : {}}>
                           {item.stock}
                         </Text>
                       </Text>
                     </View>
                     <TouchableOpacity
                       onPress={() => openMenu(item.id)}
-                      className="w-8 h-8 bg-gray-100 rounded-lg items-center justify-center"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        backgroundColor: '#F3F4F6',
+                        borderRadius: 8,
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
                       activeOpacity={0.7}
                     >
                       <Text style={{ color: '#6B7280', fontSize: 16, fontWeight: '800', letterSpacing: 1 }}>
@@ -270,15 +316,20 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
 
             {/* Backdrop do menu */}
             {menuOpenId !== null && (
-              <Pressable className="absolute inset-0 z-40" onPress={closeMenu} />
+              <Pressable style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 40 }} onPress={closeMenu} />
             )}
 
             {/* Popup do menu */}
             {menuOpenId !== null && (
               <View
-                className="absolute right-4 bg-white rounded-xl overflow-hidden z-50"
                 style={{
+                  position: 'absolute',
+                  right: 16,
                   top: menuTop,
+                  backgroundColor: '#fff',
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                  zIndex: 50,
                   shadowColor: '#000',
                   shadowOpacity: 0.12,
                   shadowRadius: 12,
@@ -292,17 +343,17 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                     closeMenu();
                     if (product) onEditPress(product);
                   }}
-                  className="px-6 py-3 border-b border-gray-100"
+                  style={{ paddingHorizontal: 24, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }}
                   activeOpacity={0.7}
                 >
-                  <Text className="text-sm font-semibold text-gray-800">Editar</Text>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#1F2937' }}>Editar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleDelete(menuOpenId)}
-                  className="px-6 py-3"
+                  style={{ paddingHorizontal: 24, paddingVertical: 12 }}
                   activeOpacity={0.7}
                 >
-                  <Text className="text-sm font-semibold text-red-500">Excluir</Text>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#EF4444' }}>Excluir</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -310,15 +361,23 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
             {/* FAB */}
             <TouchableOpacity
               onPress={onCreatePress}
-              className="absolute bottom-6 right-5 w-14 h-14 bg-[#FF662A] rounded-full items-center justify-center"
-              activeOpacity={0.85}
               style={{
+                position: 'absolute',
+                bottom: 24,
+                right: 20,
+                width: 56,
+                height: 56,
+                backgroundColor: '#FF662A',
+                borderRadius: 28,
+                alignItems: 'center',
+                justifyContent: 'center',
                 shadowColor: '#FF662A',
                 shadowOpacity: 0.45,
                 shadowRadius: 12,
                 shadowOffset: { width: 0, height: 4 },
                 elevation: 8,
               }}
+              activeOpacity={0.85}
             >
               <PlusIcon />
             </TouchableOpacity>

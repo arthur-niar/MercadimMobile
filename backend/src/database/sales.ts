@@ -1,87 +1,118 @@
 import { supabase } from '../config/supabase';
-import { Sale } from '../types';
+import { Sale, SaleItem } from '../types';
+import { getProductById } from './products';
 
-export const createSale = async (sale: Omit<Sale, 'id' | 'createdAt'>): Promise<Sale> => {
-  const { data: vendaData, error: vendaError } = await supabase
-      .from('venda')
-      .insert([{
-          idusuario: parseInt(sale.userId),
-          quantproduto: sale.quantity,
-          precototal: sale.totalPrice,
-      }])
-      .select()
+export const createSale = async (data: { userId: string; items: { productId: string; quantity: number }[] }): Promise<Sale> => {
+
+  let totalSalePrice = 0;
+  let totalQuantity = 0;
+  const processedItems: { productId: number; quantity: number; unitPrice: number; name: string; stockId: number; currentStock: number }[] = [];
+
+  for (const item of data.items) {
+    const productData = await getProductById(item.productId, data.userId);
+    if (!productData) {
+      throw new Error(`Produto com ID ${item.productId} não encontrado.`);
+    }
+
+    if (productData.stock < item.quantity) {
+      throw new Error(`Estoque insuficiente para o produto ${productData.name}. Disponível: ${productData.stock}, Solicitado: ${item.quantity}.`);
+    }
+
+
+    const { data: rawProduct } = await supabase
+      .from('produto')
+      .select('idestoque')
+      .eq('idproduto', parseInt(item.productId))
       .single();
 
-   if (vendaError) throw vendaError;
+    if (!rawProduct) throw new Error(`Erro interno ao buscar estoque do produto ${item.productId}`);
 
-   let produtoId;
-   const { data: existingProduto, error: existingError } = await supabase
-        .from('produto')
-        .select('*')
-        .eq('nome', sale.productName)
-        .limit(1)
-        .single();
+    processedItems.push({
+      productId: parseInt(item.productId),
+      quantity: item.quantity,
+      unitPrice: productData.price,
+      name: productData.name,
+      stockId: rawProduct.idestoque,
+      currentStock: productData.stock,
+    });
 
-   if (existingProduto) {
-       produtoId = existingProduto.idproduto;
-   } else {
-       const { data: estoqueData, error: estoqueError } = await supabase
-           .from('estoque')
-           .insert([{ quantprodutos: 100, quantbaixoestoque: 10 }])
+    totalSalePrice += productData.price * item.quantity;
+    totalQuantity += item.quantity;
+  }
+
+
+  const { data: vendaData, error: vendaError } = await supabase
+    .from('venda')
+    .insert([{
+        idusuario: parseInt(data.userId),
+        quantproduto: totalQuantity,
+        precototal: totalSalePrice,
+    }])
+    .select()
+    .single();
+
+  if (vendaError) throw new Error(`Erro ao criar venda: ${vendaError.message}`);
+
+
+  let relatorioId;
+  const { data: relatorios } = await supabase.from('relatorio').select('*').limit(1);
+  const existRelatorio = relatorios && relatorios.length > 0 ? relatorios[0] : null;
+  
+  if (existRelatorio) {
+       relatorioId = existRelatorio.idrelatorio;
+  } else {
+       const { data: rootRelatorio, error: relError } = await supabase
+           .from('relatorio')
+           .insert([{
+              nomeproduto: 'Geral', lucrototal: 0, vendastotais: 0, vendassemanais: 0, aumentoestoque: 0
+           }])
            .select()
            .single();
-           
-       if (estoqueError) throw estoqueError;
+       if (relError) throw new Error(`Erro ao criar relatorio: ${relError.message}`);
+       relatorioId = rootRelatorio.idrelatorio;
+  }
 
-       const { data: newProduto, error: newProdutoError } = await supabase
-          .from('produto')
-          .insert([{
-              nome: sale.productName,
-              preco: sale.unitPrice,
-              idestoque: estoqueData.idestoque
-          }])
-          .select()
-          .single();
-          
-       if (newProdutoError) throw newProdutoError;
-       produtoId = newProduto.idproduto;
-   }
 
-   let relatorioId;
-   const { data: existRelatorio } = await supabase.from('relatorio').select('*').limit(1).single();
-   if (existRelatorio) {
-        relatorioId = existRelatorio.idrelatorio;
-   } else {
-        const { data: rootRelatorio, error: relError } = await supabase
-            .from('relatorio')
-            .insert([{
-               nomeproduto: 'Geral', lucrototal: 0, vendastotais: 0, vendassemanais: 0, aumentoestoque: 0
-            }])
-            .select()
-            .single();
-        if (relError) throw relError;
-        relatorioId = rootRelatorio.idrelatorio;
-   }
+  const finalItems: SaleItem[] = [];
 
-   const { error: pvError } = await supabase
-        .from('produtovenda')
-        .insert([{
-             idproduto: produtoId,
-             idvenda: vendaData.idvenda,
-             quantidade: sale.quantity,
-             precounitario: sale.unitPrice,
-             idrelatorio: relatorioId
-        }]);
+  for (const item of processedItems) {
+    const { error: pvError } = await supabase
+      .from('produtovenda')
+      .insert([{
+           idproduto: item.productId,
+           idvenda: vendaData.idvenda,
+           quantidade: item.quantity,
+           precounitario: item.unitPrice,
+           idrelatorio: relatorioId
+      }]);
 
-   if (pvError) throw pvError;
+    if (pvError) throw new Error(`Erro ao inserir item na venda: ${pvError.message}`);
+
+
+    const newStock = Math.max(0, item.currentStock - item.quantity);
+    const { error: stockError } = await supabase
+      .from('estoque')
+      .update({
+        quantprodutos: newStock,
+        quantbaixoestoque: newStock < 5 ? 1 : 0,
+      })
+      .eq('idestoque', item.stockId);
+      
+    if (stockError) throw new Error(`Erro ao atualizar estoque: ${stockError.message}`);
+
+    finalItems.push({
+      productId: item.productId.toString(),
+      productName: item.name,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    });
+  }
 
   return {
     id: vendaData.idvenda.toString(),
-    userId: sale.userId,
-    productName: sale.productName,
-    quantity: sale.quantity,
-    unitPrice: sale.unitPrice,
-    totalPrice: sale.totalPrice,
+    userId: data.userId,
+    items: finalItems,
+    totalPrice: totalSalePrice,
     createdAt: new Date(vendaData.datavenda),
   };
 };
@@ -100,24 +131,22 @@ export const getSalesByUserId = async (userId: string): Promise<Sale[]> => {
 
   if (error || !data) return [];
 
-  const sales: Sale[] = [];
+  return data.map(venda => {
+    const items: SaleItem[] = (venda.produtovenda || []).map((pv: any) => ({
+        productId: pv.idproduto?.toString() || '',
+        productName: pv.produto ? pv.produto.nome : 'Produto Desconhecido',
+        quantity: pv.quantidade,
+        unitPrice: Number(pv.precounitario)
+    }));
 
-  for (const venda of data) {
-      if (venda.produtovenda && venda.produtovenda.length > 0) {
-          const pv = venda.produtovenda[0];
-          sales.push({
-             id: venda.idvenda.toString(),
-             userId: venda.idusuario.toString(),
-             productName: pv.produto ? pv.produto.nome : 'Produto Desconhecido',
-             quantity: pv.quantidade,
-             unitPrice: Number(pv.precounitario),
-             totalPrice: Number(venda.precototal),
-             createdAt: new Date(venda.datavenda)
-          });
-      }
-  }
-
-  return sales;
+    return {
+      id: venda.idvenda.toString(),
+      userId: venda.idusuario.toString(),
+      items,
+      totalPrice: Number(venda.precototal),
+      createdAt: new Date(venda.datavenda)
+    };
+  });
 };
 
 export const getAllSales = async (): Promise<Sale[]> => {
@@ -133,23 +162,22 @@ export const getAllSales = async (): Promise<Sale[]> => {
 
   if (error || !data) return [];
   
-  const sales: Sale[] = [];
+  return data.map(venda => {
+    const items: SaleItem[] = (venda.produtovenda || []).map((pv: any) => ({
+        productId: pv.idproduto?.toString() || '',
+        productName: pv.produto ? pv.produto.nome : 'Produto Desconhecido',
+        quantity: pv.quantidade,
+        unitPrice: Number(pv.precounitario)
+    }));
 
-  for (const venda of data) {
-      if (venda.produtovenda && venda.produtovenda.length > 0) {
-          const pv = venda.produtovenda[0];
-          sales.push({
-             id: venda.idvenda.toString(),
-             userId: venda.idusuario.toString(),
-             productName: pv.produto ? pv.produto.nome : 'Produto Desconhecido',
-             quantity: pv.quantidade,
-             unitPrice: Number(pv.precounitario),
-             totalPrice: Number(venda.precototal),
-             createdAt: new Date(venda.datavenda)
-          });
-      }
-  }
-  return sales;
+    return {
+      id: venda.idvenda.toString(),
+      userId: venda.idusuario.toString(),
+      items,
+      totalPrice: Number(venda.precototal),
+      createdAt: new Date(venda.datavenda)
+    };
+  });
 };
 
 export const hasSales = async (): Promise<boolean> => {
