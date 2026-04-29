@@ -66,6 +66,14 @@ export interface HomeResponse {
   salesItems: SalesItem[];
 }
 
+export interface Notification {
+  id: string;
+  userId: string;
+  titulo: string;
+  descricao: string;
+  createdAt: Date;
+}
+
 export interface Product {
   id: string;
   name: string;
