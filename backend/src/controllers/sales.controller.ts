@@ -15,22 +15,18 @@ export const createSaleHandler = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ message: 'Usuário não autenticado' });
     }
 
-    const { productName, quantity, unitPrice } = req.body;
-    const totalPrice = quantity * unitPrice;
+    const { items } = req.body;
 
     const sale = await createSale({
       userId: req.user.userId,
-      productName,
-      quantity,
-      unitPrice,
-      totalPrice,
+      items,
     });
 
     console.log('Venda criada:', sale.id);
     return res.status(201).json(sale);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao criar venda:', error);
-    return res.status(500).json({ message: 'Erro ao criar venda' });
+    return res.status(500).json({ message: error.message || 'Erro ao criar venda' });
   }
 };
 
@@ -51,7 +47,7 @@ export const getUserSales = async (req: AuthRequest, res: Response) => {
 };
 
 export const validateSale = [
-  body('productName').notEmpty().withMessage('Nome do produto é obrigatório').trim(),
-  body('quantity').isInt({ min: 1 }).withMessage('Quantidade deve ser maior que 0'),
-  body('unitPrice').isFloat({ min: 0.01 }).withMessage('Preço unitário deve ser maior que 0'),
+  body('items').isArray({ min: 1 }).withMessage('A venda deve conter pelo menos um item'),
+  body('items.*.productId').notEmpty().withMessage('O ID do produto é obrigatório'),
+  body('items.*.quantity').isInt({ min: 1 }).withMessage('A quantidade deve ser maior que 0'),
 ];

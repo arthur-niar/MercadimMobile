@@ -12,8 +12,9 @@ export async function listProducts(
  
   const { data: produtos, error, count } = await supabase
     .from('produto')
-    .select('*', { count: 'exact' })
+    .select('*, estoque!inner(idusuario, quantprodutos)', { count: 'exact' })
     .eq('ativo', true)
+    .eq('estoque.idusuario', parseInt(userId))
     .order('datacriacao', { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -26,21 +27,8 @@ export async function listProducts(
   const productsWithStock = await Promise.all(
     (produtos || []).map(async (p) => {
       
-      const { data: estoqueData } = await supabase
-        .from('estoque')
-        .select('quantprodutos')
-        .eq('idestoque', p.idestoque)
-        .single();
 
-     
-      const { data: vendasData } = await supabase
-        .from('produtovenda')
-        .select('quantidade')
-        .eq('idproduto', p.idproduto);
-
-      const quantidadeVendida = vendasData?.reduce((sum, v) => sum + (v.quantidade || 0), 0) || 0;
-      const quantidadeInicial = estoqueData?.quantprodutos || 0;
-      const stock = Math.max(0, quantidadeInicial - quantidadeVendida);
+      const stock = (p as any).estoque?.quantprodutos || 0;
 
       return {
         id: p.idproduto.toString(),
@@ -64,24 +52,17 @@ export async function listProducts(
 export async function getProductById(productId: string, userId: string): Promise<Product | null> {
   const { data: produto, error } = await supabase
     .from('produto')
-    .select('*, estoque(quantprodutos)')
+    .select('*, estoque!inner(idusuario, quantprodutos)')
     .eq('idproduto', parseInt(productId))
     .eq('ativo', true)
+    .eq('estoque.idusuario', parseInt(userId))
     .single();
 
   if (error || !produto) {
     return null;
   }
 
- 
-  const { data: vendasData } = await supabase
-    .from('produtovenda')
-    .select('quantidade')
-    .eq('idproduto', produto.idproduto);
-
-  const quantidadeVendida = vendasData?.reduce((sum, v) => sum + (v.quantidade || 0), 0) || 0;
-  const quantidadeInicial = produto.estoque?.quantprodutos || 0;
-  const stock = Math.max(0, quantidadeInicial - quantidadeVendida);
+  const stock = produto.estoque?.quantprodutos || 0;
 
   return {
     id: produto.idproduto.toString(),
@@ -105,6 +86,7 @@ export async function createProduct(
     .insert({
       quantprodutos: productData.stock,
       quantbaixoestoque: productData.stock < 5 ? 1 : 0,
+      idusuario: parseInt(userId),
     })
     .select()
     .single();
@@ -157,8 +139,9 @@ export async function updateProduct(
   
   const { data: produtoExistente, error: checkError } = await supabase
     .from('produto')
-    .select('*, estoque(idestoque, quantprodutos)')
+    .select('*, estoque!inner(idestoque, quantprodutos, idusuario)')
     .eq('idproduto', parseInt(productId))
+    .eq('estoque.idusuario', parseInt(userId))
     .single();
 
   if (checkError || !produtoExistente) {
@@ -218,9 +201,10 @@ export async function deleteProduct(productId: string, userId: string): Promise<
  
   const { data: produto, error: checkError } = await supabase
     .from('produto')
-    .select('*, estoque(idestoque)')
+    .select('*, estoque!inner(idestoque, idusuario)')
     .eq('idproduto', parseInt(productId))
     .eq('ativo', true)
+    .eq('estoque.idusuario', parseInt(userId))
     .single();
 
   if (checkError || !produto) {
