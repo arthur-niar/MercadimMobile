@@ -1,21 +1,27 @@
-import { Response } from 'express';
-import { validationResult } from 'express-validator';
-import { AuthRequest } from '../middleware/auth';
-import { findUserById, updateUserProfile, findUserByEmail, updateUserProfilePhoto, removeUserProfilePhoto } from '../database/users';
-import { supabase } from '../config/supabase';
+import { Response } from "express";
+import { validationResult } from "express-validator";
+import { AuthRequest } from "../middleware/auth";
+import {
+  findUserById,
+  updateUserProfile,
+  findUserByEmail,
+  updateUserProfilePhoto,
+  removeUserProfilePhoto,
+} from "../database/users";
+import { supabase } from "../config/supabase";
 
 export const getProfile = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.userId;
 
     if (!userId) {
-      return res.status(401).json({ message: 'Usuário não autenticado' });
+      return res.status(401).json({ message: "Usuário não autenticado" });
     }
 
     const user = await findUserById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: 'Usuário não encontrado' });
+      return res.status(404).json({ message: "Usuário não encontrado" });
     }
 
     return res.json({
@@ -25,8 +31,8 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
       url: user.url || null,
     });
   } catch (error) {
-    console.error('Get profile error:', error);
-    return res.status(500).json({ message: 'Erro ao buscar perfil' });
+    console.error("Get profile error:", error);
+    return res.status(500).json({ message: "Erro ao buscar perfil" });
   }
 };
 
@@ -34,42 +40,44 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ message: 'Dados inválidos', errors: errors.array() });
+      return res
+        .status(400)
+        .json({ message: "Dados inválidos", errors: errors.array() });
     }
 
     const userId = req.user?.userId;
 
     if (!userId) {
-      return res.status(401).json({ message: 'Usuário não autenticado' });
+      return res.status(401).json({ message: "Usuário não autenticado" });
     }
 
     const { name, email } = req.body;
 
     if (!name || !email) {
-      return res.status(400).json({ message: 'Nome e email são obrigatórios' });
+      return res.status(400).json({ message: "Nome e email são obrigatórios" });
     }
 
     const user = await findUserById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: 'Usuário não encontrado' });
+      return res.status(404).json({ message: "Usuário não encontrado" });
     }
 
     if (email !== user.email) {
       const existingUser = await findUserByEmail(email);
       if (existingUser && existingUser.id !== userId) {
-        return res.status(409).json({ message: 'Email já está em uso' });
+        return res.status(409).json({ message: "Email já está em uso" });
       }
     }
 
     const updatedUser = await updateUserProfile(userId, name, email);
 
     if (!updatedUser) {
-      return res.status(500).json({ message: 'Erro ao atualizar perfil' });
+      return res.status(500).json({ message: "Erro ao atualizar perfil" });
     }
 
     return res.json({
-      message: 'Perfil atualizado com sucesso',
+      message: "Perfil atualizado com sucesso",
       user: {
         id: updatedUser.id,
         email: updatedUser.email,
@@ -77,8 +85,8 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Update profile error:', error);
-    return res.status(500).json({ message: 'Erro ao atualizar perfil' });
+    console.error("Update profile error:", error);
+    return res.status(500).json({ message: "Erro ao atualizar perfil" });
   }
 };
 
@@ -87,50 +95,91 @@ export const uploadProfilePhoto = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.userId;
 
     if (!userId) {
-      return res.status(401).json({ message: 'Usuário não autenticado' });
-    }
-
-    if (!req.file) {
-      return res.status(400).json({ message: 'Nenhuma imagem foi enviada' });
+      return res.status(401).json({ message: "Usuário não autenticado" });
     }
 
     const user = await findUserById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: 'Usuário não encontrado' });
+      return res.status(404).json({ message: "Usuário não encontrado" });
+    }
+
+    let buffer: Buffer;
+    let mimeType: string;
+    let fileExtension: string;
+
+    // Suporta dois formatos: multipart/form-data (legacy) e JSON com base64 (novo, para iOS)
+    if (req.file) {
+      // Formato multipart (legacy)
+      buffer = req.file.buffer;
+      mimeType = req.file.mimetype;
+      fileExtension = req.file.originalname.split(".").pop() || "jpg";
+    } else {
+      // Formato JSON com base64 (iOS)
+      const { photo, mimeType: bodyMimeType, fileName } = req.body;
+
+      if (!photo || !bodyMimeType) {
+        return res.status(400).json({ message: "Nenhuma imagem foi enviada" });
+      }
+
+      // Validar MIME type
+      const validMimeTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
+      if (!validMimeTypes.includes(bodyMimeType)) {
+        return res.status(400).json({ message: "Tipo de imagem inválido" });
+      }
+
+      // Converter base64 para buffer
+      buffer = Buffer.from(photo, "base64");
+
+      // Validar tamanho (máx 5MB)
+      if (buffer.length > 5 * 1024 * 1024) {
+        return res
+          .status(400)
+          .json({ message: "Imagem muito grande (máximo 5MB)" });
+      }
+
+      mimeType = bodyMimeType;
+      fileExtension =
+        fileName?.split(".").pop() || getMimeExtension(bodyMimeType);
     }
 
     // Deletar foto antiga se existir
     if (user.url) {
       try {
-        const oldFileName = user.url.split('/').pop();
+        const oldFileName = user.url.split("/").pop();
         if (oldFileName) {
-          await supabase.storage.from('profile-photos').remove([`${userId}/${oldFileName}`]);
+          await supabase.storage
+            .from("profile-photos")
+            .remove([`${userId}/${oldFileName}`]);
         }
       } catch (error) {
-        console.error('Error deleting old photo:', error);
+        console.error("Error deleting old photo:", error);
       }
     }
 
     // Enviar nova foto
-    const fileExtension = req.file.originalname.split('.').pop();
     const fileName = `${userId}/profile-${Date.now()}.${fileExtension}`;
 
     const { data, error } = await supabase.storage
-      .from('profile-photos')
-      .upload(fileName, req.file.buffer, {
-        contentType: req.file.mimetype,
+      .from("profile-photos")
+      .upload(fileName, buffer, {
+        contentType: mimeType,
         upsert: true,
       });
 
     if (error) {
-      console.error('Upload error:', error);
-      return res.status(500).json({ message: 'Erro ao enviar foto' });
+      console.error("Upload error:", error);
+      return res.status(500).json({ message: "Erro ao enviar foto" });
     }
 
     // Receber URL pública da foto
     const { data: publicData } = supabase.storage
-      .from('profile-photos')
+      .from("profile-photos")
       .getPublicUrl(fileName);
 
     const photoUrl = publicData.publicUrl;
@@ -139,11 +188,13 @@ export const uploadProfilePhoto = async (req: AuthRequest, res: Response) => {
     const updatedUser = await updateUserProfilePhoto(userId, photoUrl);
 
     if (!updatedUser) {
-      return res.status(500).json({ message: 'Erro ao atualizar foto do perfil' });
+      return res
+        .status(500)
+        .json({ message: "Erro ao atualizar foto do perfil" });
     }
 
     return res.json({
-      message: 'Foto de perfil atualizada com sucesso',
+      message: "Foto de perfil atualizada com sucesso",
       user: {
         id: updatedUser.id,
         email: updatedUser.email,
@@ -152,9 +203,22 @@ export const uploadProfilePhoto = async (req: AuthRequest, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Erro ao atualizar foto de perfil:', error);
-    return res.status(500).json({ message: 'Erro ao atualizar foto de perfil' });
+    console.error("Erro ao atualizar foto de perfil:", error);
+    return res
+      .status(500)
+      .json({ message: "Erro ao atualizar foto de perfil" });
   }
+};
+
+// Função auxiliar para obter extensão do arquivo a partir do MIME type
+const getMimeExtension = (mimeType: string): string => {
+  const extensions: { [key: string]: string } = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/gif": "gif",
+    "image/webp": "webp",
+  };
+  return extensions[mimeType] || "jpg";
 };
 
 export const removeProfilePhoto = async (req: AuthRequest, res: Response) => {
@@ -162,23 +226,25 @@ export const removeProfilePhoto = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.userId;
 
     if (!userId) {
-      return res.status(401).json({ message: 'Usuário não autenticado' });
+      return res.status(401).json({ message: "Usuário não autenticado" });
     }
 
     const user = await findUserById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: 'Usuário não encontrado' });
+      return res.status(404).json({ message: "Usuário não encontrado" });
     }
 
     if (user.url) {
       try {
-        const oldFileName = user.url.split('/').pop();
+        const oldFileName = user.url.split("/").pop();
         if (oldFileName) {
-          await supabase.storage.from('profile-photos').remove([`${userId}/${oldFileName}`]);
+          await supabase.storage
+            .from("profile-photos")
+            .remove([`${userId}/${oldFileName}`]);
         }
       } catch (error) {
-        console.error('Erro ao deletar foto:', error);
+        console.error("Erro ao deletar foto:", error);
       }
     }
 
@@ -186,11 +252,13 @@ export const removeProfilePhoto = async (req: AuthRequest, res: Response) => {
     const updatedUser = await removeUserProfilePhoto(userId);
 
     if (!updatedUser) {
-      return res.status(500).json({ message: 'Erro ao remover foto do perfil' });
+      return res
+        .status(500)
+        .json({ message: "Erro ao remover foto do perfil" });
     }
 
     return res.json({
-      message: 'Foto de perfil removida com sucesso',
+      message: "Foto de perfil removida com sucesso",
       user: {
         id: updatedUser.id,
         email: updatedUser.email,
@@ -199,7 +267,7 @@ export const removeProfilePhoto = async (req: AuthRequest, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Erro ao remover foto de perfil:', error);
-    return res.status(500).json({ message: 'Erro ao remover foto de perfil' });
+    console.error("Erro ao remover foto de perfil:", error);
+    return res.status(500).json({ message: "Erro ao remover foto de perfil" });
   }
 };
