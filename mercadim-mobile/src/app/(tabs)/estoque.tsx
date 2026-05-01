@@ -1,3 +1,6 @@
+// SUBSTITUI: src/app/(tabs)/estoque.tsx
+// Mudança: onSettingsPress agora navega para /configuracoes
+
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
@@ -46,7 +49,7 @@ export default function EstoqueScreen() {
     <>
       <EstoqueView
         username={username}
-        onSettingsPress={() => router.push('/(tabs)/perfil' as Href)}
+        onSettingsPress={() => router.push('/configuracoes' as Href)}
         onCreatePress={handleOpenCreate}
         products={viewModel.products}
         loading={viewModel.loading}

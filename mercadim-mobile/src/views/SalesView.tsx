@@ -1,40 +1,46 @@
+// SUBSTITUI: src/views/SalesView.tsx
+// Mudanças:
+// - import useSettings + cores adaptadas ao tema escuro
+// - SafeAreaView trocado para o do safe-area-context
+// - Engrenagem agora navega para /configuracoes (em vez de /perfil)
+// - styles foi convertido de objeto fixo para função que recebe isDark
+
 import React from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  Modal, StatusBar, SafeAreaView
+  Modal, StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSalesViewModel } from '@/viewmodels/SalesViewModel';
 import { CartIcon } from '@/components/cart-icon';
 import { CheckIcon } from '@/components/check-icon';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { router } from 'expo-router';
+import { useSettings } from '@/contexts/SettingsContext';
 
 const ORANGE = '#FF662A';
 const YELLOW = '#FCA537';
-const BG = '#F3F4F6';
-const DARK = '#111827';
-const GRAY = '#6B7280';
 
-const UserIcon = () => (
+const UserIcon = ({ color = '#9CA3AF' }: { color?: string }) => (
   <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-    <Circle cx="12" cy="8" r="4" stroke="#9CA3AF" strokeWidth="1.8" />
-    <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" />
+    <Circle cx="12" cy="8" r="4" stroke={color} strokeWidth="1.8" />
+    <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
   </Svg>
 );
 
-const SettingsIcon = () => (
+const SettingsIcon = ({ color = '#374151' }: { color?: string }) => (
   <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
     <Path
       d="M12 15a3 3 0 100-6 3 3 0 000 6z"
-      stroke="#374151"
+      stroke={color}
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <Path
       d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
-      stroke="#374151"
+      stroke={color}
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -50,14 +56,30 @@ const PlusIcon = ({ size = 18, color = '#fff' }) => (
 
 export const SalesView = () => {
   const vm = useSalesViewModel();
+  const { isDark } = useSettings();
+
+  // Cores adaptadas ao tema
+  const screenBg = isDark ? '#0B0B0D' : '#fff';
+  const contentBg = isDark ? '#0B0B0D' : '#F3F4F6';
+  const cardBg = isDark ? '#17181B' : '#fff';
+  const cardBorder = isDark ? 'rgba(255,255,255,0.06)' : '#F3F4F6';
+  const textColor = isDark ? '#F3F4F6' : '#111827';
+  const subTextColor = isDark ? '#9CA3AF' : '#6B7280';
+  const labelColor = isDark ? '#9CA3AF' : '#9CA3AF';
+  const iconBtnBg = isDark ? '#27282C' : '#F3F4F6';
+  const iconColor = isDark ? '#D1D5DB' : '#374151';
+  const dividerColor = isDark ? 'rgba(255,255,255,0.08)' : '#eee';
+  const chipBg = isDark ? '#27282C' : '#F3F4F6';
+  const inputBg = isDark ? '#27282C' : '#F3F4F6';
+
+  const styles = makeStyles({ textColor, subTextColor, labelColor, dividerColor, cardBg, chipBg, inputBg });
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: screenBg }}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={screenBg} />
 
       <View style={{
-        backgroundColor: '#fff',
+        backgroundColor: screenBg,
         paddingHorizontal: 20,
         paddingTop: 16,
         paddingBottom: 16,
@@ -65,38 +87,38 @@ export const SalesView = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6'
+        borderBottomColor: cardBorder,
       }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <View style={{
             width: 42, height: 42, borderRadius: 21,
-            backgroundColor: '#F3F4F6',
+            backgroundColor: iconBtnBg,
             alignItems: 'center', justifyContent: 'center',
           }}>
             <UserIcon />
           </View>
           <View>
-            <Text style={{ fontSize: 12, color: '#9CA3AF' }}>Olá,</Text>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827' }}>
+            <Text style={{ fontSize: 12, color: labelColor }}>Olá,</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: textColor }}>
               {vm.username || 'Usuário'}
             </Text>
           </View>
         </View>
 
         <TouchableOpacity
-          onPress={() => router.push('/(tabs)/perfil' as any)}
+          onPress={() => router.push('/configuracoes' as any)}
           style={{
             width: 42, height: 42, borderRadius: 12,
-            backgroundColor: '#F3F4F6',
+            backgroundColor: iconBtnBg,
             alignItems: 'center', justifyContent: 'center',
           }}
           activeOpacity={0.7}
         >
-          <SettingsIcon />
+          <SettingsIcon color={iconColor} />
         </TouchableOpacity>
       </View>
 
-      <View style={{ flex: 1, backgroundColor: BG }}>
+      <View style={{ flex: 1, backgroundColor: contentBg }}>
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 140 }}>
           <LinearGradient colors={[ORANGE, YELLOW]} style={styles.summaryCard}>
             <View>
@@ -118,7 +140,7 @@ export const SalesView = () => {
             {vm.cart.length === 0 ? (
               <View style={styles.empty}>
                 <Text style={styles.emptyText}>Adicione produtos</Text>
-                <CartIcon size={40} color="#9CA3AF" />
+                <CartIcon size={40} color={isDark ? '#6B7280' : '#9CA3AF'} />
               </View>
             ) : (
               vm.cart.map((item) => (
@@ -153,7 +175,7 @@ export const SalesView = () => {
 
         <View style={styles.footer}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <CartIcon color={DARK} size={22} />
+            <CartIcon color={textColor} size={22} />
             <Text style={styles.footerTotal}>
               R$ {vm.total.toFixed(2).replace('.', ',')}
             </Text>
@@ -209,7 +231,7 @@ export const SalesView = () => {
                       vm.editingItem && !active && { opacity: 0.35 },
                     ]}
                   >
-                    <Text style={{ color: active ? '#fff' : DARK, fontWeight: '700' }}>
+                    <Text style={{ color: active ? '#fff' : textColor, fontWeight: '700' }}>
                       {product.name}
                     </Text>
                   </TouchableOpacity>
@@ -248,7 +270,16 @@ export const SalesView = () => {
   );
 };
 
-const styles = {
+// Styles dinâmicos baseados no tema
+const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg, chipBg, inputBg }: {
+  textColor: string;
+  subTextColor: string;
+  labelColor: string;
+  dividerColor: string;
+  cardBg: string;
+  chipBg: string;
+  inputBg: string;
+}) => ({
   summaryCard: {
     borderRadius: 20,
     padding: 20,
@@ -265,7 +296,7 @@ const styles = {
     color: '#fff',
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: cardBg,
     borderRadius: 20,
     padding: 16,
     marginBottom: 16,
@@ -273,7 +304,7 @@ const styles = {
   title: {
     fontWeight: '800' as const,
     marginBottom: 10,
-    color: DARK,
+    color: textColor,
   },
   empty: {
     alignItems: 'center' as const,
@@ -281,14 +312,14 @@ const styles = {
     gap: 12,
   },
   emptyText: {
-    color: '#9CA3AF',
+    color: labelColor,
   },
   item: {
     flexDirection: 'row' as const,
     justifyContent: 'space-between' as const,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderColor: dividerColor,
     gap: 12,
   },
   itemRight: {
@@ -301,16 +332,16 @@ const styles = {
   },
   name: {
     fontWeight: '700' as const,
-    color: DARK,
+    color: textColor,
   },
   detail: {
-    color: GRAY,
+    color: subTextColor,
     fontSize: 12,
     marginTop: 2,
   },
   total: {
     fontWeight: '800' as const,
-    color: DARK,
+    color: textColor,
   },
   edit: {
     color: YELLOW,
@@ -327,7 +358,7 @@ const styles = {
     bottom: 20,
     left: 20,
     right: 20,
-    backgroundColor: '#fff',
+    backgroundColor: cardBg,
     borderRadius: 20,
     padding: 12,
     flexDirection: 'row' as const,
@@ -336,7 +367,7 @@ const styles = {
   },
   footerTotal: {
     fontWeight: '900' as const,
-    color: DARK,
+    color: textColor,
   },
   finish: {
     backgroundColor: '#22C55E',
@@ -373,12 +404,12 @@ const styles = {
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: '#00000055',
+    backgroundColor: '#00000099',
     justifyContent: 'center' as const,
     padding: 20,
   },
   modal: {
-    backgroundColor: '#fff',
+    backgroundColor: cardBg,
     borderRadius: 20,
     padding: 20,
   },
@@ -389,13 +420,13 @@ const styles = {
   },
   closeText: {
     fontSize: 26,
-    color: DARK,
+    color: textColor,
     lineHeight: 28,
   },
   label: {
     marginTop: 10,
     marginBottom: 8,
-    color: DARK,
+    color: textColor,
     fontWeight: '700' as const,
   },
   productSelector: {
@@ -405,7 +436,7 @@ const styles = {
     marginBottom: 8,
   },
   productChip: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: chipBg,
     borderRadius: 999,
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -414,7 +445,7 @@ const styles = {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     marginTop: 6,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: inputBg,
     borderRadius: 14,
     padding: 8,
   },
@@ -438,7 +469,7 @@ const styles = {
     textAlign: 'center' as const,
     fontSize: 20,
     fontWeight: '800' as const,
-    color: DARK,
+    color: textColor,
   },
   addBtn: {
     marginTop: 20,
@@ -451,4 +482,4 @@ const styles = {
     color: '#fff',
     fontWeight: '700' as const,
   },
-};
+});
