@@ -1,9 +1,15 @@
+// SUBSTITUI: src/views/HomeView.tsx
+// Mudanças: import useSettings + cores adaptadas ao tema escuro
+// SafeAreaView trocado para o do safe-area-context (mais robusto)
+
 import React from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StatusBar, SafeAreaView, ActivityIndicator, RefreshControl,
+  View, Text, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator, RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { formatCurrency } from '@/utils';
+import { useSettings } from '@/contexts/SettingsContext';
 
 interface SaleItem {
   name: string;
@@ -25,25 +31,25 @@ interface HomeViewProps {
   onReportPress: () => void;
 }
 
-const UserIcon = () => (
+const UserIcon = ({ color = '#9CA3AF' }: { color?: string }) => (
   <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-    <Circle cx="12" cy="8" r="4" stroke="#9CA3AF" strokeWidth="1.8" />
-    <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" />
+    <Circle cx="12" cy="8" r="4" stroke={color} strokeWidth="1.8" />
+    <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
   </Svg>
 );
 
-const SettingsIcon = () => (
+const SettingsIcon = ({ color = '#374151' }: { color?: string }) => (
   <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
     <Path
       d="M12 15a3 3 0 100-6 3 3 0 000 6z"
-      stroke="#374151"
+      stroke={color}
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <Path
       d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
-      stroke="#374151"
+      stroke={color}
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -51,10 +57,10 @@ const SettingsIcon = () => (
   </Svg>
 );
 
-const ReportIcon = () => (
+const ReportIcon = ({ color = '#374151' }: { color?: string }) => (
   <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-    <Rect x="3" y="3" width="18" height="18" rx="3" stroke="#374151" strokeWidth="1.6" />
-    <Path d="M8 8h8M8 12h8M8 16h5" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" />
+    <Rect x="3" y="3" width="18" height="18" rx="3" stroke={color} strokeWidth="1.6" />
+    <Path d="M8 8h8M8 12h8M8 16h5" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
   </Svg>
 );
 
@@ -85,6 +91,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onSettingsPress,
   onReportPress,
 }) => {
+  const { isDark } = useSettings();
+
+  // Cores adaptadas ao tema
+  const screenBg = isDark ? '#0B0B0D' : '#fff';
+  const contentBg = isDark ? '#0B0B0D' : '#F5F5F5';
+  const cardBg = isDark ? '#17181B' : '#fff';
+  const cardBorder = isDark ? 'rgba(255,255,255,0.06)' : '#E5E7EB';
+  const textColor = isDark ? '#F3F4F6' : '#111827';
+  const subTextColor = isDark ? '#9CA3AF' : '#6B7280';
+  const labelColor = isDark ? '#9CA3AF' : '#9CA3AF';
+  const iconBtnBg = isDark ? '#27282C' : '#F3F4F6';
+  const iconColor = isDark ? '#D1D5DB' : '#374151';
+  const dividerColor = isDark ? 'rgba(255,255,255,0.06)' : '#F3F4F6';
+  const emptyIconBg = isDark ? '#3A2412' : '#FFF7ED';
+
   const hasSales = salesItems.length > 0 && salesItems.some(i => i.quantity > 0);
   const totalQuantity = salesItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -100,22 +121,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   if (loading && !refreshing) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: screenBg }}>
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={screenBg} />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#FF662A" />
-          <Text style={{ marginTop: 12, fontSize: 14, color: '#9CA3AF' }}>Carregando dados...</Text>
+          <Text style={{ marginTop: 12, fontSize: 14, color: subTextColor }}>Carregando dados...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: screenBg }}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={screenBg} />
 
       <View style={{
-        backgroundColor: '#fff',
+        backgroundColor: screenBg,
         paddingHorizontal: 20,
         paddingTop: 16,
         paddingBottom: 16,
@@ -126,14 +147,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <View style={{
             width: 42, height: 42, borderRadius: 21,
-            backgroundColor: '#F3F4F6',
+            backgroundColor: iconBtnBg,
             alignItems: 'center', justifyContent: 'center',
           }}>
             <UserIcon />
           </View>
           <View>
-            <Text style={{ fontSize: 12, color: '#9CA3AF' }}>Olá,</Text>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827' }}>
+            <Text style={{ fontSize: 12, color: labelColor }}>Olá,</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: textColor }}>
               {username || 'Usuário'}
             </Text>
           </View>
@@ -143,17 +164,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
           onPress={onSettingsPress}
           style={{
             width: 42, height: 42, borderRadius: 12,
-            backgroundColor: '#F3F4F6',
+            backgroundColor: iconBtnBg,
             alignItems: 'center', justifyContent: 'center',
           }}
           activeOpacity={0.7}
         >
-          <SettingsIcon />
+          <SettingsIcon color={iconColor} />
         </TouchableOpacity>
       </View>
 
       <ScrollView
-        style={{ flex: 1, backgroundColor: '#F5F5F5' }}
+        style={{ flex: 1, backgroundColor: contentBg }}
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -167,17 +188,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
       >
         {error && (
           <View style={{
-            backgroundColor: '#FEE2E2',
+            backgroundColor: isDark ? '#3F1212' : '#FEE2E2',
             borderRadius: 12,
             padding: 14,
             marginBottom: 16,
             borderLeftWidth: 4,
             borderLeftColor: '#EF4444',
           }}>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#991B1B', marginBottom: 4 }}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: isDark ? '#FCA5A5' : '#991B1B', marginBottom: 4 }}>
               Erro ao carregar dados
             </Text>
-            <Text style={{ fontSize: 12, color: '#7F1D1D' }}>{error}</Text>
+            <Text style={{ fontSize: 12, color: isDark ? '#F87171' : '#7F1D1D' }}>{error}</Text>
           </View>
         )}
 
@@ -193,7 +214,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <TouchableOpacity
           onPress={onReportPress}
           style={{
-            backgroundColor: '#fff',
+            backgroundColor: cardBg,
             borderRadius: 14,
             padding: 14,
             flexDirection: 'row',
@@ -201,17 +222,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
             gap: 10,
             marginBottom: 16,
             borderWidth: 1,
-            borderColor: '#E5E7EB',
+            borderColor: cardBorder,
           }}
           activeOpacity={0.7}
         >
-          <ReportIcon />
-          <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151' }}>Relatório de vendas</Text>
+          <ReportIcon color={iconColor} />
+          <Text style={{ fontSize: 14, fontWeight: '600', color: isDark ? '#D1D5DB' : '#374151' }}>
+            Relatório de vendas
+          </Text>
         </TouchableOpacity>
 
         {hasSales ? (
-          <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 16 }}>
-            <Text style={{ fontSize: 15, fontWeight: '800', color: '#111827', marginBottom: 12 }}>
+          <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: cardBorder }}>
+            <Text style={{ fontSize: 15, fontWeight: '800', color: textColor, marginBottom: 12 }}>
               Venda de produto
             </Text>
             <View style={{ height: 10, borderRadius: 5, overflow: 'hidden', flexDirection: 'row', marginBottom: 10 }}>
@@ -223,11 +246,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
               {salesItems.map((item, index) => (
                 <View key={index} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: item.color }} />
-                  <Text style={{ fontSize: 11, color: '#6B7280' }}>{item.name}</Text>
+                  <Text style={{ fontSize: 11, color: subTextColor }}>{item.name}</Text>
                 </View>
               ))}
             </View>
-            <View style={{ borderTopWidth: 1, borderTopColor: '#F3F4F6' }}>
+            <View style={{ borderTopWidth: 1, borderTopColor: dividerColor }}>
               {salesItems.map((item, index) => (
                 <View key={index} style={{
                   flexDirection: 'row',
@@ -235,22 +258,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   alignItems: 'center',
                   paddingVertical: 10,
                   borderBottomWidth: index < salesItems.length - 1 ? 1 : 0,
-                  borderBottomColor: '#F9FAFB',
+                  borderBottomColor: dividerColor,
                 }}>
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>{item.name}</Text>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: textColor }}>{item.name}</Text>
                   <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={{ fontSize: 14, fontWeight: '700', color: '#111827' }}>{item.quantity}</Text>
-                    <Text style={{ fontSize: 10, color: '#9CA3AF' }}>Vendas</Text>
+                    <Text style={{ fontSize: 14, fontWeight: '700', color: textColor }}>{item.quantity}</Text>
+                    <Text style={{ fontSize: 10, color: labelColor }}>Vendas</Text>
                   </View>
                 </View>
               ))}
             </View>
           </View>
         ) : (
-          <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 28, alignItems: 'center' }}>
+          <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 28, alignItems: 'center', borderWidth: 0.5, borderColor: cardBorder }}>
             <View style={{
               width: 52, height: 52, borderRadius: 26,
-              backgroundColor: '#FFF7ED',
+              backgroundColor: emptyIconBg,
               alignItems: 'center', justifyContent: 'center',
               marginBottom: 12,
             }}>
@@ -260,10 +283,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <Path d="M9 10l1.5 1.5L13 8" stroke="#FF662A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               </Svg>
             </View>
-            <Text style={{ fontSize: 14, fontWeight: '700', color: '#111827', marginBottom: 6 }}>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: textColor, marginBottom: 6 }}>
               Nenhuma venda ainda
             </Text>
-            <Text style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'center', lineHeight: 18 }}>
+            <Text style={{ fontSize: 12, color: labelColor, textAlign: 'center', lineHeight: 18 }}>
               Registre uma venda para ver o relatório de produtos
             </Text>
           </View>
