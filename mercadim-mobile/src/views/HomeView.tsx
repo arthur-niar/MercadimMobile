@@ -1,6 +1,4 @@
-// SUBSTITUI: src/views/HomeView.tsx
-// Mudanças: import useSettings + cores adaptadas ao tema escuro
-// SafeAreaView trocado para o do safe-area-context (mais robusto)
+
 
 import React from 'react';
 import {
@@ -10,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { formatCurrency } from '@/utils';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SaleItem {
   name: string;
@@ -94,6 +93,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onReportPress,
 }) => {
   const { isDark, fontScale } = useSettings();
+  const { t } = useTranslation();
 
   const screenBg = isDark ? '#0B0B0D' : '#fff';
   const contentBg = isDark ? '#0B0B0D' : '#F5F5F5';
@@ -126,7 +126,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={screenBg} />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#FF662A" />
-          <Text style={{ marginTop: 12, fontSize: 14 * fontScale, color: subTextColor }}>Carregando dados...</Text>
+          <Text style={{ marginTop: 12, fontSize: 14 * fontScale, color: subTextColor }}>{t('home.loadingData')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -162,9 +162,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
             )}
           </View>
           <View>
-            <Text style={{ fontSize: 12 * fontScale, color: labelColor }}>Olá,</Text>
+            <Text style={{ fontSize: 12 * fontScale, color: labelColor }}>{t('home.greeting')}</Text>
             <Text style={{ fontSize: 16 * fontScale, fontWeight: '700', color: textColor }}>
-              {username || 'Usuário'}
+              {username || t('home.user')}
             </Text>
           </View>
         </View>
@@ -212,12 +212,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
         )}
 
         <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
-          <SummaryCard value={formatCurrency(totalSales)} label="Vendas Totais (Semana)" color="#FF8C3A" fontScale={fontScale} />
-          <SummaryCard value={`${itemsSold} Unid.`} label="Itens Vendidos (Semana)" color="#FCA53A" fontScale={fontScale} />
+          <SummaryCard value={formatCurrency(totalSales)} label={t('home.totalSales')} color="#FF8C3A" fontScale={fontScale} />
+          <SummaryCard value={`${itemsSold} Unid.`} label={t('home.itemsSold')} color="#FCA53A" fontScale={fontScale} />
         </View>
         <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
-          <SummaryCard value={`${itemsReceived} Unid.`} label="Itens Recebidos" color="#FF7A2A" fontScale={fontScale} />
-          <SummaryCard value={formatCurrency(averageTicket)} label="Ticket Médio" color="#FFB84A" fontScale={fontScale} />
+          <SummaryCard value={`${itemsReceived} Unid.`} label={t('home.itemsReceived')} color="#FF7A2A" fontScale={fontScale} />
+          <SummaryCard value={formatCurrency(averageTicket)} label={t('home.averageTicket')} color="#FFB84A" fontScale={fontScale} />
         </View>
 
         <TouchableOpacity
@@ -272,7 +272,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: textColor }}>{item.name}</Text>
                   <View style={{ alignItems: 'flex-end' }}>
                     <Text style={{ fontSize: 14 * fontScale, fontWeight: '700', color: textColor }}>{item.quantity}</Text>
-                    <Text style={{ fontSize: 10 * fontScale, color: labelColor }}>Vendas</Text>
+                    <Text style={{ fontSize: 10 * fontScale, color: labelColor }}>{t('home.sales')}</Text>
                   </View>
                 </View>
               ))}

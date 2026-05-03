@@ -16,6 +16,7 @@ import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { Product } from '@/models/Product';
 import { formatCurrency } from '@/utils';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 
@@ -62,12 +63,14 @@ const Header = ({
   onSettingsPress,
   isDark,
   fontScale,
+  t,
 }: {
   username: string;
   profilePhotoUrl?: string | null;
   onSettingsPress: () => void;
   isDark: boolean;
   fontScale: number;
+  t: any;
 }) => {
   const headerBg = isDark ? '#0B0B0D' : '#fff';
   const borderColor = isDark ? 'rgba(255,255,255,0.06)' : '#F3F4F6';
@@ -104,9 +107,9 @@ const Header = ({
           )}
         </View>
         <View>
-          <Text style={{ fontSize: 12 * fontScale, color: labelColor }}>Olá,</Text>
+          <Text style={{ fontSize: 12 * fontScale, color: labelColor }}>{t('stock.greeting')}</Text>
           <Text style={{ fontSize: 16 * fontScale, fontWeight: '700', color: textColor }}>
-            {username || 'Usuário'}
+            {username || t('stock.user')}
           </Text>
         </View>
       </View>
@@ -132,11 +135,11 @@ const SummaryCardBase = ({ value, label, className }: { value: number; label: st
   </View>
 );
 
-const ErrorBanner = ({ message, onRetry }: { message: string; onRetry: () => void }) => (
+const ErrorBanner = ({ message, onRetry, t }: { message: string; onRetry: () => void; t: any }) => (
   <View className="mx-4 mt-3 bg-red-50 border-l-4 border-red-400 rounded-xl p-3 flex-row items-center justify-between">
     <Text className="text-xs text-red-700 flex-1 mr-2" numberOfLines={2}>{message}</Text>
     <TouchableOpacity onPress={onRetry} activeOpacity={0.7}>
-      <Text className="text-xs font-bold text-red-500">Tentar novamente</Text>
+      <Text className="text-xs font-bold text-red-500">{t('stock.retry')}</Text>
     </TouchableOpacity>
   </View>
 );
@@ -178,7 +181,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
   onRefresh,
   onRetry,
 }) => {
-  const { isDark, fontScale } = useSettings();
+  const { t, isDark, fontScale } = useTranslation();
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [menuTop, setMenuTop] = useState(0);
   const rowRefs = useRef<Record<string, View | null>>({});
@@ -211,10 +214,10 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
   const handleDelete = (id: string) => {
     closeMenu();
     Alert.alert(
-      'Excluir produto',
-      'Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.',
+      t('stock.confirmDelete'),
+      t('stock.confirmDeleteDescription'),
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         { text: 'Excluir', style: 'destructive', onPress: () => onDeletePress(id) },
       ],
     );
@@ -225,11 +228,11 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
     return (
       <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: screenBg }}>
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={screenBg} />
-        <Header username={username} profilePhotoUrl={profilePhotoUrl} onSettingsPress={onSettingsPress} isDark={isDark} fontScale={fontScale} />
+        <Header username={username} profilePhotoUrl={profilePhotoUrl} onSettingsPress={onSettingsPress} isDark={isDark} fontScale={fontScale} t={t} />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: screenBg }}>
           <ActivityIndicator size="large" color="#FF8C3A" />
           <Text style={{ marginTop: 12, fontSize: 14 * fontScale, color: subTextColor }}>
-            Carregando produtos...
+            {t('stock.loadingProducts')}
           </Text>
         </View>
       </SafeAreaView>
@@ -239,7 +242,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: screenBg }}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={screenBg} />
-      <Header username={username} profilePhotoUrl={profilePhotoUrl} onSettingsPress={onSettingsPress} isDark={isDark} fontScale={fontScale} />
+      <Header username={username} profilePhotoUrl={profilePhotoUrl} onSettingsPress={onSettingsPress} isDark={isDark} fontScale={fontScale} t={t} />
 
       <View style={{ flex: 1, backgroundColor: contentBg }}>
 
@@ -250,7 +253,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
             contentContainerStyle={{ flexGrow: 1, padding: 16, justifyContent: 'center' }}
             showsVerticalScrollIndicator={false}
           >
-            {error && <ErrorBanner message={error} onRetry={onRetry} />}
+            {error && <ErrorBanner message={error} onRetry={onRetry} t={t} />}
             <View style={{
               backgroundColor: cardBg,
               borderRadius: 16,
@@ -268,7 +271,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                 textAlign: 'center',
                 lineHeight: 24,
               }}>
-                Crie o seu Primeiro{'\n'}Produto!
+                {t('stock.noProducts')}
               </Text>
               <BagIcon />
               <TouchableOpacity
@@ -282,7 +285,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                 }}
               >
                 <Text style={{ color: '#fff', fontSize: 14 * fontScale, fontWeight: '700', textAlign: 'center' }}>
-                  Criar Produto
+                  {t('stock.addProduct')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -292,7 +295,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
         {/* ── Estado C — lista ─────────────────────────────────────────────── */}
         {!isEmpty && (
           <>
-            {error && <ErrorBanner message={error} onRetry={onRetry} />}
+            {error && <ErrorBanner message={error} onRetry={onRetry} t={t} />}
 
             <ScrollView
               style={{ flex: 1, backgroundColor: contentBg }}
@@ -301,8 +304,8 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
             >
               {/* Cards de resumo */}
               <View className="flex-row gap-3 px-4 pt-4 pb-2">
-                <SummaryCardBase value={totalProducts} label="Total de Produtos" className="bg-orange" />
-                <SummaryCardBase value={lowStockCount} label="Baixo Estoque(<5)" className="bg-orange-light" />
+                <SummaryCardBase value={totalProducts} label={t('stock.totalProducts')} className="bg-orange" />
+                <SummaryCardBase value={lowStockCount} label={t('stock.lowStock') + '(<5)'} className="bg-orange-light" />
               </View>
 
               {/* Cabeçalho da seção */}
@@ -357,9 +360,9 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                       </Text>
                       <Text style={{ fontSize: 12 * fontScale, color: subTextColor, marginTop: 2 }}>
                         {formatCurrency(item.price)}
-                        {'  |  Estoque: '}
+                        {'  |  '}
                         <Text style={item.stock < 5 ? { color: '#EF4444', fontWeight: '700' } : undefined}>
-                          {item.stock}
+                          {item.stock} {t('stock.units')}
                         </Text>
                       </Text>
                     </View>
@@ -421,7 +424,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                   }}
                 >
                   <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: textColor }}>
-                    Editar
+                    {t('stock.edit')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -430,7 +433,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                   style={{ paddingHorizontal: 24, paddingVertical: 12 }}
                 >
                   <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: '#EF4444' }}>
-                    Excluir
+                    {t('stock.delete')}
                   </Text>
                 </TouchableOpacity>
               </View>

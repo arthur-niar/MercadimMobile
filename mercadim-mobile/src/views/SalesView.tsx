@@ -1,9 +1,4 @@
-// SUBSTITUI: src/views/SalesView.tsx
-// Mudanças:
-// - import useSettings + cores adaptadas ao tema escuro
-// - SafeAreaView trocado para o do safe-area-context
-// - Engrenagem agora navega para /configuracoes (em vez de /perfil)
-// - styles foi convertido de objeto fixo para função que recebe isDark
+
 
 import React from 'react';
 import {
@@ -18,6 +13,7 @@ import { CheckIcon } from '@/components/check-icon';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { router } from 'expo-router';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const ORANGE = '#FF662A';
 const YELLOW = '#FCA537';
@@ -57,6 +53,7 @@ const PlusIcon = ({ size = 18, color = '#fff' }) => (
 export const SalesView = () => {
   const vm = useSalesViewModel();
   const { isDark, fontScale } = useSettings();
+  const { t } = useTranslation();
 
   // Cores adaptadas ao tema
   const screenBg = isDark ? '#0B0B0D' : '#fff';
@@ -106,7 +103,7 @@ export const SalesView = () => {
             )}
           </View>
           <View>
-            <Text style={{ fontSize: 12 * fontScale, color: labelColor }}>Olá,</Text>
+            <Text style={{ fontSize: 12 * fontScale, color: labelColor }}>{t('sales.greeting')}</Text>
             <Text style={{ fontSize: 16 * fontScale, fontWeight: '700', color: textColor }}>
               {vm.username || 'Usuário'}
             </Text>
@@ -133,12 +130,12 @@ export const SalesView = () => {
               <Text style={styles.summaryValue}>
                 R$ {vm.total.toFixed(2).replace('.', ',')}
               </Text>
-              <Text style={styles.summaryLabel}>Total</Text>
+              <Text style={styles.summaryLabel}>{t('sales.total')}</Text>
             </View>
 
             <View>
               <Text style={styles.summaryValue}>{vm.totalItems}</Text>
-              <Text style={styles.summaryLabel}>Itens</Text>
+              <Text style={styles.summaryLabel}>{t('sales.items')}</Text>
             </View>
           </LinearGradient>
 
@@ -247,7 +244,7 @@ export const SalesView = () => {
               })}
             </View>
 
-            <Text style={styles.label}>Quantidade</Text>
+            <Text style={styles.label}>{t('sales.quantity')}</Text>
 
             <View style={styles.qtyBox}>
               <TouchableOpacity onPress={vm.decreaseQuantity} style={styles.qtyBtn}>

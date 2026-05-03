@@ -1,9 +1,4 @@
-// SUBSTITUI: src/views/ProfileView.tsx
-// Mudanças:
-// - import useSettings + cores adaptadas ao tema escuro
-// - Mantém o gradiente laranja no topo (identidade visual)
-// - Card branco vira escuro no modo escuro
-// - Modal e inputs adaptados
+
 
 import React from 'react';
 import {
@@ -12,11 +7,11 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useProfileViewModel } from '@/viewmodels';
-import { useSettings } from '@/contexts/SettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const ProfileView: React.FC = () => {
   const viewModel = useProfileViewModel();
-  const { isDark, fontScale } = useSettings();
+  const { t, isDark, fontScale } = useTranslation();
 
   // Cores adaptadas ao tema
   const screenBg = isDark ? '#0B0B0D' : '#fff';
@@ -96,7 +91,7 @@ export const ProfileView: React.FC = () => {
                     fontSize: 12 * fontScale,
                     fontWeight: '600',
                   }}>
-                    📷 Alterar
+                    📷 {t('profile.changePhoto')}
                   </Text>
                 </TouchableOpacity>
 
@@ -117,7 +112,7 @@ export const ProfileView: React.FC = () => {
                       fontSize: 12 * fontScale,
                       fontWeight: '600',
                     }}>
-                      ✕ Remover
+                      ✕ {t('profile.removePhoto')}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -144,14 +139,14 @@ export const ProfileView: React.FC = () => {
           }}>
 
             <View style={{ marginBottom: 16 }}>
-              <Text style={getLabelStyle(labelColor, fontScale)}>Nome</Text>
+              <Text style={getLabelStyle(labelColor, fontScale)}>{t('profile.name')}</Text>
               <View style={getInputBox(false, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
                 <Text style={{ color: textColor, fontSize: 15 * fontScale }}>{viewModel.name}</Text>
               </View>
             </View>
 
             <View style={{ marginBottom: 20 }}>
-              <Text style={getLabelStyle(labelColor, fontScale)}>Email</Text>
+              <Text style={getLabelStyle(labelColor, fontScale)}>{t('profile.email')}</Text>
               <View style={getInputBox(false, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
                 <Text style={{ color: textColor, fontSize: 15 * fontScale }}>{viewModel.email}</Text>
               </View>
@@ -196,7 +191,7 @@ export const ProfileView: React.FC = () => {
                   fontWeight: '700',
                   fontSize: 15 * fontScale
                 }}>
-                  Editar
+                  {t('profile.editProfile')}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -207,7 +202,7 @@ export const ProfileView: React.FC = () => {
                 color: '#EF4444',
                 fontWeight: '600'
               }}>
-                Sair Do Aplicativo
+                {t('profile.logout')}
               </Text>
             </TouchableOpacity>
 
@@ -234,11 +229,11 @@ export const ProfileView: React.FC = () => {
                 marginBottom: 16,
                 color: textColor,
               }}>
-                Editar Perfil
+                {t('profile.editProfile')}
               </Text>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={getLabelStyle(labelColor, fontScale)}>Nome</Text>
+                <Text style={getLabelStyle(labelColor, fontScale)}>{t('profile.name')}</Text>
                 <View style={getInputBox(!!viewModel.nameError, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
                   <TextInput
                     style={{ color: textColor, fontSize: 15 * fontScale }}
@@ -252,7 +247,7 @@ export const ProfileView: React.FC = () => {
               </View>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={getLabelStyle(labelColor, fontScale)}>Email</Text>
+                <Text style={getLabelStyle(labelColor, fontScale)}>{t('profile.email')}</Text>
                 <View style={getInputBox(!!viewModel.emailError, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
                   <TextInput
                     style={{ color: textColor, fontSize: 15 * fontScale }}
@@ -291,7 +286,7 @@ export const ProfileView: React.FC = () => {
                     <ActivityIndicator color="#fff" />
                   ) : (
                     <Text style={{ color: '#fff', fontWeight: '700' }}>
-                      Salvar
+                      {t('profile.save')}
                     </Text>
                   )}
                 </LinearGradient>
@@ -302,7 +297,7 @@ export const ProfileView: React.FC = () => {
                   textAlign: 'center',
                   color: subTextColor
                 }}>
-                  Fechar
+                  {t('common.cancel')}
                 </Text>
               </TouchableOpacity>
 

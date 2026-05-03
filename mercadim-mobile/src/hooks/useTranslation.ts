@@ -3,11 +3,12 @@ import { useSettings } from '@/contexts/SettingsContext';
 
 export const useTranslation = () => {
   const { t, i18n } = useI18nTranslation();
-  const { fontScale } = useSettings();
+  const { fontScale, isDark } = useSettings();
 
   return {
     t,
     i18n,
     fontScale,
+    isDark,
   };
 };
