@@ -1,3 +1,10 @@
+// SUBSTITUI: src/views/ProfileView.tsx
+// Mudanças:
+// - import useSettings + cores adaptadas ao tema escuro
+// - Mantém o gradiente laranja no topo (identidade visual)
+// - Card branco vira escuro no modo escuro
+// - Modal e inputs adaptados
+
 import React from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
@@ -5,26 +12,39 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useProfileViewModel } from '@/viewmodels';
+import { useSettings } from '@/contexts/SettingsContext';
 
 export const ProfileView: React.FC = () => {
   const viewModel = useProfileViewModel();
+  const { isDark } = useSettings();
+
+  // Cores adaptadas ao tema
+  const screenBg = isDark ? '#0B0B0D' : '#fff';
+  const cardBg = isDark ? '#17181B' : '#fff';
+  const textColor = isDark ? '#F3F4F6' : '#111827';
+  const labelColor = isDark ? '#D1D5DB' : '#374151';
+  const subTextColor = isDark ? '#9CA3AF' : '#6B7280';
+  const inputBg = isDark ? '#27282C' : '#F9FAFB';
+  const inputBorder = isDark ? 'rgba(255,255,255,0.08)' : '#E5E7EB';
+  const inputErrorBg = isDark ? '#3F1212' : '#FEF2F2';
+  const inputErrorBorder = isDark ? '#7F1D1D' : '#FCA5A5';
 
   if (viewModel.loadingProfile) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: screenBg }}>
         <ActivityIndicator size="large" color="#FF662A" />
       </View>
     );
   }
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: screenBg }}>
       <StatusBar barStyle="light-content" />
 
       <LinearGradient colors={['#FF662A', '#FCA537']} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 
-          <View style={{ 
+          <View style={{
             height: 260,
             justifyContent: 'center',
             alignItems: 'center',
@@ -111,11 +131,11 @@ export const ProfileView: React.FC = () => {
 
           <View style={{
             flex: 1,
-            backgroundColor: '#fff',
+            backgroundColor: cardBg,
             borderTopLeftRadius: 40,
             borderTopRightRadius: 40,
             padding: 28,
-            marginTop: -50, 
+            marginTop: -50,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 10 },
             shadowOpacity: 0.15,
@@ -124,16 +144,16 @@ export const ProfileView: React.FC = () => {
           }}>
 
             <View style={{ marginBottom: 16 }}>
-              <Text style={labelStyle}>Nome</Text>
-              <View style={inputBox(false)}>
-                <Text>{viewModel.name}</Text>
+              <Text style={getLabelStyle(labelColor)}>Nome</Text>
+              <View style={getInputBox(false, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
+                <Text style={{ color: textColor, fontSize: 15 }}>{viewModel.name}</Text>
               </View>
             </View>
 
             <View style={{ marginBottom: 20 }}>
-              <Text style={labelStyle}>Email</Text>
-              <View style={inputBox(false)}>
-                <Text>{viewModel.email}</Text>
+              <Text style={getLabelStyle(labelColor)}>Email</Text>
+              <View style={getInputBox(false, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
+                <Text style={{ color: textColor, fontSize: 15 }}>{viewModel.email}</Text>
               </View>
             </View>
 
@@ -187,7 +207,7 @@ export const ProfileView: React.FC = () => {
                 color: '#EF4444',
                 fontWeight: '600'
               }}>
-                Fazer Log out
+                Sair Do Aplicativo
               </Text>
             </TouchableOpacity>
 
@@ -203,7 +223,7 @@ export const ProfileView: React.FC = () => {
             padding: 24
           }}>
             <View style={{
-              backgroundColor: '#fff',
+              backgroundColor: cardBg,
               borderRadius: 20,
               padding: 20
             }}>
@@ -211,16 +231,18 @@ export const ProfileView: React.FC = () => {
               <Text style={{
                 fontSize: 18,
                 fontWeight: '700',
-                marginBottom: 16
+                marginBottom: 16,
+                color: textColor,
               }}>
                 Editar Perfil
               </Text>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={labelStyle}>Nome</Text>
-                <View style={inputBox(!!viewModel.nameError)}>
+                <Text style={getLabelStyle(labelColor)}>Nome</Text>
+                <View style={getInputBox(!!viewModel.nameError, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
                   <TextInput
-                    style={inputText}
+                    style={{ color: textColor, fontSize: 15 }}
+                    placeholderTextColor={subTextColor}
                     value={viewModel.editName}
                     onChangeText={viewModel.setEditName}
                     editable={!viewModel.loading}
@@ -230,10 +252,11 @@ export const ProfileView: React.FC = () => {
               </View>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={labelStyle}>Email</Text>
-                <View style={inputBox(!!viewModel.emailError)}>
+                <Text style={getLabelStyle(labelColor)}>Email</Text>
+                <View style={getInputBox(!!viewModel.emailError, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
                   <TextInput
-                    style={inputText}
+                    style={{ color: textColor, fontSize: 15 }}
+                    placeholderTextColor={subTextColor}
                     value={viewModel.editEmail}
                     onChangeText={viewModel.setEditEmail}
                     autoCapitalize="none"
@@ -277,7 +300,7 @@ export const ProfileView: React.FC = () => {
               <TouchableOpacity onPress={viewModel.closeModal} style={{ marginTop: 12 }} disabled={viewModel.loading}>
                 <Text style={{
                   textAlign: 'center',
-                  color: '#6B7280'
+                  color: subTextColor
                 }}>
                   Fechar
                 </Text>
@@ -292,28 +315,29 @@ export const ProfileView: React.FC = () => {
   );
 };
 
-const labelStyle = {
-  color: '#374151',
+const getLabelStyle = (color: string) => ({
+  color,
   fontSize: 10,
   fontWeight: '800' as const,
   letterSpacing: 1.5,
   textTransform: 'uppercase' as const,
   marginBottom: 8,
-};
+});
 
-const inputBox = (hasError: boolean) => ({
-  backgroundColor: hasError ? '#FEF2F2' : '#F9FAFB',
+const getInputBox = (
+  hasError: boolean,
+  bg: string,
+  border: string,
+  errorBg: string,
+  errorBorder: string,
+) => ({
+  backgroundColor: hasError ? errorBg : bg,
   borderWidth: 1.5,
-  borderColor: hasError ? '#FCA5A5' : '#E5E7EB',
+  borderColor: hasError ? errorBorder : border,
   borderRadius: 14,
   paddingHorizontal: 16,
   paddingVertical: 14,
 });
-
-const inputText = {
-  color: '#111827',
-  fontSize: 15,
-};
 
 const errText = {
   color: '#EF4444',

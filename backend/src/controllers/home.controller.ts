@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { getSalesByUserId } from '../database/sales';
 import { HomeResponse, SalesItem } from '../types';
+import { supabase } from '../config/supabase';
 
 export const getHomeSummary = async (req: AuthRequest, res: Response) => {
   try {
@@ -13,7 +14,12 @@ export const getHomeSummary = async (req: AuthRequest, res: Response) => {
     const userId = req.user.userId;
     console.log('Buscando resumo para usuário:', userId);
 
-    const userSales = await getSalesByUserId(userId);
+    const [userSales, { data: estoqueData }] = await Promise.all([
+      getSalesByUserId(userId),
+      supabase.from('estoque').select('quantprodutos').eq('idusuario', parseInt(userId))
+    ]);
+
+    const totalStock = (estoqueData || []).reduce((sum, e) => sum + (e.quantprodutos || 0), 0);
 
     if (userSales.length === 0) {
       console.log('Nenhuma venda encontrada para o usuário');
@@ -21,7 +27,7 @@ export const getHomeSummary = async (req: AuthRequest, res: Response) => {
         summary: {
           totalSales: 0,
           itemsSold: 0,
-          itemsReceived: 0,
+          itemsReceived: totalStock,
           averageTicket: 0,
         },
         salesItems: [],
@@ -29,13 +35,21 @@ export const getHomeSummary = async (req: AuthRequest, res: Response) => {
     }
 
     const totalSales = userSales.reduce((sum, sale) => sum + sale.totalPrice, 0);
-    const itemsSold = userSales.reduce((sum, sale) => sum + sale.quantity, 0);
+    
+    
+    const itemsSold = userSales.reduce((sum, sale) => {
+      const itemsQtd = sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+      return sum + itemsQtd;
+    }, 0);
+    
     const averageTicket = totalSales / userSales.length;
 
     const productMap = new Map<string, number>();
     userSales.forEach(sale => {
-      const current = productMap.get(sale.productName) || 0;
-      productMap.set(sale.productName, current + sale.quantity);
+      sale.items.forEach(item => {
+        const current = productMap.get(item.productName) || 0;
+        productMap.set(item.productName, current + item.quantity);
+      });
     });
 
     const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'];
@@ -48,11 +62,13 @@ export const getHomeSummary = async (req: AuthRequest, res: Response) => {
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 10);
 
+    const itemsReceived = totalStock + itemsSold;
+
     const response: HomeResponse = {
       summary: {
         totalSales,
         itemsSold,
-        itemsReceived: 0,
+        itemsReceived,
         averageTicket,
       },
       salesItems,

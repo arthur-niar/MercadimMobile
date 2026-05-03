@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { authService } from '@/services/auth.service';
 import { homeService, SalesItem } from '@/services/home.service';
 
@@ -36,9 +37,11 @@ export const useHomeViewModel = () => {
     }
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   return {
     username,

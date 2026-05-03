@@ -6,6 +6,7 @@ export interface PendingUser {
   email: string;
   password?: string;
   name?: string;
+  url?: string;
   code: string;
   expiresAt: Date;
 }
@@ -21,7 +22,7 @@ export const savePendingUser = (email: string, password?: string, name?: string,
     pendingUsers.splice(existingIndex, 1);
   }
   
-  pendingUsers.push({ email, password, name, code: code || '', expiresAt });
+  pendingUsers.push({ email, password, name, url: '0', code: code || '', expiresAt });
 };
 
 export const getPendingUser = (email: string, code: string): PendingUser | undefined => {
@@ -54,6 +55,7 @@ export const findUserByEmail = async (email: string): Promise<User | undefined> 
     id: data.idusuario.toString(),
     email: data.email,
     name: data.nome,
+    url:data.url,
     password: data.senha,
     createdAt: new Date(),
     url: data.url || '', 
@@ -73,18 +75,19 @@ export const findUserById = async (id: string): Promise<User | undefined> => {
      id: data.idusuario.toString(),
      email: data.email,
      name: data.nome,
+     url:data.url,
      password: data.senha,
      createdAt: new Date(),
      url: data.url || '', 
   };
 };
 
-export const createUser = async (email: string, plainPassword?: string, name?: string): Promise<User> => {
+export const createUser = async (email: string, plainPassword?: string, name?: string, url?: string): Promise<User> => {
    const hashedPassword = plainPassword ? await hashPassword(plainPassword) : undefined;
    
    const { data, error } = await supabase
     .from('usuario')
-    .insert([{ email, senha: hashedPassword, nome: name }])
+    .insert([{ email, senha: hashedPassword, nome: name,url: url || '0', dataCriacao: new Date() }])
     .select()
     .single();
     
@@ -115,6 +118,29 @@ export const updateUserPassword = async (email: string, newPassword?: string): P
        console.error("Error updating user password:", error);
        throw error;
    }
+};
+
+export const updateUserUrl = async (userId: string, url: string): Promise<User | undefined> => {
+  const {data, error} = await supabase
+  .from('usuario')
+  .update({ url: url })
+  .eq('idusuario', parseInt(userId))
+  .select()
+  .single();
+
+  if (error || !data) {
+    console.error("Error updating user URL:", error);
+    return undefined;
+  }
+
+  return {
+    id: data.idusuario.toString(),
+    email: data.email,
+    name: data.nome,
+    url: data.url,
+    password: data.senha,
+    createdAt: new Date(),
+  };
 };
 
 export const updateUserProfile = async (userId: string, name: string, email: string): Promise<User | undefined> => {

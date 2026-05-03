@@ -1,23 +1,25 @@
+// SUBSTITUI: src/app/(tabs)/_layout.tsx
+// Mudança: Tabs.Screen name="sales" (antes era "nova-venda" que não existe)
+
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
+import { useSettings } from '@/contexts/SettingsContext';
 
 const ORANGE = '#FF662A';
-const GRAY_ACTIVE = '#4B5563';
-const GRAY_BG = '#E5E7EB';
 
-const HomeIcon = ({ active }: { active: boolean }) => (
+const HomeIcon = ({ active, inactive }: { active: boolean; inactive: string }) => (
   <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <Path d="M3 12L12 4l9 8" stroke={active ? '#fff' : GRAY_ACTIVE} strokeWidth="2" strokeLinecap="round" />
-    <Path d="M5 10v9a1 1 0 001 1h4v-4h4v4h4a1 1 0 001-1v-9" stroke={active ? '#fff' : GRAY_ACTIVE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M3 12L12 4l9 8" stroke={active ? '#fff' : inactive} strokeWidth="2" strokeLinecap="round" />
+    <Path d="M5 10v9a1 1 0 001 1h4v-4h4v4h4a1 1 0 001-1v-9" stroke={active ? '#fff' : inactive} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
-const NovaVendaIcon = ({ active }: { active: boolean }) => (
+const NovaVendaIcon = ({ active, inactive }: { active: boolean; inactive: string }) => (
   <View style={{ width: 22, height: 22, alignItems: 'center', justifyContent: 'center' }}>
     <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <Path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke={active ? '#fff' : GRAY_ACTIVE} strokeWidth="1.8" strokeLinecap="round" />
+      <Path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke={active ? '#fff' : inactive} strokeWidth="1.8" strokeLinecap="round" />
     </Svg>
     {!active && (
       <View style={{ position: 'absolute', top: 0, right: 0, width: 12, height: 12, borderRadius: 6, backgroundColor: ORANGE, alignItems: 'center', justifyContent: 'center' }}>
@@ -29,27 +31,36 @@ const NovaVendaIcon = ({ active }: { active: boolean }) => (
   </View>
 );
 
-const EstoqueIcon = ({ active }: { active: boolean }) => (
+const EstoqueIcon = ({ active, inactive }: { active: boolean; inactive: string }) => (
   <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <Rect x="5" y="2" width="14" height="17" rx="2" stroke={active ? '#fff' : GRAY_ACTIVE} strokeWidth="1.8" />
-    <Path d="M9 2v2a1 1 0 001 1h4a1 1 0 001-1V2" stroke={active ? '#fff' : GRAY_ACTIVE} strokeWidth="1.8" />
-    <Path d="M9 10l1.5 1.5L13 8" stroke={active ? '#fff' : GRAY_ACTIVE} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    <Path d="M9 15h6" stroke={active ? '#fff' : GRAY_ACTIVE} strokeWidth="1.6" strokeLinecap="round" />
+    <Rect x="5" y="2" width="14" height="17" rx="2" stroke={active ? '#fff' : inactive} strokeWidth="1.8" />
+    <Path d="M9 2v2a1 1 0 001 1h4a1 1 0 001-1V2" stroke={active ? '#fff' : inactive} strokeWidth="1.8" />
+    <Path d="M9 10l1.5 1.5L13 8" stroke={active ? '#fff' : inactive} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <Path d="M9 15h6" stroke={active ? '#fff' : inactive} strokeWidth="1.6" strokeLinecap="round" />
   </Svg>
 );
 
-const PerfilIcon = ({ active }: { active: boolean }) => (
+const PerfilIcon = ({ active, inactive }: { active: boolean; inactive: string }) => (
   <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <Circle cx="12" cy="8" r="4" stroke={active ? '#fff' : GRAY_ACTIVE} strokeWidth="1.8" />
-    <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={active ? '#fff' : GRAY_ACTIVE} strokeWidth="1.8" strokeLinecap="round" />
+    <Circle cx="12" cy="8" r="4" stroke={active ? '#fff' : inactive} strokeWidth="1.8" />
+    <Path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={active ? '#fff' : inactive} strokeWidth="1.8" strokeLinecap="round" />
   </Svg>
 );
 
-const TabIcon = ({ icon, label, active, lines = 1 }: { icon: React.ReactNode; label: string; active: boolean; lines?: number }) => (
+const TabIcon = ({
+  icon, label, active, lines = 1, inactiveBg, inactiveColor,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  active: boolean;
+  lines?: number;
+  inactiveBg: string;
+  inactiveColor: string;
+}) => (
   <View style={{ alignItems: 'center', gap: 3, paddingTop: 4, width: '100%' }}>
     <View style={{
       width: 44, height: 44, borderRadius: 14,
-      backgroundColor: active ? ORANGE : GRAY_BG,
+      backgroundColor: active ? ORANGE : inactiveBg,
       alignItems: 'center', justifyContent: 'center',
     }}>
       {icon}
@@ -61,7 +72,7 @@ const TabIcon = ({ icon, label, active, lines = 1 }: { icon: React.ReactNode; la
       style={{
         fontSize: 9,
         fontWeight: active ? '700' : '500',
-        color: active ? ORANGE : GRAY_ACTIVE,
+        color: active ? ORANGE : inactiveColor,
         width: '100%',
         textAlign: 'center',
         lineHeight: 11,
@@ -73,13 +84,23 @@ const TabIcon = ({ icon, label, active, lines = 1 }: { icon: React.ReactNode; la
 );
 
 export default function TabsLayout() {
+  const { isDark } = useSettings();
+
+  // Cores adaptadas ao tema
+  const tabBarBg = isDark ? '#17181B' : '#fff';
+  const tabBarBorder = isDark ? 'rgba(255,255,255,0.08)' : '#E5E7EB';
+  const inactiveBg = isDark ? '#27282C' : '#E5E7EB';
+  const inactiveColor = isDark ? '#9CA3AF' : '#4B5563';
+  const sceneBg = isDark ? '#0B0B0D' : '#fff';
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
+        sceneStyle: { backgroundColor: sceneBg },
         tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopColor: '#E5E7EB',
+          backgroundColor: tabBarBg,
+          borderTopColor: tabBarBorder,
           borderTopWidth: 1,
           height: 100,
           paddingBottom: 12,
@@ -93,15 +114,28 @@ export default function TabsLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon={<HomeIcon active={focused} />} label="Home" active={focused} />
+            <TabIcon
+              icon={<HomeIcon active={focused} inactive={inactiveColor} />}
+              label="Home"
+              active={focused}
+              inactiveBg={inactiveBg}
+              inactiveColor={inactiveColor}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="nova-venda"
+        name="sales"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon={<NovaVendaIcon active={focused} />} label="Venda" active={focused} lines={2} />
+            <TabIcon
+              icon={<NovaVendaIcon active={focused} inactive={inactiveColor} />}
+              label="Venda"
+              active={focused}
+              lines={2}
+              inactiveBg={inactiveBg}
+              inactiveColor={inactiveColor}
+            />
           ),
         }}
       />
@@ -109,7 +143,13 @@ export default function TabsLayout() {
         name="estoque"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon={<EstoqueIcon active={focused} />} label="Estoque" active={focused} />
+            <TabIcon
+              icon={<EstoqueIcon active={focused} inactive={inactiveColor} />}
+              label="Estoque"
+              active={focused}
+              inactiveBg={inactiveBg}
+              inactiveColor={inactiveColor}
+            />
           ),
         }}
       />
@@ -117,7 +157,13 @@ export default function TabsLayout() {
         name="perfil"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon={<PerfilIcon active={focused} />} label="Perfil" active={focused} />
+            <TabIcon
+              icon={<PerfilIcon active={focused} inactive={inactiveColor} />}
+              label="Perfil"
+              active={focused}
+              inactiveBg={inactiveBg}
+              inactiveColor={inactiveColor}
+            />
           ),
         }}
       />
