@@ -9,6 +9,7 @@ import {
   Pressable,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
@@ -26,7 +27,7 @@ const UserIcon = ({ color = '#9CA3AF' }: { color?: string }) => (
 );
 
 const SettingsIcon = ({ color = '#374151' }: { color?: string }) => (
-  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+  <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
     <Path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     <Path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
@@ -57,14 +58,18 @@ const PlusIcon = () => (
 
 const Header = ({
   username,
+  profilePhotoUrl,
   onSettingsPress,
   isDark,
+  fontScale,
 }: {
   username: string;
+  profilePhotoUrl?: string | null;
   onSettingsPress: () => void;
   isDark: boolean;
+  fontScale: number;
 }) => {
-  const headerBg = isDark ? '#17181B' : '#fff';
+  const headerBg = isDark ? '#0B0B0D' : '#fff';
   const borderColor = isDark ? 'rgba(255,255,255,0.06)' : '#F3F4F6';
   const avatarBg = isDark ? '#27282C' : '#F3F4F6';
   const labelColor = isDark ? '#9CA3AF' : '#9CA3AF';
@@ -78,22 +83,29 @@ const Header = ({
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: 20,
-      paddingVertical: 16,
+      paddingTop: 16,
+      paddingBottom: 16,
       backgroundColor: headerBg,
-      borderBottomWidth: 1,
-      borderBottomColor: borderColor,
     }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <View style={{
-          width: 40, height: 40, borderRadius: 20,
+          width: 42, height: 42, borderRadius: 21,
           backgroundColor: avatarBg,
           alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden',
         }}>
-          <UserIcon color={isDark ? '#9CA3AF' : '#9CA3AF'} />
+          {profilePhotoUrl ? (
+            <Image 
+              source={{ uri: profilePhotoUrl }}
+              style={{ width: 42, height: 42 }}
+            />
+          ) : (
+            <UserIcon color={isDark ? '#9CA3AF' : '#9CA3AF'} />
+          )}
         </View>
         <View>
-          <Text style={{ fontSize: 12, color: labelColor }}>Olá,</Text>
-          <Text style={{ fontSize: 16, fontWeight: '700', color: textColor }}>
+          <Text style={{ fontSize: 12 * fontScale, color: labelColor }}>Olá,</Text>
+          <Text style={{ fontSize: 16 * fontScale, fontWeight: '700', color: textColor }}>
             {username || 'Usuário'}
           </Text>
         </View>
@@ -102,7 +114,7 @@ const Header = ({
         onPress={onSettingsPress}
         activeOpacity={0.7}
         style={{
-          width: 40, height: 40, borderRadius: 12,
+          width: 42, height: 42, borderRadius: 12,
           backgroundColor: iconBtnBg,
           alignItems: 'center', justifyContent: 'center',
         }}
@@ -133,6 +145,7 @@ const ErrorBanner = ({ message, onRetry }: { message: string; onRetry: () => voi
 
 interface EstoqueViewProps {
   username: string;
+  profilePhotoUrl?: string | null;
   onSettingsPress: () => void;
   onCreatePress: () => void;
   products: Product[];
@@ -151,6 +164,7 @@ interface EstoqueViewProps {
 
 export const EstoqueView: React.FC<EstoqueViewProps> = ({
   username,
+  profilePhotoUrl,
   onSettingsPress,
   onCreatePress,
   products,
@@ -164,7 +178,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
   onRefresh,
   onRetry,
 }) => {
-  const { isDark } = useSettings();
+  const { isDark, fontScale } = useSettings();
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [menuTop, setMenuTop] = useState(0);
   const rowRefs = useRef<Record<string, View | null>>({});
@@ -211,10 +225,10 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
     return (
       <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: screenBg }}>
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={screenBg} />
-        <Header username={username} onSettingsPress={onSettingsPress} isDark={isDark} />
+        <Header username={username} profilePhotoUrl={profilePhotoUrl} onSettingsPress={onSettingsPress} isDark={isDark} fontScale={fontScale} />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: screenBg }}>
           <ActivityIndicator size="large" color="#FF8C3A" />
-          <Text style={{ marginTop: 12, fontSize: 14, color: subTextColor }}>
+          <Text style={{ marginTop: 12, fontSize: 14 * fontScale, color: subTextColor }}>
             Carregando produtos...
           </Text>
         </View>
@@ -225,7 +239,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: screenBg }}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={screenBg} />
-      <Header username={username} onSettingsPress={onSettingsPress} isDark={isDark} />
+      <Header username={username} profilePhotoUrl={profilePhotoUrl} onSettingsPress={onSettingsPress} isDark={isDark} fontScale={fontScale} />
 
       <View style={{ flex: 1, backgroundColor: contentBg }}>
 
@@ -248,7 +262,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
               borderColor: cardBorder,
             }}>
               <Text style={{
-                fontSize: 18,
+                fontSize: 18 * fontScale,
                 fontWeight: '800',
                 color: textColor,
                 textAlign: 'center',
@@ -267,7 +281,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                   width: '100%',
                 }}
               >
-                <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700', textAlign: 'center' }}>
+                <Text style={{ color: '#fff', fontSize: 14 * fontScale, fontWeight: '700', textAlign: 'center' }}>
                   Criar Produto
                 </Text>
               </TouchableOpacity>
@@ -299,7 +313,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                 paddingHorizontal: 16,
                 paddingVertical: 12,
               }}>
-                <Text style={{ fontSize: 16, fontWeight: '800', color: textColor }}>
+                <Text style={{ fontSize: 16 * fontScale, fontWeight: '800', color: textColor }}>
                   Seus Produtos
                 </Text>
                 <TouchableOpacity
@@ -338,10 +352,10 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                     }}
                   >
                     <View style={{ flex: 1, marginRight: 12 }}>
-                      <Text style={{ fontSize: 14, fontWeight: '700', color: textColor }}>
+                      <Text style={{ fontSize: 14 * fontScale, fontWeight: '700', color: textColor }}>
                         {item.name}
                       </Text>
-                      <Text style={{ fontSize: 12, color: subTextColor, marginTop: 2 }}>
+                      <Text style={{ fontSize: 12 * fontScale, color: subTextColor, marginTop: 2 }}>
                         {formatCurrency(item.price)}
                         {'  |  Estoque: '}
                         <Text style={item.stock < 5 ? { color: '#EF4444', fontWeight: '700' } : undefined}>
@@ -358,7 +372,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                         alignItems: 'center', justifyContent: 'center',
                       }}
                     >
-                      <Text style={{ color: menuBtnColor, fontSize: 16, fontWeight: '800', letterSpacing: 1 }}>
+                      <Text style={{ color: menuBtnColor, fontSize: 16 * fontScale, fontWeight: '800', letterSpacing: 1 }}>
                         ···
                       </Text>
                     </TouchableOpacity>
@@ -406,7 +420,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                     borderBottomColor: cardBorder,
                   }}
                 >
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: textColor }}>
+                  <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: textColor }}>
                     Editar
                   </Text>
                 </TouchableOpacity>
@@ -415,7 +429,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                   activeOpacity={0.7}
                   style={{ paddingHorizontal: 24, paddingVertical: 12 }}
                 >
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#EF4444' }}>
+                  <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: '#EF4444' }}>
                     Excluir
                   </Text>
                 </TouchableOpacity>

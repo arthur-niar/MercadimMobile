@@ -2,7 +2,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { Alert } from 'react-native';
 import api from '../services/api';
-import { authService } from '../services/auth.service';
+import { useProfile } from '@/contexts/ProfileContext';
 
 export type Product = {
   id: string;
@@ -16,6 +16,7 @@ export type CartItem = Product & {
 };
 
 export const useSalesViewModel = () => {
+  const { profile } = useProfile();
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -23,13 +24,9 @@ export const useSalesViewModel = () => {
   const [quantity, setQuantity] = useState('1');
   const [modalVisible, setModalVisible] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [username, setUsername] = useState('');
 
   const loadData = async () => {
     try {
-      const name = await authService.getUserName();
-      setUsername(name ?? '');
-      
       const response = await api.get('/products');
       const stockProducts = response.data.products.filter((p: Product) => p.stock > 0);
       setProducts(stockProducts);
@@ -166,7 +163,8 @@ export const useSalesViewModel = () => {
   };
 
   return {
-    username,
+    username: profile?.name || '',
+    profilePhotoUrl: profile?.url || null,
     products,
     cart,
     selectedProduct,

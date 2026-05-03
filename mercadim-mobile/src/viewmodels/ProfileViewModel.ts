@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { validateEmail } from '@/utils/validation';
-import { getProfile, updateProfile, uploadProfilePhoto, removeProfilePhoto } from '@/services/profile.service';
-import { authService } from '@/services/auth.service';
+import { updateProfile, uploadProfilePhoto, removeProfilePhoto } from '@/services/profile.service';
+import { useProfile } from '@/contexts/ProfileContext';
 
 export const useProfileViewModel = () => {
   const router = useRouter();
+  const { profile, refreshProfile, updateProfileData, loading: contextLoading, clearProfile } = useProfile();
+  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
@@ -21,29 +23,17 @@ export const useProfileViewModel = () => {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loadingProfile, setLoadingProfile] = useState(true);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  const fetchProfile = async () => {
-    try {
-      setLoadingProfile(true);
-      const profileData = await getProfile();
-      setName(profileData.name);
-      setEmail(profileData.email);
-      setProfilePhotoUrl(profileData.url || null);
-      setEditName(profileData.name);
-      setEditEmail(profileData.email);
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Erro ao carregar perfil';
-      setErrorMessage(message);
-    } finally {
-      setLoadingProfile(false);
-    }
-  };
-
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    if (profile) {
+      setName(profile.name);
+      setEmail(profile.email);
+      setProfilePhotoUrl(profile.url || null);
+      setEditName(profile.name);
+      setEditEmail(profile.email);
+    }
+  }, [profile]);
 
   const clearErrors = () => {
     setNameError('');
@@ -88,6 +78,7 @@ export const useProfileViewModel = () => {
 
       setName(response.user.name);
       setEmail(response.user.email);
+      updateProfileData({ name: response.user.name, email: response.user.email });
       setSuccessMessage('Dados atualizados com sucesso!');
       closeModal();
     } catch (error: any) {
@@ -108,7 +99,7 @@ export const useProfileViewModel = () => {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
@@ -132,6 +123,7 @@ export const useProfileViewModel = () => {
       const response = await uploadProfilePhoto(photoUri);
       
       setProfilePhotoUrl(response.user.url || null);
+      updateProfileData({ url: response.user.url });
       setSuccessMessage('Foto de perfil atualizada com sucesso!');
       
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -149,12 +141,12 @@ export const useProfileViewModel = () => {
       setUploadingPhoto(true);
       setErrorMessage('');
       
-      const response = await removeProfilePhoto();
+      await removeProfilePhoto();
       
       setProfilePhotoUrl(null);
+      updateProfileData({ url: undefined });
       setSuccessMessage('Foto de perfil removida com sucesso!');
       
-      // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error: any) {
       const message = error.response?.data?.message || 'Erro ao remover foto';
@@ -167,7 +159,9 @@ export const useProfileViewModel = () => {
 
   const handleLogout = async () => {
     try {
+      const { authService } = await import('@/services/auth.service');
       await authService.logout();
+      clearProfile();
       router.replace('/login');
     } catch (error) {
       console.error('Erro ao sair:', error);
@@ -195,9 +189,9 @@ export const useProfileViewModel = () => {
     handleSave,
 
     loading,
-    loadingProfile,
+    loadingProfile: contextLoading,
     uploadingPhoto,
-    refreshProfile: fetchProfile,
+    refreshProfile,
     handleLogout,
     handlePickImage,
     handleRemovePhoto,

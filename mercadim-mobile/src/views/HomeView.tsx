@@ -4,7 +4,7 @@
 
 import React from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator, RefreshControl,
+  View, Text, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator, RefreshControl, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
@@ -19,6 +19,7 @@ interface SaleItem {
 
 interface HomeViewProps {
   username: string;
+  profilePhotoUrl?: string | null;
   totalSales: number;
   itemsSold: number;
   itemsReceived: number;
@@ -64,7 +65,7 @@ const ReportIcon = ({ color = '#374151' }: { color?: string }) => (
   </Svg>
 );
 
-const SummaryCard = ({ value, label, color }: { value: string; label: string; color: string }) => (
+const SummaryCard = ({ value, label, color, fontScale }: { value: string; label: string; color: string; fontScale: number }) => (
   <View style={{
     flex: 1,
     backgroundColor: color,
@@ -73,13 +74,14 @@ const SummaryCard = ({ value, label, color }: { value: string; label: string; co
     minHeight: 80,
     justifyContent: 'flex-end',
   }}>
-    <Text style={{ color: '#fff', fontSize: 17, fontWeight: '800', marginBottom: 2 }}>{value}</Text>
-    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 10, lineHeight: 13 }}>{label}</Text>
+    <Text style={{ color: '#fff', fontSize: 17 * fontScale, fontWeight: '800', marginBottom: 2 }}>{value}</Text>
+    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 10 * fontScale, lineHeight: 13 }}>{label}</Text>
   </View>
 );
 
 export const HomeView: React.FC<HomeViewProps> = ({
   username,
+  profilePhotoUrl,
   totalSales,
   itemsSold,
   itemsReceived,
@@ -91,9 +93,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onSettingsPress,
   onReportPress,
 }) => {
-  const { isDark } = useSettings();
+  const { isDark, fontScale } = useSettings();
 
-  // Cores adaptadas ao tema
   const screenBg = isDark ? '#0B0B0D' : '#fff';
   const contentBg = isDark ? '#0B0B0D' : '#F5F5F5';
   const cardBg = isDark ? '#17181B' : '#fff';
@@ -125,7 +126,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={screenBg} />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#FF662A" />
-          <Text style={{ marginTop: 12, fontSize: 14, color: subTextColor }}>Carregando dados...</Text>
+          <Text style={{ marginTop: 12, fontSize: 14 * fontScale, color: subTextColor }}>Carregando dados...</Text>
         </View>
       </SafeAreaView>
     );
@@ -149,12 +150,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
             width: 42, height: 42, borderRadius: 21,
             backgroundColor: iconBtnBg,
             alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden',
           }}>
-            <UserIcon />
+            {profilePhotoUrl ? (
+              <Image 
+                source={{ uri: profilePhotoUrl }}
+                style={{ width: 42, height: 42 }}
+              />
+            ) : (
+              <UserIcon />
+            )}
           </View>
           <View>
-            <Text style={{ fontSize: 12, color: labelColor }}>Olá,</Text>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: textColor }}>
+            <Text style={{ fontSize: 12 * fontScale, color: labelColor }}>Olá,</Text>
+            <Text style={{ fontSize: 16 * fontScale, fontWeight: '700', color: textColor }}>
               {username || 'Usuário'}
             </Text>
           </View>
@@ -195,20 +204,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
             borderLeftWidth: 4,
             borderLeftColor: '#EF4444',
           }}>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: isDark ? '#FCA5A5' : '#991B1B', marginBottom: 4 }}>
+            <Text style={{ fontSize: 13 * fontScale, fontWeight: '600', color: isDark ? '#FCA5A5' : '#991B1B', marginBottom: 4 }}>
               Erro ao carregar dados
             </Text>
-            <Text style={{ fontSize: 12, color: isDark ? '#F87171' : '#7F1D1D' }}>{error}</Text>
+            <Text style={{ fontSize: 12 * fontScale, color: isDark ? '#F87171' : '#7F1D1D' }}>{error}</Text>
           </View>
         )}
 
         <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
-          <SummaryCard value={formatCurrency(totalSales)} label="Vendas Totais (Semana)" color="#FF8C3A" />
-          <SummaryCard value={`${itemsSold} Unid.`} label="Itens Vendidos (Semana)" color="#FCA53A" />
+          <SummaryCard value={formatCurrency(totalSales)} label="Vendas Totais (Semana)" color="#FF8C3A" fontScale={fontScale} />
+          <SummaryCard value={`${itemsSold} Unid.`} label="Itens Vendidos (Semana)" color="#FCA53A" fontScale={fontScale} />
         </View>
         <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
-          <SummaryCard value={`${itemsReceived} Unid.`} label="Itens Recebidos" color="#FF7A2A" />
-          <SummaryCard value={formatCurrency(averageTicket)} label="Ticket Médio" color="#FFB84A" />
+          <SummaryCard value={`${itemsReceived} Unid.`} label="Itens Recebidos" color="#FF7A2A" fontScale={fontScale} />
+          <SummaryCard value={formatCurrency(averageTicket)} label="Ticket Médio" color="#FFB84A" fontScale={fontScale} />
         </View>
 
         <TouchableOpacity
@@ -227,14 +236,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
           activeOpacity={0.7}
         >
           <ReportIcon color={iconColor} />
-          <Text style={{ fontSize: 14, fontWeight: '600', color: isDark ? '#D1D5DB' : '#374151' }}>
+          <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: isDark ? '#D1D5DB' : '#374151' }}>
             Relatório de vendas
           </Text>
         </TouchableOpacity>
 
         {hasSales ? (
           <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: cardBorder }}>
-            <Text style={{ fontSize: 15, fontWeight: '800', color: textColor, marginBottom: 12 }}>
+            <Text style={{ fontSize: 15 * fontScale, fontWeight: '800', color: textColor, marginBottom: 12 }}>
               Venda de produto
             </Text>
             <View style={{ height: 10, borderRadius: 5, overflow: 'hidden', flexDirection: 'row', marginBottom: 10 }}>
@@ -246,7 +255,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               {salesItems.map((item, index) => (
                 <View key={index} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: item.color }} />
-                  <Text style={{ fontSize: 11, color: subTextColor }}>{item.name}</Text>
+                  <Text style={{ fontSize: 11 * fontScale, color: subTextColor }}>{item.name}</Text>
                 </View>
               ))}
             </View>
@@ -260,10 +269,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   borderBottomWidth: index < salesItems.length - 1 ? 1 : 0,
                   borderBottomColor: dividerColor,
                 }}>
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: textColor }}>{item.name}</Text>
+                  <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: textColor }}>{item.name}</Text>
                   <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={{ fontSize: 14, fontWeight: '700', color: textColor }}>{item.quantity}</Text>
-                    <Text style={{ fontSize: 10, color: labelColor }}>Vendas</Text>
+                    <Text style={{ fontSize: 14 * fontScale, fontWeight: '700', color: textColor }}>{item.quantity}</Text>
+                    <Text style={{ fontSize: 10 * fontScale, color: labelColor }}>Vendas</Text>
                   </View>
                 </View>
               ))}
@@ -283,10 +292,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <Path d="M9 10l1.5 1.5L13 8" stroke="#FF662A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               </Svg>
             </View>
-            <Text style={{ fontSize: 14, fontWeight: '700', color: textColor, marginBottom: 6 }}>
+            <Text style={{ fontSize: 14 * fontScale, fontWeight: '700', color: textColor, marginBottom: 6 }}>
               Nenhuma venda ainda
             </Text>
-            <Text style={{ fontSize: 12, color: labelColor, textAlign: 'center', lineHeight: 18 }}>
+            <Text style={{ fontSize: 12 * fontScale, color: labelColor, textAlign: 'center', lineHeight: 18 }}>
               Registre uma venda para ver o relatório de produtos
             </Text>
           </View>

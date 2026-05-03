@@ -1,6 +1,5 @@
 // Traduções em Português
 export const pt = {
-  // Telas
   settings: {
     title: 'Configurações',
     sections: {
@@ -78,7 +77,84 @@ export const pt = {
     },
   },
 
-  // Comum (usado em várias telas)
+  home: {
+    greeting: 'Olá,',
+    user: 'Usuário',
+    totalSales: 'Vendas Totais (Semana)',
+    itemsSold: 'Itens Vendidos (Semana)',
+    itemsReceived: 'Itens Recebidos',
+    averageTicket: 'Ticket Médio',
+    salesReport: 'Relatório de vendas',
+    productSales: 'Venda de produto',
+    sales: 'Vendas',
+    noSales: 'Nenhuma venda ainda',
+    noSalesDescription: 'Registre uma venda para ver o relatório de produtos',
+    loadingData: 'Carregando dados...',
+    errorLoading: 'Erro ao carregar dados',
+  },
+
+  sales: {
+    greeting: 'Olá,',
+    user: 'Usuário',
+    total: 'Total',
+    items: 'Itens',
+    addProduct: 'Adicionar produto',
+    noProducts: 'Sem produtos',
+    noProductsDescription: 'Não há produtos disponíveis no estoque.',
+    finalizeSale: 'Finalizar venda',
+    saleSuccess: 'Venda realizada com sucesso!',
+    saleError: 'Erro na venda',
+    saleErrorDescription: 'Não foi possível concluir a venda.',
+    invalidQuantity: 'Quantidade inválida',
+    invalidQuantityDescription: 'Informe uma quantidade maior que zero.',
+    insufficientStock: 'Estoque insuficiente',
+    stockLimit: 'Limite do estoque atingido.',
+    selectProduct: 'Selecionar produto',
+    quantity: 'Quantidade',
+    confirm: 'Confirmar',
+    cancel: 'Cancelar',
+  },
+
+  stock: {
+    greeting: 'Olá,',
+    user: 'Usuário',
+    totalProducts: 'Total de Produtos',
+    lowStock: 'Estoque Baixo',
+    addProduct: 'Adicionar produto',
+    noProducts: 'Estoque vazio',
+    noProductsDescription: 'Adicione produtos para começar a gerenciar seu estoque',
+    loadingProducts: 'Carregando produtos...',
+    errorLoading: 'Erro ao carregar produtos',
+    retry: 'Tentar novamente',
+    edit: 'Editar',
+    delete: 'Excluir',
+    confirmDelete: 'Confirmar exclusão',
+    confirmDeleteDescription: 'Tem certeza que deseja excluir este produto?',
+    units: 'Unid.',
+  },
+
+  profile: {
+    greeting: 'Olá,',
+    user: 'Usuário',
+    editProfile: 'Editar perfil',
+    changePhoto: 'Alterar foto',
+    removePhoto: 'Remover foto',
+    name: 'Nome',
+    email: 'Email',
+    save: 'Salvar',
+    cancel: 'Cancelar',
+    logout: 'Sair',
+    nameRequired: 'Nome é obrigatório',
+    invalidEmail: 'Email inválido',
+    updateSuccess: 'Dados atualizados com sucesso!',
+    updateError: 'Erro ao atualizar perfil',
+    photoUpdateSuccess: 'Foto de perfil atualizada com sucesso!',
+    photoRemoveSuccess: 'Foto de perfil removida com sucesso!',
+    photoError: 'Erro ao enviar foto',
+    permissionDenied: 'Permissão para acessar galeria foi negada',
+    selectImageError: 'Erro ao selecionar imagem',
+  },
+
   common: {
     back: 'Voltar',
     cancel: 'Cancelar',

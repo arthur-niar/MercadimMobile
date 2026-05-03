@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { authService } from '@/services/auth.service';
 import { homeService, SalesItem } from '@/services/home.service';
+import { useProfile } from '@/contexts/ProfileContext';
 
 export const useHomeViewModel = () => {
-  const [username, setUsername] = useState('');
+  const { profile } = useProfile();
   const [totalSales, setTotalSales] = useState(0);
   const [itemsSold, setItemsSold] = useState(0);
   const [itemsReceived, setItemsReceived] = useState(0);
@@ -18,12 +18,8 @@ export const useHomeViewModel = () => {
       setLoading(true);
       setError(null);
 
-      const [name, homeData] = await Promise.all([
-        authService.getUserName(),
-        homeService.getHomeSummary(),
-      ]);
+      const homeData = await homeService.getHomeSummary();
 
-      setUsername(name ?? '');
       setTotalSales(homeData.summary.totalSales);
       setItemsSold(homeData.summary.itemsSold);
       setItemsReceived(homeData.summary.itemsReceived);
@@ -44,7 +40,8 @@ export const useHomeViewModel = () => {
   );
 
   return {
-    username,
+    username: profile?.name || '',
+    profilePhotoUrl: profile?.url || null,
     totalSales,
     itemsSold,
     itemsReceived,

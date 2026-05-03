@@ -18,7 +18,6 @@ export const authService = {
     try {
       const response = await api.post<AuthResponse>('/auth/register/verify', data);
       await AsyncStorage.setItem('authToken', response.data.token);
-      await AsyncStorage.setItem('userName', response.data.user.name);
       return response.data;
     } catch (error: any) {
       if (error.response?.data?.message) {
@@ -32,7 +31,6 @@ export const authService = {
     try {
       const response = await api.post<AuthResponse>('/auth/login', credentials);
       await AsyncStorage.setItem('authToken', response.data.token);
-      await AsyncStorage.setItem('userName', response.data.user.name);
       return response.data;
     } catch (error: any) {
       if (error.response?.data?.message) {
@@ -66,14 +64,9 @@ export const authService = {
 
   async logout(): Promise<void> {
     await AsyncStorage.removeItem('authToken');
-    await AsyncStorage.removeItem('userName');
   },
 
   async getToken(): Promise<string | null> {
     return await AsyncStorage.getItem('authToken');
-  },
-
-  async getUserName(): Promise<string | null> {
-    return await AsyncStorage.getItem('userName');
   },
 };

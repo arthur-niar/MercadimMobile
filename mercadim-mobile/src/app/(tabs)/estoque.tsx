@@ -1,26 +1,19 @@
-// SUBSTITUI: src/app/(tabs)/estoque.tsx
-// Mudança: onSettingsPress agora navega para /configuracoes
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { EstoqueView } from '@/views/EstoqueView';
 import { ProductFormModal } from '@/components/ProductFormModal';
 import { useProductsViewModel } from '@/viewmodels';
-import { authService } from '@/services/auth.service';
+import { useProfile } from '@/contexts/ProfileContext';
 import { Product } from '@/models/Product';
 
 export default function EstoqueScreen() {
   const router = useRouter();
   const viewModel = useProductsViewModel();
+  const { profile } = useProfile();
 
-  const [username, setUsername] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-
-  useEffect(() => {
-    authService.getUserName().then(name => setUsername(name ?? ''));
-  }, []);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -48,7 +41,8 @@ export default function EstoqueScreen() {
   return (
     <>
       <EstoqueView
-        username={username}
+        username={profile?.name || ''}
+        profilePhotoUrl={profile?.url || null}
         onSettingsPress={() => router.push('/configuracoes' as Href)}
         onCreatePress={handleOpenCreate}
         products={viewModel.products}

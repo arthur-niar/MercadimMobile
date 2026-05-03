@@ -5,9 +5,11 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRegisterViewModel } from '@/viewmodels';
+import { useSettings } from '@/contexts/SettingsContext';
 
 export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackToLogin }) => {
   const viewModel = useRegisterViewModel();
+  const { fontScale } = useSettings();
 
   const handleAction = () => {
     if (viewModel.step === 'credentials') return viewModel.handleEmailAndUsername();
@@ -60,7 +62,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
 
             {viewModel.step !== 'credentials' && viewModel.step !== 'success' && (
               <TouchableOpacity onPress={handleBack} style={{ marginBottom: 16 }}>
-                <Text style={{ color: '#fff', fontSize: 16 }}>← Voltar</Text>
+                <Text style={{ color: '#fff', fontSize: 16 * fontScale }}>← Voltar</Text>
               </TouchableOpacity>
             )}
 
@@ -75,7 +77,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                 borderWidth: 1,
                 borderColor: 'rgba(255,255,255,0.3)'
               }}>
-                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800', letterSpacing: 3 }}>
+                <Text style={{ color: '#fff', fontSize: 11 * fontScale, fontWeight: '800', letterSpacing: 3 }}>
                   MERCADIM
                 </Text>
               </View>
@@ -84,7 +86,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                 <>
                   <Text style={{
                     color: '#fff',
-                    fontSize: 40,
+                    fontSize: 40 * fontScale,
                     fontWeight: '800',
                     lineHeight: 46,
                     letterSpacing: -1
@@ -94,7 +96,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
 
                   <Text style={{
                     color: 'rgba(255,255,255,0.65)',
-                    fontSize: 15,
+                    fontSize: 15 * fontScale,
                     marginTop: 8
                   }}>
                     {header.subtitle}
@@ -116,17 +118,17 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
 
               {viewModel.generalError ? (
                 <View style={{ backgroundColor: '#FEF2F2', borderLeftWidth: 3, borderLeftColor: '#EF4444', borderRadius: 10, padding: 14, marginBottom: 20 }}>
-                  <Text style={{ color: '#B91C1C', fontSize: 13, fontWeight: '500' }}>{viewModel.generalError}</Text>
+                  <Text style={{ color: '#B91C1C', fontSize: 13 * fontScale, fontWeight: '500' }}>{viewModel.generalError}</Text>
                 </View>
               ) : null}
 
               {viewModel.step === 'credentials' && (
                 <>
                   <View style={{ marginBottom: 16 }}>
-                    <Text style={labelStyle}>Email</Text>
+                    <Text style={getLabelStyle(fontScale)}>Email</Text>
                     <View style={inputBox(!!viewModel.emailError)}>
                       <TextInput
-                        style={inputText}
+                        style={getInputText(fontScale)}
                         placeholder="seu@email.com"
                         placeholderTextColor="#9CA3AF"
                         value={viewModel.email}
@@ -134,14 +136,14 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                         autoCapitalize="none"
                       />
                     </View>
-                    {viewModel.emailError && <Text style={errText}>{viewModel.emailError}</Text>}
+                    {viewModel.emailError && <Text style={getErrText(fontScale)}>{viewModel.emailError}</Text>}
                   </View>
 
                   <View style={{ marginBottom: 16 }}>
-                    <Text style={labelStyle}>Nome de usuário</Text>
+                    <Text style={getLabelStyle(fontScale)}>Nome de usuário</Text>
                     <View style={inputBox(!!viewModel.usernameError)}>
                       <TextInput
-                        style={inputText}
+                        style={getInputText(fontScale)}
                         placeholder="seu_usuario"
                         placeholderTextColor="#9CA3AF"
                         value={viewModel.username}
@@ -149,7 +151,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                         autoCapitalize="none"
                       />
                     </View>
-                    {viewModel.usernameError && <Text style={errText}>{viewModel.usernameError}</Text>}
+                    {viewModel.usernameError && <Text style={getErrText(fontScale)}>{viewModel.usernameError}</Text>}
                   </View>
                 </>
               )}
@@ -157,10 +159,10 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
               {viewModel.step === 'confirmPassword' && (
                 <>
                   <View style={{ marginBottom: 16 }}>
-                    <Text style={labelStyle}>Senha</Text>
+                    <Text style={getLabelStyle(fontScale)}>Senha</Text>
                     <View style={inputBox(!!viewModel.passwordError)}>
                       <TextInput
-                        style={inputText}
+                        style={getInputText(fontScale)}
                         placeholder="••••••••"
                         placeholderTextColor="#9CA3AF"
                         value={viewModel.password}
@@ -168,14 +170,14 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                         secureTextEntry
                       />
                     </View>
-                    {viewModel.passwordError && <Text style={errText}>{viewModel.passwordError}</Text>}
+                    {viewModel.passwordError && <Text style={getErrText(fontScale)}>{viewModel.passwordError}</Text>}
                   </View>
 
                   <View style={{ marginBottom: 16 }}>
-                    <Text style={labelStyle}>Confirmar senha</Text>
+                    <Text style={getLabelStyle(fontScale)}>Confirmar senha</Text>
                     <View style={inputBox(!!viewModel.confirmPasswordError)}>
                       <TextInput
-                        style={inputText}
+                        style={getInputText(fontScale)}
                         placeholder="Confirme sua senha"
                         placeholderTextColor="#9CA3AF"
                         value={viewModel.confirmPassword}
@@ -183,17 +185,17 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                         secureTextEntry
                       />
                     </View>
-                    {viewModel.confirmPasswordError && <Text style={errText}>{viewModel.confirmPasswordError}</Text>}
+                    {viewModel.confirmPasswordError && <Text style={getErrText(fontScale)}>{viewModel.confirmPasswordError}</Text>}
                   </View>
                 </>
               )}
 
               {viewModel.step === 'code' && (
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={labelStyle}>Código</Text>
+                  <Text style={getLabelStyle(fontScale)}>Código</Text>
                   <View style={inputBox(!!viewModel.codeError)}>
                     <TextInput
-                      style={{ ...inputText, textAlign: 'center', letterSpacing: 8, fontSize: 20 }}
+                      style={{ ...getInputText(fontScale), textAlign: 'center', letterSpacing: 8, fontSize: 20 * fontScale }}
                       placeholder="000000"
                       placeholderTextColor="#D1D5DB"
                       value={viewModel.code}
@@ -202,14 +204,14 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                       maxLength={6}
                     />
                   </View>
-                  {viewModel.codeError && <Text style={errText}>{viewModel.codeError}</Text>}
+                  {viewModel.codeError && <Text style={getErrText(fontScale)}>{viewModel.codeError}</Text>}
                 </View>
               )}
 
               {viewModel.step === 'success' && (
                 <View style={{ alignItems: 'center' }}>
-                  <Text style={{ fontSize: 30 }}>✓</Text>
-                  <Text style={{ fontSize: 18, fontWeight: '700', marginTop: 10 }}>
+                  <Text style={{ fontSize: 30 * fontScale }}>✓</Text>
+                  <Text style={{ fontSize: 18 * fontScale, fontWeight: '700', marginTop: 10 }}>
                     Cadastro concluído!
                   </Text>
 
@@ -240,7 +242,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                   
                   {viewModel.step === 'credentials' && (
                     <View style={{ alignItems: 'center', marginTop: 20 }}>
-                      <Text style={{ color: '#6B7280', fontSize: 13 }}>
+                      <Text style={{ color: '#6B7280', fontSize: 13 * fontScale }}>
                         Já possui uma conta?{' '}
                         <Text 
                           style={{ color: '#FF662A', fontWeight: '700' }}
@@ -256,7 +258,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
             </View>
 
             <View style={{ alignItems: 'center', marginTop: 28 }}>
-              <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>
+              <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 * fontScale }}>
                 © Mercadim 2026
               </Text>
             </View>
@@ -268,14 +270,14 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
   );
 };
 
-const labelStyle = {
+const getLabelStyle = (fontScale: number) => ({
   color: '#374151',
-  fontSize: 10,
+  fontSize: 10 * fontScale,
   fontWeight: '800' as const,
   letterSpacing: 1.5,
   textTransform: 'uppercase' as const,
   marginBottom: 8,
-};
+});
 
 const inputBox = (hasError: boolean) => ({
   backgroundColor: hasError ? '#FEF2F2' : '#F9FAFB',
@@ -286,14 +288,14 @@ const inputBox = (hasError: boolean) => ({
   paddingVertical: 14,
 });
 
-const inputText = {
+const getInputText = (fontScale: number) => ({
   color: '#111827',
-  fontSize: 15,
-};
+  fontSize: 15 * fontScale,
+});
 
-const errText = {
+const getErrText = (fontScale: number) => ({
   color: '#EF4444',
-  fontSize: 12,
+  fontSize: 12 * fontScale,
   marginTop: 5,
   marginLeft: 4,
-};
+});

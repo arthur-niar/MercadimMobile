@@ -16,7 +16,7 @@ import { useSettings } from '@/contexts/SettingsContext';
 
 export const ProfileView: React.FC = () => {
   const viewModel = useProfileViewModel();
-  const { isDark } = useSettings();
+  const { isDark, fontScale } = useSettings();
 
   // Cores adaptadas ao tema
   const screenBg = isDark ? '#0B0B0D' : '#fff';
@@ -68,7 +68,7 @@ export const ProfileView: React.FC = () => {
                   style={{ width: '100%', height: '100%' }}
                 />
               ) : (
-                <Text style={{ fontSize: 42 }}>👤</Text>
+                <Text style={{ fontSize: 42 * fontScale }}>👤</Text>
               )}
             </View>
 
@@ -93,7 +93,7 @@ export const ProfileView: React.FC = () => {
                 >
                   <Text style={{
                     color: '#fff',
-                    fontSize: 12,
+                    fontSize: 12 * fontScale,
                     fontWeight: '600',
                   }}>
                     📷 Alterar
@@ -114,7 +114,7 @@ export const ProfileView: React.FC = () => {
                   >
                     <Text style={{
                       color: 'rgba(255, 255, 255, 0.8)',
-                      fontSize: 12,
+                      fontSize: 12 * fontScale,
                       fontWeight: '600',
                     }}>
                       ✕ Remover
@@ -144,16 +144,16 @@ export const ProfileView: React.FC = () => {
           }}>
 
             <View style={{ marginBottom: 16 }}>
-              <Text style={getLabelStyle(labelColor)}>Nome</Text>
+              <Text style={getLabelStyle(labelColor, fontScale)}>Nome</Text>
               <View style={getInputBox(false, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
-                <Text style={{ color: textColor, fontSize: 15 }}>{viewModel.name}</Text>
+                <Text style={{ color: textColor, fontSize: 15 * fontScale }}>{viewModel.name}</Text>
               </View>
             </View>
 
             <View style={{ marginBottom: 20 }}>
-              <Text style={getLabelStyle(labelColor)}>Email</Text>
+              <Text style={getLabelStyle(labelColor, fontScale)}>Email</Text>
               <View style={getInputBox(false, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
-                <Text style={{ color: textColor, fontSize: 15 }}>{viewModel.email}</Text>
+                <Text style={{ color: textColor, fontSize: 15 * fontScale }}>{viewModel.email}</Text>
               </View>
             </View>
 
@@ -194,7 +194,7 @@ export const ProfileView: React.FC = () => {
                 <Text style={{
                   color: '#fff',
                   fontWeight: '700',
-                  fontSize: 15
+                  fontSize: 15 * fontScale
                 }}>
                   Editar
                 </Text>
@@ -229,7 +229,7 @@ export const ProfileView: React.FC = () => {
             }}>
 
               <Text style={{
-                fontSize: 18,
+                fontSize: 18 * fontScale,
                 fontWeight: '700',
                 marginBottom: 16,
                 color: textColor,
@@ -238,24 +238,24 @@ export const ProfileView: React.FC = () => {
               </Text>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={getLabelStyle(labelColor)}>Nome</Text>
+                <Text style={getLabelStyle(labelColor, fontScale)}>Nome</Text>
                 <View style={getInputBox(!!viewModel.nameError, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
                   <TextInput
-                    style={{ color: textColor, fontSize: 15 }}
+                    style={{ color: textColor, fontSize: 15 * fontScale }}
                     placeholderTextColor={subTextColor}
                     value={viewModel.editName}
                     onChangeText={viewModel.setEditName}
                     editable={!viewModel.loading}
                   />
                 </View>
-                {viewModel.nameError && <Text style={errText}>{viewModel.nameError}</Text>}
+                {viewModel.nameError && <Text style={getErrText(fontScale)}>{viewModel.nameError}</Text>}
               </View>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={getLabelStyle(labelColor)}>Email</Text>
+                <Text style={getLabelStyle(labelColor, fontScale)}>Email</Text>
                 <View style={getInputBox(!!viewModel.emailError, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
                   <TextInput
-                    style={{ color: textColor, fontSize: 15 }}
+                    style={{ color: textColor, fontSize: 15 * fontScale }}
                     placeholderTextColor={subTextColor}
                     value={viewModel.editEmail}
                     onChangeText={viewModel.setEditEmail}
@@ -263,7 +263,7 @@ export const ProfileView: React.FC = () => {
                     editable={!viewModel.loading}
                   />
                 </View>
-                {viewModel.emailError && <Text style={errText}>{viewModel.emailError}</Text>}
+                {viewModel.emailError && <Text style={getErrText(fontScale)}>{viewModel.emailError}</Text>}
               </View>
 
               {viewModel.errorMessage ? (
@@ -271,7 +271,7 @@ export const ProfileView: React.FC = () => {
                   color: '#EF4444',
                   marginBottom: 12,
                   textAlign: 'center',
-                  fontSize: 13
+                  fontSize: 13 * fontScale
                 }}>
                   {viewModel.errorMessage}
                 </Text>
@@ -315,9 +315,9 @@ export const ProfileView: React.FC = () => {
   );
 };
 
-const getLabelStyle = (color: string) => ({
+const getLabelStyle = (color: string, fontScale: number) => ({
   color,
-  fontSize: 10,
+  fontSize: 10 * fontScale,
   fontWeight: '800' as const,
   letterSpacing: 1.5,
   textTransform: 'uppercase' as const,
@@ -339,9 +339,9 @@ const getInputBox = (
   paddingVertical: 14,
 });
 
-const errText = {
+const getErrText = (fontScale: number) => ({
   color: '#EF4444',
-  fontSize: 12,
+  fontSize: 12 * fontScale,
   marginTop: 5,
   marginLeft: 4,
-};
+});
