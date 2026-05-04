@@ -105,7 +105,7 @@ export const SalesView = () => {
           <View>
             <Text style={{ fontSize: 12 * fontScale, color: labelColor }}>{t('sales.greeting')}</Text>
             <Text style={{ fontSize: 16 * fontScale, fontWeight: '700', color: textColor }}>
-              {vm.username || 'Usuário'}
+              {vm.username || t('sales.user')}
             </Text>
           </View>
         </View>
@@ -140,11 +140,11 @@ export const SalesView = () => {
           </LinearGradient>
 
           <View style={styles.card}>
-            <Text style={styles.title}>Seu carrinho</Text>
+            <Text style={styles.title}>{t('sales.yourCart')}</Text>
 
             {vm.cart.length === 0 ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyText}>Adicione produtos</Text>
+                <Text style={styles.emptyText}>{t('sales.addProducts')}</Text>
                 <CartIcon size={40} color={isDark ? '#6B7280' : '#9CA3AF'} />
               </View>
             ) : (
@@ -153,7 +153,7 @@ export const SalesView = () => {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.name}>{item.name}</Text>
                     <Text style={styles.detail}>
-                      Quantidade: {item.quantity}
+                      {t('sales.quantity')}: {item.quantity}
                     </Text>
                   </View>
 
@@ -164,11 +164,11 @@ export const SalesView = () => {
 
                     <View style={styles.itemActions}>
                       <TouchableOpacity onPress={() => vm.openEditItem(item)}>
-                        <Text style={styles.edit}>Editar</Text>
+                        <Text style={styles.edit}>{t('sales.edit')}</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity onPress={() => vm.removeItem(item.id)}>
-                        <Text style={styles.remove}>Remover</Text>
+                        <Text style={styles.remove}>{t('sales.remove')}</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -211,7 +211,7 @@ export const SalesView = () => {
           <View style={styles.modal}>
             <View style={styles.modalHeader}>
               <Text style={styles.title}>
-                {vm.editingItem ? 'Editar produto' : 'Adicionar produto'}
+                {vm.editingItem ? t('sales.editProduct') : t('sales.addProduct')}
               </Text>
 
               <TouchableOpacity onPress={vm.closeModal}>
@@ -219,7 +219,7 @@ export const SalesView = () => {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.label}>Produto</Text>
+            <Text style={styles.label}>{t('sales.productLabel')}</Text>
 
             <View style={styles.productSelector}>
               {vm.products.map((product) => {
@@ -265,7 +265,7 @@ export const SalesView = () => {
 
             <TouchableOpacity style={styles.addBtn} onPress={vm.addOrUpdateCart}>
               <Text style={styles.addBtnText}>
-                {vm.editingItem ? 'Salvar alteração' : 'Adicionar'}
+                {vm.editingItem ? t('sales.saveChange') : t('sales.addBtn')}
               </Text>
             </TouchableOpacity>
           </View>

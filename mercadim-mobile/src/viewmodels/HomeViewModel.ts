@@ -2,9 +2,11 @@ import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { homeService, SalesItem } from '@/services/home.service';
 import { useProfile } from '@/contexts/ProfileContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const useHomeViewModel = () => {
   const { profile } = useProfile();
+  const { t } = useTranslation();
   const [totalSales, setTotalSales] = useState(0);
   const [itemsSold, setItemsSold] = useState(0);
   const [itemsReceived, setItemsReceived] = useState(0);
@@ -26,8 +28,8 @@ export const useHomeViewModel = () => {
       setAverageTicket(homeData.summary.averageTicket);
       setSalesItems(homeData.salesItems);
     } catch (err: any) {
-      console.error('Erro ao carregar dados da home:', err);
-      setError(err.message || 'Erro ao carregar dados');
+      console.error(t('home.loadError'), err);
+      setError(err.message || t('home.loadError'));
     } finally {
       setLoading(false);
     }

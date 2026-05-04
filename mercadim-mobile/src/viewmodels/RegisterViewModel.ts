@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { authService } from '@/services/auth.service';
 import { validateEmail, validatePassword, validateCode } from '@/utils/validation';
 import { RegisterCredentials, RegisterVerifyRequest } from '@/models';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type RegisterStep = 'credentials' | 'confirmPassword' | 'code' | 'success';
 
@@ -23,6 +24,7 @@ export const useRegisterViewModel = () => {
 
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const clearErrors = () => {
     setEmailError('');
@@ -40,12 +42,12 @@ export const useRegisterViewModel = () => {
     const emailValidation = validateEmail(email);
 
     if (!emailValidation.isValid) {
-      setEmailError(emailValidation.error || '');
+      setEmailError(t(emailValidation.error as any));
       return;
     }
 
     if (!username || username.trim().length < 2) {
-      setUsernameError('Nome deve ter no mínimo 2 caracteres');
+      setUsernameError(t('auth.validation.usernameMinLength'));
       return;
     }
 
@@ -58,17 +60,17 @@ export const useRegisterViewModel = () => {
     const passwordValidation = validatePassword(password);
 
     if (!passwordValidation.isValid) {
-      setPasswordError(passwordValidation.error || '');
+      setPasswordError(t(passwordValidation.error as any));
       return;
     }
 
     if (!confirmPassword) {
-      setConfirmPasswordError('Confirme sua senha');
+      setConfirmPasswordError(t('auth.validation.confirmPasswordRequired'));
       return;
     }
 
     if (password !== confirmPassword) {
-      setConfirmPasswordError('As senhas não coincidem');
+      setConfirmPasswordError(t('auth.validation.passwordsDoNotMatch'));
       return;
     }
 
@@ -84,7 +86,7 @@ export const useRegisterViewModel = () => {
       await authService.requestRegister(credentials);
       setStep('code');
     } catch (error: any) {
-      setGeneralError(error.message || 'Erro ao solicitar registro');
+      setGeneralError(error.message || t('auth.messages.registerRequestError'));
     } finally {
       setLoading(false);
     }
@@ -96,7 +98,7 @@ export const useRegisterViewModel = () => {
     const codeValidation = validateCode(code);
 
     if (!codeValidation.isValid) {
-      setCodeError(codeValidation.error || '');
+      setCodeError(t(codeValidation.error as any));
       return;
     }
 
@@ -109,10 +111,10 @@ export const useRegisterViewModel = () => {
       };
 
       await authService.verifyRegister(verifyData);
-      setSuccessMessage('Conta criada com sucesso!');
+      setSuccessMessage(t('auth.messages.registerSuccess'));
       setStep('success');
     } catch (error: any) {
-      setCodeError(error.message || 'Código inválido ou expirado');
+      setCodeError(error.message || t('auth.messages.codeInvalid'));
     } finally {
       setLoading(false);
     }

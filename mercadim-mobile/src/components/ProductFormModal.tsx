@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Product } from '@/models/Product';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface FormData {
   name: string;
@@ -35,18 +36,18 @@ interface ProductFormModalProps {
 
 const EMPTY_FORM: FormData = { name: '', price: '', stock: '', category: '' };
 
-const validate = (form: FormData): FormErrors => {
+const validate = (form: FormData, t: any): FormErrors => {
   const errors: FormErrors = {};
   if (!form.name.trim()) {
-    errors.name = 'Nome é obrigatório';
+    errors.name = t('productForm.nameRequired');
   }
   const price = parseFloat(form.price.replace(',', '.'));
   if (!form.price.trim() || isNaN(price) || price <= 0) {
-    errors.price = 'Preço deve ser maior que zero';
+    errors.price = t('productForm.priceInvalid');
   }
   const stock = parseInt(form.stock, 10);
   if (!form.stock.trim() || isNaN(stock) || stock < 0) {
-    errors.stock = 'Estoque deve ser 0 ou mais';
+    errors.stock = t('productForm.stockInvalid');
   }
   return errors;
 };
@@ -61,6 +62,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (visible && initialData) {
@@ -84,7 +86,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    const validationErrors = validate(form);
+    const validationErrors = validate(form, t);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
@@ -105,8 +107,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     }
   };
 
-  const title = mode === 'edit' ? 'Editar Produto' : 'Novo Produto';
-  const submitLabel = mode === 'edit' ? 'Salvar' : 'Criar';
+  const title = mode === 'edit' ? t('productForm.editProduct') : t('productForm.newProduct');
+  const submitLabel = mode === 'edit' ? t('productForm.save') : t('productForm.create');
 
   return (
     <Modal
@@ -142,11 +144,11 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
             {/* Campo: Nome */}
             <View className="gap-1">
-              <Text className="text-xs font-semibold text-gray-700">Nome:</Text>
+              <Text className="text-xs font-semibold text-gray-700">{t('productForm.name')}</Text>
               <TextInput
                 value={form.name}
                 onChangeText={v => setField('name', v)}
-                placeholder="Ex: Arroz"
+                placeholder={t('productForm.nameEx')}
                 placeholderTextColor="#9CA3AF"
                 returnKeyType="next"
                 className={`border rounded-xl px-3 py-2.5 text-sm text-gray-900 ${
@@ -161,11 +163,11 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             {/* Linha: Preço + Estoque */}
             <View className="flex-row gap-3">
               <View className="flex-1 gap-1">
-                <Text className="text-xs font-semibold text-gray-700">Preço:</Text>
+                <Text className="text-xs font-semibold text-gray-700">{t('productForm.price')}</Text>
                 <TextInput
                   value={form.price}
                   onChangeText={v => setField('price', v)}
-                  placeholder="Ex: 10,00"
+                  placeholder={t('productForm.priceEx')}
                   placeholderTextColor="#9CA3AF"
                   keyboardType="decimal-pad"
                   returnKeyType="next"
@@ -179,11 +181,11 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               </View>
 
               <View className="flex-1 gap-1">
-                <Text className="text-xs font-semibold text-gray-700">Estoque:</Text>
+                <Text className="text-xs font-semibold text-gray-700">{t('productForm.stock')}</Text>
                 <TextInput
                   value={form.stock}
                   onChangeText={v => setField('stock', v)}
-                  placeholder="Ex: 10"
+                  placeholder={t('productForm.stockEx')}
                   placeholderTextColor="#9CA3AF"
                   keyboardType="number-pad"
                   returnKeyType="next"
@@ -200,12 +202,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             {/* Campo: Categoria */}
             <View className="gap-1">
               <Text className="text-xs font-semibold text-gray-700">
-                Categoria <Text className="font-normal text-gray-400">(Opcional):</Text>
+                {t('productForm.category')} <Text className="font-normal text-gray-400">{t('productForm.optional')}</Text>
               </Text>
               <TextInput
                 value={form.category}
                 onChangeText={v => setField('category', v)}
-                placeholder="Ex: Laticínios"
+                placeholder={t('productForm.categoryEx')}
                 placeholderTextColor="#9CA3AF"
                 returnKeyType="done"
                 onSubmitEditing={handleSubmit}

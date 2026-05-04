@@ -1,11 +1,11 @@
 export const validateEmail = (email: string): { isValid: boolean; error?: string } => {
   if (!email) {
-    return { isValid: false, error: 'Email é obrigatório' };
+    return { isValid: false, error: 'auth.validation.emailRequired' };
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    return { isValid: false, error: 'Email inválido' };
+    return { isValid: false, error: 'auth.validation.emailInvalid' };
   }
 
   return { isValid: true };
@@ -13,11 +13,11 @@ export const validateEmail = (email: string): { isValid: boolean; error?: string
 
 export const validatePassword = (password: string): { isValid: boolean; error?: string } => {
   if (!password) {
-    return { isValid: false, error: 'Senha é obrigatória' };
+    return { isValid: false, error: 'auth.validation.passwordRequired' };
   }
 
   if (password.length < 6) {
-    return { isValid: false, error: 'Senha deve ter no mínimo 6 caracteres' };
+    return { isValid: false, error: 'auth.validation.passwordMinLength' };
   }
 
   return { isValid: true };
@@ -25,15 +25,15 @@ export const validatePassword = (password: string): { isValid: boolean; error?: 
 
 export const validateCode = (code: string): { isValid: boolean; error?: string } => {
   if (!code) {
-    return { isValid: false, error: 'Código é obrigatório' };
+    return { isValid: false, error: 'auth.validation.codeRequired' };
   }
 
   if (code.length !== 6) {
-    return { isValid: false, error: 'Código deve ter 6 dígitos' };
+    return { isValid: false, error: 'auth.validation.codeLength' };
   }
 
   if (!/^\d+$/.test(code)) {
-    return { isValid: false, error: 'Código deve conter apenas números' };
+    return { isValid: false, error: 'auth.validation.codeNumeric' };
   }
 
   return { isValid: true };

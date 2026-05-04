@@ -298,7 +298,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               marginBottom: 8,
               paddingRight: 28,
             }}>
-              Estoque baixo
+              {t('home.lowStockTitle')}
             </Text>
 
             <Text style={{
@@ -306,7 +306,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               fontSize: 13 * fontScale,
               lineHeight: 20,
             }}>
-              O produto Arroz está com poucas unidades disponíveis. Verifique o estoque para evitar falta de produto.
+              {t('home.lowStockMsg', { name: 'Arroz' })}
             </Text>
           </View>
         </View>
@@ -335,7 +335,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             borderLeftColor: '#EF4444',
           }}>
             <Text style={{ fontSize: 13 * fontScale, fontWeight: '600', color: isDark ? '#FCA5A5' : '#991B1B', marginBottom: 4 }}>
-              Erro ao carregar dados
+              {t('home.errorLoading')}
             </Text>
             <Text style={{ fontSize: 12 * fontScale, color: isDark ? '#F87171' : '#7F1D1D' }}>{error}</Text>
           </View>
@@ -367,14 +367,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
         >
           <ReportIcon color={iconColor} />
           <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: isDark ? '#D1D5DB' : '#374151' }}>
-            Relatório de vendas
+            {t('home.salesReport')}
           </Text>
         </TouchableOpacity>
 
         {hasSales ? (
           <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: cardBorder }}>
             <Text style={{ fontSize: 15 * fontScale, fontWeight: '800', color: textColor, marginBottom: 12 }}>
-              Venda de produto
+              {t('home.productSales')}
             </Text>
             <View style={{ height: 10, borderRadius: 5, overflow: 'hidden', flexDirection: 'row', marginBottom: 10 }}>
               {salesItems.map((item, index) => (
@@ -423,10 +423,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </Svg>
             </View>
             <Text style={{ fontSize: 14 * fontScale, fontWeight: '700', color: textColor, marginBottom: 6 }}>
-              Nenhuma venda ainda
+              {t('home.noSales')}
             </Text>
             <Text style={{ fontSize: 12 * fontScale, color: labelColor, textAlign: 'center', lineHeight: 18 }}>
-              Registre uma venda para ver o relatório de produtos
+              {t('home.noSalesDescription')}
             </Text>
           </View>
         )}

@@ -7,6 +7,7 @@ import Svg, { Path } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useNotificationsViewModel } from '@/viewmodels/NotificationsViewModel';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const BackIcon = ({ color = '#374151' }: { color?: string }) => (
   <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -24,6 +25,7 @@ export const NotificationsView: React.FC = () => {
   const router = useRouter();
   const viewModel = useNotificationsViewModel();
   const { isDark } = useSettings();
+  const { t } = useTranslation();
 
   const screenBg = isDark ? '#0B0B0D' : '#fff';
   const contentBg = isDark ? '#0B0B0D' : '#F5F5F5';
@@ -64,10 +66,10 @@ export const NotificationsView: React.FC = () => {
 
         <View>
           <Text style={{ fontSize: 20, fontWeight: '800', color: textColor }}>
-            Notificações
+            {t('notifications.title')}
           </Text>
           <Text style={{ fontSize: 12, color: subTextColor }}>
-            Alertas e avisos importantes
+            {t('notifications.subtitle')}
           </Text>
         </View>
       </View>
@@ -87,10 +89,10 @@ export const NotificationsView: React.FC = () => {
             borderColor: cardBorder,
           }}>
             <Text style={{ fontSize: 14, fontWeight: '700', color: textColor, marginBottom: 6 }}>
-              Nenhuma notificação
+              {t('notifications.none')}
             </Text>
             <Text style={{ fontSize: 12, color: subTextColor, textAlign: 'center' }}>
-              Quando houver novos avisos, eles aparecerão aqui.
+              {t('notifications.noneDesc')}
             </Text>
           </View>
         ) : (
@@ -192,7 +194,7 @@ export const NotificationsView: React.FC = () => {
               activeOpacity={0.8}
             >
               <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>
-                Fechar
+                {t('notifications.close')}
               </Text>
             </TouchableOpacity>
           </View>

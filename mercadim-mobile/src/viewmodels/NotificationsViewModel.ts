@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export type AppNotification = {
   id: number;
@@ -9,29 +10,34 @@ export type AppNotification = {
 };
 
 export const useNotificationsViewModel = () => {
-  const [notifications, setNotifications] = useState<AppNotification[]>([
-    {
-      id: 1,
-      title: 'Estoque baixo',
-      description: 'O produto Arroz está com poucas unidades disponíveis.',
-      date: 'Hoje, 14:30',
-      read: false,
-    },
-    {
-      id: 2,
-      title: 'Venda realizada',
-      description: 'Uma nova venda foi registrada no sistema.',
-      date: 'Ontem, 18:10',
-      read: false,
-    },
-    {
-      id: 3,
-      title: 'Resumo semanal',
-      description: 'Seu relatório semanal de vendas já está disponível.',
-      date: 'Segunda-feira, 09:00',
-      read: true,
-    },
-  ]);
+  const { t } = useTranslation();
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+
+  useEffect(() => {
+    setNotifications([
+      {
+        id: 1,
+        title: t('notifications.lowStockTitle'),
+        description: t('notifications.lowStockDesc', { name: 'Arroz' }),
+        date: t('notifications.today', { time: '14:30' }),
+        read: false,
+      },
+      {
+        id: 2,
+        title: t('notifications.saleTitle'),
+        description: t('notifications.saleDesc'),
+        date: t('notifications.yesterday', { time: '18:10' }),
+        read: false,
+      },
+      {
+        id: 3,
+        title: t('notifications.weeklySummaryTitle'),
+        description: t('notifications.weeklySummaryDesc'),
+        date: t('notifications.monday', { time: '09:00' }),
+        read: true,
+      },
+    ]);
+  }, [t]);
 
   const [selectedNotification, setSelectedNotification] = useState<AppNotification | null>(null);
 

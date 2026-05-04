@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { authService } from '@/services/auth.service';
 import { validateEmail, validateCode, validatePassword } from '@/utils/validation';
 import { PasswordResetRequest, PasswordResetVerify } from '@/models';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type Step = 'email' | 'code' | 'newPassword' | 'success';
 
@@ -18,6 +19,7 @@ export const useForgotPasswordViewModel = () => {
   const [generalError, setGeneralError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const { t } = useTranslation();
 
   const clearErrors = () => {
     setEmailError('');
@@ -31,7 +33,7 @@ export const useForgotPasswordViewModel = () => {
     clearErrors();
     const emailValidation = validateEmail(email);
     if (!emailValidation.isValid) {
-      setEmailError(emailValidation.error || '');
+      setEmailError(t(emailValidation.error as any));
       return false;
     }
     setLoading(true);
@@ -41,7 +43,7 @@ export const useForgotPasswordViewModel = () => {
       setStep('code');
       return true;
     } catch (error: any) {
-      setGeneralError(error.message || 'Email não encontrado');
+      setGeneralError(error.message || t('auth.messages.emailNotFound'));
       return false;
     } finally {
       setLoading(false);
@@ -52,7 +54,7 @@ export const useForgotPasswordViewModel = () => {
     clearErrors();
     const codeValidation = validateCode(code);
     if (!codeValidation.isValid) {
-      setCodeError(codeValidation.error || '');
+      setCodeError(t(codeValidation.error as any));
       return false;
     }
     setStep('newPassword');
@@ -63,11 +65,11 @@ export const useForgotPasswordViewModel = () => {
     clearErrors();
     const passwordValidation = validatePassword(newPassword);
     if (!passwordValidation.isValid) {
-      setPasswordError(passwordValidation.error || '');
+      setPasswordError(t(passwordValidation.error as any));
       return false;
     }
     if (newPassword !== confirmPassword) {
-      setConfirmPasswordError('As senhas não coincidem');
+      setConfirmPasswordError(t('auth.validation.passwordsDoNotMatch'));
       return false;
     }
     setLoading(true);
@@ -77,7 +79,7 @@ export const useForgotPasswordViewModel = () => {
       setStep('success');
       return true;
     } catch (error: any) {
-      setGeneralError(error.message || 'Código inválido ou expirado');
+      setGeneralError(error.message || t('auth.messages.codeInvalid'));
       return false;
     } finally {
       setLoading(false);

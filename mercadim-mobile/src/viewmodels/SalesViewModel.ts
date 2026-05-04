@@ -3,6 +3,7 @@ import { useFocusEffect } from 'expo-router';
 import { Alert } from 'react-native';
 import api from '../services/api';
 import { useProfile } from '@/contexts/ProfileContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export type Product = {
   id: string;
@@ -17,6 +18,7 @@ export type CartItem = Product & {
 
 export const useSalesViewModel = () => {
   const { profile } = useProfile();
+  const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -31,7 +33,7 @@ export const useSalesViewModel = () => {
       const stockProducts = response.data.products.filter((p: Product) => p.stock > 0);
       setProducts(stockProducts);
     } catch (error) {
-      console.error('Erro ao buscar dados:', error);
+      console.error(t('sales.loadError'), error);
     }
   };
 
@@ -51,7 +53,7 @@ export const useSalesViewModel = () => {
 
   const openAddProduct = () => {
     if (products.length === 0) {
-        Alert.alert('Sem produtos', 'Não há produtos disponíveis no estoque.');
+        Alert.alert(t('sales.noProductsTitle'), t('sales.noProductsMsg'));
         return;
     }
     setEditingItem(null);
@@ -77,12 +79,12 @@ export const useSalesViewModel = () => {
 
     const qtd = Number(quantity);
     if (!qtd || qtd <= 0) {
-      Alert.alert('Quantidade inválida', 'Informe uma quantidade maior que zero.');
+      Alert.alert(t('sales.invalidQuantityTitle'), t('sales.invalidQuantityMsg'));
       return;
     }
 
     if (qtd > selectedProduct.stock) {
-      Alert.alert('Estoque insuficiente', `O produto ${selectedProduct.name} possui apenas ${selectedProduct.stock} unidades disponíveis.`);
+      Alert.alert(t('sales.insufficientStockTitle'), t('sales.insufficientStockMsg', { name: selectedProduct.name, stock: selectedProduct.stock }));
       return;
     }
 
@@ -102,7 +104,7 @@ export const useSalesViewModel = () => {
       if (existing) {
         const newTotalQtd = existing.quantity + qtd;
         if (newTotalQtd > selectedProduct.stock) {
-           Alert.alert('Estoque insuficiente', `O produto ${selectedProduct.name} possui apenas ${selectedProduct.stock} unidades disponíveis.`);
+           Alert.alert(t('sales.insufficientStockTitle'), t('sales.insufficientStockMsg', { name: selectedProduct.name, stock: selectedProduct.stock }));
            return prev;
         }
 
@@ -131,7 +133,7 @@ export const useSalesViewModel = () => {
   const increaseQuantity = () => {
     const value = Number(quantity || 0) + 1;
     if (selectedProduct && value > selectedProduct.stock) {
-       Alert.alert('Atenção', 'Limite do estoque atingido.');
+       Alert.alert(t('sales.attention'), t('sales.stockLimitReached'));
        return;
     }
     setQuantity(String(value));
@@ -148,7 +150,7 @@ export const useSalesViewModel = () => {
     try {
       await api.post('/sales', { items });
       
-      setSuccessMessage('Venda realizada com sucesso!');
+      setSuccessMessage(t('sales.vendaSuccess'));
       setCart([]);
       
 
@@ -158,7 +160,7 @@ export const useSalesViewModel = () => {
         setSuccessMessage('');
       }, 3000);
     } catch (error: any) {
-       Alert.alert('Erro na venda', error.response?.data?.message || 'Não foi possível concluir a venda.');
+       Alert.alert(t('sales.saleError'), error.response?.data?.message || t('sales.saleErrorMsg'));
     }
   };
 

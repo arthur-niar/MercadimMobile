@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { validateEmail } from '@/utils/validation';
 import { updateProfile, uploadProfilePhoto, removeProfilePhoto } from '@/services/profile.service';
 import { useProfile } from '@/contexts/ProfileContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const useProfileViewModel = () => {
   const router = useRouter();
@@ -24,6 +25,7 @@ export const useProfileViewModel = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (profile) {
@@ -58,14 +60,14 @@ export const useProfileViewModel = () => {
     setSuccessMessage('');
 
     if (!editName.trim()) {
-      setNameError('Nome é obrigatório');
+      setNameError(t('profile.nameRequired'));
       return;
     }
 
     const emailValidation = validateEmail(editEmail);
 
     if (!emailValidation.isValid) {
-      setEmailError(emailValidation.error || '');
+      setEmailError(t(emailValidation.error as any));
       return;
     }
 
@@ -79,10 +81,10 @@ export const useProfileViewModel = () => {
       setName(response.user.name);
       setEmail(response.user.email);
       updateProfileData({ name: response.user.name, email: response.user.email });
-      setSuccessMessage('Dados atualizados com sucesso!');
+      setSuccessMessage(t('profile.updateSuccess'));
       closeModal();
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Erro ao atualizar perfil';
+      const message = error.response?.data?.message || t('profile.updateError');
       setErrorMessage(message);
     } finally {
       setLoading(false);
@@ -94,7 +96,7 @@ export const useProfileViewModel = () => {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (!permissionResult.granted) {
-        setErrorMessage('Permissão para acessar galeria foi negada');
+        setErrorMessage(t('profile.permissionDenied'));
         return;
       }
 
@@ -111,7 +113,7 @@ export const useProfileViewModel = () => {
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      setErrorMessage('Erro ao selecionar imagem');
+      setErrorMessage(t('profile.selectImageError'));
     }
   };
 
@@ -124,11 +126,11 @@ export const useProfileViewModel = () => {
       
       setProfilePhotoUrl(response.user.url || null);
       updateProfileData({ url: response.user.url });
-      setSuccessMessage('Foto de perfil atualizada com sucesso!');
+      setSuccessMessage(t('profile.photoUpdateSuccess'));
       
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Erro ao enviar foto';
+      const message = error.response?.data?.message || t('profile.photoError');
       setErrorMessage(message);
       console.error('Upload photo error:', error);
     } finally {
@@ -145,11 +147,11 @@ export const useProfileViewModel = () => {
       
       setProfilePhotoUrl(null);
       updateProfileData({ url: undefined });
-      setSuccessMessage('Foto de perfil removida com sucesso!');
+      setSuccessMessage(t('profile.photoRemoveSuccess'));
       
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Erro ao remover foto';
+      const message = error.response?.data?.message || t('profile.photoError');
       setErrorMessage(message);
       console.error('Erro de remoção de foto:', error);
     } finally {

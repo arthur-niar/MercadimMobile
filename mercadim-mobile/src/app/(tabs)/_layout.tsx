@@ -6,6 +6,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const ORANGE = '#FF662A';
 
@@ -85,6 +86,7 @@ const TabIcon = ({
 
 export default function TabsLayout() {
   const { isDark } = useSettings();
+  const { t } = useTranslation();
 
   // Cores adaptadas ao tema
   const tabBarBg = isDark ? '#17181B' : '#fff';
@@ -116,7 +118,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused }) => (
             <TabIcon
               icon={<HomeIcon active={focused} inactive={inactiveColor} />}
-              label="Home"
+              label={t('tabs.home')}
               active={focused}
               inactiveBg={inactiveBg}
               inactiveColor={inactiveColor}
@@ -130,7 +132,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused }) => (
             <TabIcon
               icon={<NovaVendaIcon active={focused} inactive={inactiveColor} />}
-              label="Venda"
+              label={t('tabs.sales')}
               active={focused}
               lines={2}
               inactiveBg={inactiveBg}
@@ -145,7 +147,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused }) => (
             <TabIcon
               icon={<EstoqueIcon active={focused} inactive={inactiveColor} />}
-              label="Estoque"
+              label={t('tabs.stock')}
               active={focused}
               inactiveBg={inactiveBg}
               inactiveColor={inactiveColor}
@@ -159,7 +161,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused }) => (
             <TabIcon
               icon={<PerfilIcon active={focused} inactive={inactiveColor} />}
-              label="Perfil"
+              label={t('tabs.profile')}
               active={focused}
               inactiveBg={inactiveBg}
               inactiveColor={inactiveColor}

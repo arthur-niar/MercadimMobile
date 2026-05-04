@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { authService } from '@/services/auth.service';
 import { validateEmail, validatePassword } from '@/utils/validation';
 import { LoginCredentials } from '@/models';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const useLoginViewModel = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ export const useLoginViewModel = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const { t } = useTranslation();
 
   const clearErrors = () => {
     setEmailError('');
@@ -27,12 +29,12 @@ export const useLoginViewModel = () => {
     const passwordValidation = validatePassword(password);
 
     if (!emailValidation.isValid) {
-      setEmailError(emailValidation.error || '');
+      setEmailError(t(emailValidation.error as any));
       return false;
     }
-
+    
     if (!passwordValidation.isValid) {
-      setPasswordError(passwordValidation.error || '');
+      setPasswordError(t(passwordValidation.error as any));
       return false;
     }
 
@@ -49,10 +51,10 @@ export const useLoginViewModel = () => {
     try {
       const credentials: LoginCredentials = { email, password };
       await authService.login(credentials);
-      setSuccessMessage('Login realizado com sucesso!');
+      setSuccessMessage(t('auth.messages.loginSuccess'));
       return true;
     } catch (error: any) {
-      setGeneralError(error.message || 'Email ou senha incorretos');
+      setGeneralError(error.message || t('auth.messages.loginError'));
       return false;
     } finally {
       setLoading(false);
