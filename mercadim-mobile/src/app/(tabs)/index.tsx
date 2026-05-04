@@ -13,6 +13,7 @@ export default function HomeScreen() {
   return (
     <HomeView
       username={viewModel.username}
+      profilePhotoUrl={viewModel.profilePhotoUrl}
       totalSales={viewModel.totalSales}
       itemsSold={viewModel.itemsSold}
       itemsReceived={viewModel.itemsReceived}

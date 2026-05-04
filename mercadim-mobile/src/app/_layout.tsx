@@ -1,17 +1,16 @@
-
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SettingsProvider, useSettings } from '@/contexts/SettingsContext';
-import '@/i18n'; // inicializa o sistema de tradução
+import { ProfileProvider } from '@/contexts/ProfileContext';
+import '@/i18n'; 
 import '../../global.css';
+import '@/utils/setupGlobalText';
 
-// Componente interno que consome o context (precisa estar dentro do Provider)
 function ThemedStack() {
   const { isDark, isLoaded } = useSettings();
 
-  // Aguarda settings carregarem antes de renderizar (evita flash de tema errado)
   if (!isLoaded) {
     return null;
   }
@@ -34,7 +33,9 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <SettingsProvider>
-        <ThemedStack />
+        <ProfileProvider>
+          <ThemedStack />
+        </ProfileProvider>
       </SettingsProvider>
     </SafeAreaProvider>
   );

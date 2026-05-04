@@ -11,6 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "node"
+    // ignorar api deprecada
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

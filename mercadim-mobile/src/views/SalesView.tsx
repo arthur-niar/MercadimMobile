@@ -1,14 +1,9 @@
-// SUBSTITUI: src/views/SalesView.tsx
-// Mudanças:
-// - import useSettings + cores adaptadas ao tema escuro
-// - SafeAreaView trocado para o do safe-area-context
-// - Engrenagem agora navega para /configuracoes (em vez de /perfil)
-// - styles foi convertido de objeto fixo para função que recebe isDark
+
 
 import React from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  Modal, StatusBar,
+  Modal, StatusBar, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,6 +13,7 @@ import { CheckIcon } from '@/components/check-icon';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { router } from 'expo-router';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const ORANGE = '#FF662A';
 const YELLOW = '#FCA537';
@@ -56,7 +52,8 @@ const PlusIcon = ({ size = 18, color = '#fff' }) => (
 
 export const SalesView = () => {
   const vm = useSalesViewModel();
-  const { isDark } = useSettings();
+  const { isDark, fontScale } = useSettings();
+  const { t } = useTranslation();
 
   // Cores adaptadas ao tema
   const screenBg = isDark ? '#0B0B0D' : '#fff';
@@ -72,7 +69,7 @@ export const SalesView = () => {
   const chipBg = isDark ? '#27282C' : '#F3F4F6';
   const inputBg = isDark ? '#27282C' : '#F3F4F6';
 
-  const styles = makeStyles({ textColor, subTextColor, labelColor, dividerColor, cardBg, chipBg, inputBg });
+  const styles = makeStyles({ textColor, subTextColor, labelColor, dividerColor, cardBg, chipBg, inputBg, fontScale });
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: screenBg }}>
@@ -94,12 +91,20 @@ export const SalesView = () => {
             width: 42, height: 42, borderRadius: 21,
             backgroundColor: iconBtnBg,
             alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden',
           }}>
-            <UserIcon />
+            {vm.profilePhotoUrl ? (
+              <Image 
+                source={{ uri: vm.profilePhotoUrl }}
+                style={{ width: 42, height: 42 }}
+              />
+            ) : (
+              <UserIcon />
+            )}
           </View>
           <View>
-            <Text style={{ fontSize: 12, color: labelColor }}>Olá,</Text>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: textColor }}>
+            <Text style={{ fontSize: 12 * fontScale, color: labelColor }}>{t('sales.greeting')}</Text>
+            <Text style={{ fontSize: 16 * fontScale, fontWeight: '700', color: textColor }}>
               {vm.username || 'Usuário'}
             </Text>
           </View>
@@ -125,12 +130,12 @@ export const SalesView = () => {
               <Text style={styles.summaryValue}>
                 R$ {vm.total.toFixed(2).replace('.', ',')}
               </Text>
-              <Text style={styles.summaryLabel}>Total</Text>
+              <Text style={styles.summaryLabel}>{t('sales.total')}</Text>
             </View>
 
             <View>
               <Text style={styles.summaryValue}>{vm.totalItems}</Text>
-              <Text style={styles.summaryLabel}>Itens</Text>
+              <Text style={styles.summaryLabel}>{t('sales.items')}</Text>
             </View>
           </LinearGradient>
 
@@ -231,7 +236,7 @@ export const SalesView = () => {
                       vm.editingItem && !active && { opacity: 0.35 },
                     ]}
                   >
-                    <Text style={{ color: active ? '#fff' : textColor, fontWeight: '700' }}>
+                    <Text style={{ color: active ? '#fff' : textColor, fontWeight: '700', fontSize: 14 * fontScale }}>
                       {product.name}
                     </Text>
                   </TouchableOpacity>
@@ -239,7 +244,7 @@ export const SalesView = () => {
               })}
             </View>
 
-            <Text style={styles.label}>Quantidade</Text>
+            <Text style={styles.label}>{t('sales.quantity')}</Text>
 
             <View style={styles.qtyBox}>
               <TouchableOpacity onPress={vm.decreaseQuantity} style={styles.qtyBtn}>
@@ -271,7 +276,7 @@ export const SalesView = () => {
 };
 
 // Styles dinâmicos baseados no tema
-const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg, chipBg, inputBg }: {
+const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg, chipBg, inputBg, fontScale }: {
   textColor: string;
   subTextColor: string;
   labelColor: string;
@@ -279,6 +284,7 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
   cardBg: string;
   chipBg: string;
   inputBg: string;
+  fontScale: number;
 }) => ({
   summaryCard: {
     borderRadius: 20,
@@ -290,10 +296,11 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
   summaryValue: {
     color: '#fff',
     fontWeight: '900' as const,
-    fontSize: 20,
+    fontSize: 20 * fontScale,
   },
   summaryLabel: {
     color: '#fff',
+    fontSize: 14 * fontScale,
   },
   card: {
     backgroundColor: cardBg,
@@ -305,6 +312,7 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
     fontWeight: '800' as const,
     marginBottom: 10,
     color: textColor,
+    fontSize: 16 * fontScale,
   },
   empty: {
     alignItems: 'center' as const,
@@ -313,6 +321,7 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
   },
   emptyText: {
     color: labelColor,
+    fontSize: 14 * fontScale,
   },
   item: {
     flexDirection: 'row' as const,
@@ -333,24 +342,26 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
   name: {
     fontWeight: '700' as const,
     color: textColor,
+    fontSize: 14 * fontScale,
   },
   detail: {
     color: subTextColor,
-    fontSize: 12,
+    fontSize: 12 * fontScale,
     marginTop: 2,
   },
   total: {
     fontWeight: '800' as const,
     color: textColor,
+    fontSize: 14 * fontScale,
   },
   edit: {
     color: YELLOW,
-    fontSize: 12,
+    fontSize: 12 * fontScale,
     fontWeight: '700' as const,
   },
   remove: {
     color: ORANGE,
-    fontSize: 12,
+    fontSize: 12 * fontScale,
     fontWeight: '700' as const,
   },
   footer: {
@@ -368,6 +379,7 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
   footerTotal: {
     fontWeight: '900' as const,
     color: textColor,
+    fontSize: 16 * fontScale,
   },
   finish: {
     backgroundColor: '#22C55E',
@@ -401,6 +413,7 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
   successText: {
     color: '#fff',
     fontWeight: '800' as const,
+    fontSize: 14 * fontScale,
   },
   modalOverlay: {
     flex: 1,
@@ -419,7 +432,7 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
     alignItems: 'center' as const,
   },
   closeText: {
-    fontSize: 26,
+    fontSize: 26 * fontScale,
     color: textColor,
     lineHeight: 28,
   },
@@ -428,6 +441,7 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
     marginBottom: 8,
     color: textColor,
     fontWeight: '700' as const,
+    fontSize: 14 * fontScale,
   },
   productSelector: {
     flexDirection: 'row' as const,
@@ -459,7 +473,7 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
   },
   qtyText: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 24 * fontScale,
     fontWeight: '900' as const,
     lineHeight: 26,
     includeFontPadding: false,
@@ -467,7 +481,7 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
   input: {
     flex: 1,
     textAlign: 'center' as const,
-    fontSize: 20,
+    fontSize: 20 * fontScale,
     fontWeight: '800' as const,
     color: textColor,
   },
@@ -481,5 +495,6 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
   addBtnText: {
     color: '#fff',
     fontWeight: '700' as const,
+    fontSize: 14 * fontScale,
   },
 });

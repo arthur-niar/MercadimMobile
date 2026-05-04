@@ -5,9 +5,11 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRegisterViewModel } from '@/viewmodels';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackToLogin }) => {
   const viewModel = useRegisterViewModel();
+  const { t, fontScale } = useTranslation();
 
   const handleAction = () => {
     if (viewModel.step === 'credentials') return viewModel.handleEmailAndUsername();
@@ -24,18 +26,18 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
     switch (viewModel.step) {
       case 'credentials':
         return {
-          title: 'Crie sua\nconta.',
-          subtitle: 'Informe seu email e nome de usuário'
+          title: t('auth.register.createAccount'),
+          subtitle: t('auth.register.provideEmailAndUsername')
         };
       case 'confirmPassword':
         return {
-          title: 'Crie\nsua senha.',
-          subtitle: 'Defina uma senha segura'
+          title: t('auth.register.createPassword'),
+          subtitle: t('auth.register.defineSecurePassword')
         };
       case 'code':
         return {
-          title: 'Código\nenviado.',
-          subtitle: 'Verifique o seu email com o codigo previsto'
+          title: t('auth.register.codeSent'),
+          subtitle: t('auth.register.verifyEmailWithCode')
         };
       default:
         return { title: '', subtitle: '' };
@@ -60,7 +62,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
 
             {viewModel.step !== 'credentials' && viewModel.step !== 'success' && (
               <TouchableOpacity onPress={handleBack} style={{ marginBottom: 16 }}>
-                <Text style={{ color: '#fff', fontSize: 16 }}>← Voltar</Text>
+                <Text style={{ color: '#fff', fontSize: 16 * fontScale }}>{t('auth.register.back')}</Text>
               </TouchableOpacity>
             )}
 
@@ -75,7 +77,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                 borderWidth: 1,
                 borderColor: 'rgba(255,255,255,0.3)'
               }}>
-                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800', letterSpacing: 3 }}>
+                <Text style={{ color: '#fff', fontSize: 11 * fontScale, fontWeight: '800', letterSpacing: 3 }}>
                   MERCADIM
                 </Text>
               </View>
@@ -84,7 +86,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                 <>
                   <Text style={{
                     color: '#fff',
-                    fontSize: 40,
+                    fontSize: 40 * fontScale,
                     fontWeight: '800',
                     lineHeight: 46,
                     letterSpacing: -1
@@ -94,7 +96,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
 
                   <Text style={{
                     color: 'rgba(255,255,255,0.65)',
-                    fontSize: 15,
+                    fontSize: 15 * fontScale,
                     marginTop: 8
                   }}>
                     {header.subtitle}
@@ -116,40 +118,40 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
 
               {viewModel.generalError ? (
                 <View style={{ backgroundColor: '#FEF2F2', borderLeftWidth: 3, borderLeftColor: '#EF4444', borderRadius: 10, padding: 14, marginBottom: 20 }}>
-                  <Text style={{ color: '#B91C1C', fontSize: 13, fontWeight: '500' }}>{viewModel.generalError}</Text>
+                  <Text style={{ color: '#B91C1C', fontSize: 13 * fontScale, fontWeight: '500' }}>{viewModel.generalError}</Text>
                 </View>
               ) : null}
 
               {viewModel.step === 'credentials' && (
                 <>
                   <View style={{ marginBottom: 16 }}>
-                    <Text style={labelStyle}>Email</Text>
+                    <Text style={getLabelStyle(fontScale)}>{t('auth.register.emailLabel')}</Text>
                     <View style={inputBox(!!viewModel.emailError)}>
                       <TextInput
-                        style={inputText}
-                        placeholder="seu@email.com"
+                        style={getInputText(fontScale)}
+                        placeholder={t('auth.register.emailPlaceholder')}
                         placeholderTextColor="#9CA3AF"
                         value={viewModel.email}
                         onChangeText={viewModel.setEmail}
                         autoCapitalize="none"
                       />
                     </View>
-                    {viewModel.emailError && <Text style={errText}>{viewModel.emailError}</Text>}
+                    {viewModel.emailError && <Text style={getErrText(fontScale)}>{viewModel.emailError}</Text>}
                   </View>
 
                   <View style={{ marginBottom: 16 }}>
-                    <Text style={labelStyle}>Nome de usuário</Text>
+                    <Text style={getLabelStyle(fontScale)}>{t('auth.register.usernameLabel')}</Text>
                     <View style={inputBox(!!viewModel.usernameError)}>
                       <TextInput
-                        style={inputText}
-                        placeholder="seu_usuario"
+                        style={getInputText(fontScale)}
+                        placeholder={t('auth.register.usernamePlaceholder')}
                         placeholderTextColor="#9CA3AF"
                         value={viewModel.username}
                         onChangeText={viewModel.setUsername}
                         autoCapitalize="none"
                       />
                     </View>
-                    {viewModel.usernameError && <Text style={errText}>{viewModel.usernameError}</Text>}
+                    {viewModel.usernameError && <Text style={getErrText(fontScale)}>{viewModel.usernameError}</Text>}
                   </View>
                 </>
               )}
@@ -157,44 +159,44 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
               {viewModel.step === 'confirmPassword' && (
                 <>
                   <View style={{ marginBottom: 16 }}>
-                    <Text style={labelStyle}>Senha</Text>
+                    <Text style={getLabelStyle(fontScale)}>{t('auth.register.passwordLabel')}</Text>
                     <View style={inputBox(!!viewModel.passwordError)}>
                       <TextInput
-                        style={inputText}
-                        placeholder="••••••••"
+                        style={getInputText(fontScale)}
+                        placeholder={t('auth.register.passwordPlaceholder')}
                         placeholderTextColor="#9CA3AF"
                         value={viewModel.password}
                         onChangeText={viewModel.setPassword}
                         secureTextEntry
                       />
                     </View>
-                    {viewModel.passwordError && <Text style={errText}>{viewModel.passwordError}</Text>}
+                    {viewModel.passwordError && <Text style={getErrText(fontScale)}>{viewModel.passwordError}</Text>}
                   </View>
 
                   <View style={{ marginBottom: 16 }}>
-                    <Text style={labelStyle}>Confirmar senha</Text>
+                    <Text style={getLabelStyle(fontScale)}>{t('auth.register.confirmPasswordLabel')}</Text>
                     <View style={inputBox(!!viewModel.confirmPasswordError)}>
                       <TextInput
-                        style={inputText}
-                        placeholder="Confirme sua senha"
+                        style={getInputText(fontScale)}
+                        placeholder={t('auth.register.confirmPasswordPlaceholder')}
                         placeholderTextColor="#9CA3AF"
                         value={viewModel.confirmPassword}
                         onChangeText={viewModel.setConfirmPassword}
                         secureTextEntry
                       />
                     </View>
-                    {viewModel.confirmPasswordError && <Text style={errText}>{viewModel.confirmPasswordError}</Text>}
+                    {viewModel.confirmPasswordError && <Text style={getErrText(fontScale)}>{viewModel.confirmPasswordError}</Text>}
                   </View>
                 </>
               )}
 
               {viewModel.step === 'code' && (
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={labelStyle}>Código</Text>
+                  <Text style={getLabelStyle(fontScale)}>{t('auth.register.codeLabel')}</Text>
                   <View style={inputBox(!!viewModel.codeError)}>
                     <TextInput
-                      style={{ ...inputText, textAlign: 'center', letterSpacing: 8, fontSize: 20 }}
-                      placeholder="000000"
+                      style={{ ...getInputText(fontScale), textAlign: 'center', letterSpacing: 8, fontSize: 20 * fontScale }}
+                      placeholder={t('auth.register.codePlaceholder')}
                       placeholderTextColor="#D1D5DB"
                       value={viewModel.code}
                       onChangeText={viewModel.setCode}
@@ -202,20 +204,20 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                       maxLength={6}
                     />
                   </View>
-                  {viewModel.codeError && <Text style={errText}>{viewModel.codeError}</Text>}
+                  {viewModel.codeError && <Text style={getErrText(fontScale)}>{viewModel.codeError}</Text>}
                 </View>
               )}
 
               {viewModel.step === 'success' && (
                 <View style={{ alignItems: 'center' }}>
-                  <Text style={{ fontSize: 30 }}>✓</Text>
-                  <Text style={{ fontSize: 18, fontWeight: '700', marginTop: 10 }}>
-                    Cadastro concluído!
+                  <Text style={{ fontSize: 30 * fontScale }}>✓</Text>
+                  <Text style={{ fontSize: 18 * fontScale, fontWeight: '700', marginTop: 10 }}>
+                    {t('auth.register.registrationComplete')}
                   </Text>
 
                   <TouchableOpacity onPress={onBackToLogin} style={{ marginTop: 20 }}>
                     <Text style={{ textAlign: 'center', color: '#FF662A', fontWeight: '600' }}>
-                      Voltar para login
+                      {t('auth.register.backToLogin')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -232,7 +234,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                         <ActivityIndicator color="#fff" />
                       ) : (
                         <Text style={{ color: '#fff', fontWeight: '700' }}>
-                          Continuar
+                          {t('auth.register.continueBtn')}
                         </Text>
                       )}
                     </LinearGradient>
@@ -240,13 +242,13 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
                   
                   {viewModel.step === 'credentials' && (
                     <View style={{ alignItems: 'center', marginTop: 20 }}>
-                      <Text style={{ color: '#6B7280', fontSize: 13 }}>
-                        Já possui uma conta?{' '}
+                      <Text style={{ color: '#6B7280', fontSize: 13 * fontScale }}>
+                        {t('auth.register.alreadyHaveAccount')}{' '}
                         <Text 
                           style={{ color: '#FF662A', fontWeight: '700' }}
                           onPress={onBackToLogin}
                         >
-                          Entrar
+                          {t('auth.register.signIn')}
                         </Text>
                       </Text>
                     </View>
@@ -256,7 +258,7 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
             </View>
 
             <View style={{ alignItems: 'center', marginTop: 28 }}>
-              <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>
+              <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 * fontScale }}>
                 © Mercadim 2026
               </Text>
             </View>
@@ -268,14 +270,14 @@ export const RegisterView: React.FC<{ onBackToLogin: () => void }> = ({ onBackTo
   );
 };
 
-const labelStyle = {
+const getLabelStyle = (fontScale: number) => ({
   color: '#374151',
-  fontSize: 10,
+  fontSize: 10 * fontScale,
   fontWeight: '800' as const,
   letterSpacing: 1.5,
   textTransform: 'uppercase' as const,
   marginBottom: 8,
-};
+});
 
 const inputBox = (hasError: boolean) => ({
   backgroundColor: hasError ? '#FEF2F2' : '#F9FAFB',
@@ -286,14 +288,14 @@ const inputBox = (hasError: boolean) => ({
   paddingVertical: 14,
 });
 
-const inputText = {
+const getInputText = (fontScale: number) => ({
   color: '#111827',
-  fontSize: 15,
-};
+  fontSize: 15 * fontScale,
+});
 
-const errText = {
+const getErrText = (fontScale: number) => ({
   color: '#EF4444',
-  fontSize: 12,
+  fontSize: 12 * fontScale,
   marginTop: 5,
   marginLeft: 4,
-};
+});

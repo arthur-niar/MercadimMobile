@@ -1,22 +1,17 @@
-// SUBSTITUI: src/views/ProfileView.tsx
-// Mudanças:
-// - import useSettings + cores adaptadas ao tema escuro
-// - Mantém o gradiente laranja no topo (identidade visual)
-// - Card branco vira escuro no modo escuro
-// - Modal e inputs adaptados
+
 
 import React from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, StatusBar, Modal, ActivityIndicator
+  KeyboardAvoidingView, Platform, StatusBar, Modal, ActivityIndicator, Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useProfileViewModel } from '@/viewmodels';
-import { useSettings } from '@/contexts/SettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const ProfileView: React.FC = () => {
   const viewModel = useProfileViewModel();
-  const { isDark } = useSettings();
+  const { t, isDark, fontScale } = useTranslation();
 
   // Cores adaptadas ao tema
   const screenBg = isDark ? '#0B0B0D' : '#fff';
@@ -59,10 +54,74 @@ export const ProfileView: React.FC = () => {
               alignItems: 'center',
               borderWidth: 4,
               borderColor: '#fff',
-              zIndex: 2
+              zIndex: 2,
+              overflow: 'hidden',
             }}>
-              <Text style={{ fontSize: 42 }}>👤</Text>
+              {viewModel.profilePhotoUrl ? (
+                <Image 
+                  source={{ uri: viewModel.profilePhotoUrl }}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              ) : (
+                <Text style={{ fontSize: 42 * fontScale }}>👤</Text>
+              )}
             </View>
+
+            {/* Botões de ação para foto */}
+            {!viewModel.uploadingPhoto ? (
+              <View style={{
+                flexDirection: 'row',
+                marginTop: 16,
+                gap: 12,
+                justifyContent: 'center',
+              }}>
+                <TouchableOpacity 
+                  onPress={viewModel.handlePickImage}
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                  }}
+                >
+                  <Text style={{
+                    color: '#fff',
+                    fontSize: 12 * fontScale,
+                    fontWeight: '600',
+                  }}>
+                    📷 {t('profile.changePhoto')}
+                  </Text>
+                </TouchableOpacity>
+
+                {viewModel.profilePhotoUrl && (
+                  <TouchableOpacity 
+                    onPress={viewModel.handleRemovePhoto}
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                    }}
+                  >
+                    <Text style={{
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontSize: 12 * fontScale,
+                      fontWeight: '600',
+                    }}>
+                      ✕ {t('profile.removePhoto')}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : (
+              <View style={{ marginTop: 16 }}>
+                <ActivityIndicator size="small" color="#fff" />
+              </View>
+            )}
           </View>
 
           <View style={{
@@ -80,16 +139,16 @@ export const ProfileView: React.FC = () => {
           }}>
 
             <View style={{ marginBottom: 16 }}>
-              <Text style={getLabelStyle(labelColor)}>Nome</Text>
+              <Text style={getLabelStyle(labelColor, fontScale)}>{t('profile.name')}</Text>
               <View style={getInputBox(false, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
-                <Text style={{ color: textColor, fontSize: 15 }}>{viewModel.name}</Text>
+                <Text style={{ color: textColor, fontSize: 15 * fontScale }}>{viewModel.name}</Text>
               </View>
             </View>
 
             <View style={{ marginBottom: 20 }}>
-              <Text style={getLabelStyle(labelColor)}>Email</Text>
+              <Text style={getLabelStyle(labelColor, fontScale)}>{t('profile.email')}</Text>
               <View style={getInputBox(false, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
-                <Text style={{ color: textColor, fontSize: 15 }}>{viewModel.email}</Text>
+                <Text style={{ color: textColor, fontSize: 15 * fontScale }}>{viewModel.email}</Text>
               </View>
             </View>
 
@@ -100,6 +159,16 @@ export const ProfileView: React.FC = () => {
                 textAlign: 'center'
               }}>
                 {viewModel.errorMessage}
+              </Text>
+            ) : null}
+
+            {viewModel.successMessage ? (
+              <Text style={{
+                color: '#22C55E',
+                marginBottom: 12,
+                textAlign: 'center'
+              }}>
+                {viewModel.successMessage}
               </Text>
             ) : null}
 
@@ -120,9 +189,9 @@ export const ProfileView: React.FC = () => {
                 <Text style={{
                   color: '#fff',
                   fontWeight: '700',
-                  fontSize: 15
+                  fontSize: 15 * fontScale
                 }}>
-                  Editar
+                  {t('profile.editProfile')}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -133,19 +202,9 @@ export const ProfileView: React.FC = () => {
                 color: '#EF4444',
                 fontWeight: '600'
               }}>
-                Sair Do Aplicativo
+                {t('profile.logout')}
               </Text>
             </TouchableOpacity>
-
-            {viewModel.successMessage ? (
-              <Text style={{
-                color: '#22C55E',
-                marginTop: 12,
-                textAlign: 'center'
-              }}>
-                {viewModel.successMessage}
-              </Text>
-            ) : null}
 
           </View>
 
@@ -165,33 +224,33 @@ export const ProfileView: React.FC = () => {
             }}>
 
               <Text style={{
-                fontSize: 18,
+                fontSize: 18 * fontScale,
                 fontWeight: '700',
                 marginBottom: 16,
                 color: textColor,
               }}>
-                Editar Perfil
+                {t('profile.editProfile')}
               </Text>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={getLabelStyle(labelColor)}>Nome</Text>
+                <Text style={getLabelStyle(labelColor, fontScale)}>{t('profile.name')}</Text>
                 <View style={getInputBox(!!viewModel.nameError, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
                   <TextInput
-                    style={{ color: textColor, fontSize: 15 }}
+                    style={{ color: textColor, fontSize: 15 * fontScale }}
                     placeholderTextColor={subTextColor}
                     value={viewModel.editName}
                     onChangeText={viewModel.setEditName}
                     editable={!viewModel.loading}
                   />
                 </View>
-                {viewModel.nameError && <Text style={errText}>{viewModel.nameError}</Text>}
+                {viewModel.nameError && <Text style={getErrText(fontScale)}>{viewModel.nameError}</Text>}
               </View>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={getLabelStyle(labelColor)}>Email</Text>
+                <Text style={getLabelStyle(labelColor, fontScale)}>{t('profile.email')}</Text>
                 <View style={getInputBox(!!viewModel.emailError, inputBg, inputBorder, inputErrorBg, inputErrorBorder)}>
                   <TextInput
-                    style={{ color: textColor, fontSize: 15 }}
+                    style={{ color: textColor, fontSize: 15 * fontScale }}
                     placeholderTextColor={subTextColor}
                     value={viewModel.editEmail}
                     onChangeText={viewModel.setEditEmail}
@@ -199,7 +258,7 @@ export const ProfileView: React.FC = () => {
                     editable={!viewModel.loading}
                   />
                 </View>
-                {viewModel.emailError && <Text style={errText}>{viewModel.emailError}</Text>}
+                {viewModel.emailError && <Text style={getErrText(fontScale)}>{viewModel.emailError}</Text>}
               </View>
 
               {viewModel.errorMessage ? (
@@ -207,7 +266,7 @@ export const ProfileView: React.FC = () => {
                   color: '#EF4444',
                   marginBottom: 12,
                   textAlign: 'center',
-                  fontSize: 13
+                  fontSize: 13 * fontScale
                 }}>
                   {viewModel.errorMessage}
                 </Text>
@@ -227,7 +286,7 @@ export const ProfileView: React.FC = () => {
                     <ActivityIndicator color="#fff" />
                   ) : (
                     <Text style={{ color: '#fff', fontWeight: '700' }}>
-                      Salvar
+                      {t('profile.save')}
                     </Text>
                   )}
                 </LinearGradient>
@@ -238,7 +297,7 @@ export const ProfileView: React.FC = () => {
                   textAlign: 'center',
                   color: subTextColor
                 }}>
-                  Fechar
+                  {t('common.cancel')}
                 </Text>
               </TouchableOpacity>
 
@@ -251,9 +310,9 @@ export const ProfileView: React.FC = () => {
   );
 };
 
-const getLabelStyle = (color: string) => ({
+const getLabelStyle = (color: string, fontScale: number) => ({
   color,
-  fontSize: 10,
+  fontSize: 10 * fontScale,
   fontWeight: '800' as const,
   letterSpacing: 1.5,
   textTransform: 'uppercase' as const,
@@ -275,9 +334,9 @@ const getInputBox = (
   paddingVertical: 14,
 });
 
-const errText = {
+const getErrText = (fontScale: number) => ({
   color: '#EF4444',
-  fontSize: 12,
+  fontSize: 12 * fontScale,
   marginTop: 5,
   marginLeft: 4,
-};
+});

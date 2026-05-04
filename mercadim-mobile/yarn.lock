@@ -2796,10 +2796,15 @@ expo-device@~8.0.10:
   dependencies:
     ua-parser-js "^0.7.33"
 
+expo-file-system@^55.0.17:
+  version "55.0.17"
+  resolved "https://registry.npmjs.org/expo-file-system/-/expo-file-system-55.0.17.tgz"
+  integrity sha512-d27K1cagUOt2BwxwPka9KW8Znu5kN1tnairozCzzCRZviZFtWnBxwFuJ3KU6MAbav/9UhSMkp5Ve/oZ+SR0UgQ==
+
 expo-file-system@~19.0.21:
-  version "19.0.21"
-  resolved "https://registry.npmjs.org/expo-file-system/-/expo-file-system-19.0.21.tgz"
-  integrity sha512-s3DlrDdiscBHtab/6W1osrjGL+C2bvoInPJD7sOwmxfJ5Woynv2oc+Fz1/xVXaE/V7HE/+xrHC/H45tu6lZzzg==
+  version "19.0.22"
+  resolved "https://registry.npmjs.org/expo-file-system/-/expo-file-system-19.0.22.tgz"
+  integrity sha512-l9pgahSc7sJD0bP9vBNeXvZjy8QKDpVHVxWmei/ESQOrzmoj5BidziqLVsyZdxsi+PfdbTtttLTAmddH/JafYA==
 
 expo-font@>=14.0.4, expo-font@~14.0.11:
   version "14.0.11"
@@ -2812,6 +2817,18 @@ expo-glass-effect@~0.1.9:
   version "0.1.9"
   resolved "https://registry.npmjs.org/expo-glass-effect/-/expo-glass-effect-0.1.9.tgz"
   integrity sha512-mDnoQKrvdkKEk1kUDgCKRdw1fHsouG25BclBico9lZSrLb7HpfGla3jnlz9rYGqXIiO8i9BTxpsmFhDnc1/4hg==
+
+expo-image-loader@~55.0.0:
+  version "55.0.0"
+  resolved "https://registry.npmjs.org/expo-image-loader/-/expo-image-loader-55.0.0.tgz"
+  integrity sha512-NOjp56wDrfuA5aiNAybBIjqIn1IxKeGJ8CECWZncQ/GzjZfyTYAHTCyeApYkdKkMBLHINzI4BbTGSlbCa0fXXQ==
+
+expo-image-picker@^55.0.19:
+  version "55.0.19"
+  resolved "https://registry.npmjs.org/expo-image-picker/-/expo-image-picker-55.0.19.tgz"
+  integrity sha512-PqOOfRz7+hbB9IFN0LfNxpJJwuPlUG0Abr0qM3Wc61OJ7FFyuKJ50QJ/fFItzSuoXifET1YIFBiXx5nA8Gkinw==
+  dependencies:
+    expo-image-loader "~55.0.0"
 
 expo-image@~3.0.11:
   version "3.0.11"

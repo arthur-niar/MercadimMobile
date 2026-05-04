@@ -126,7 +126,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  // JÁ EXISTIA: cores adaptadas ao tema
   const screenBg = isDark ? '#0B0B0D' : '#fff';
   const contentBg = isDark ? '#0B0B0D' : '#F5F5F5';
   const cardBg = isDark ? '#17181B' : '#fff';

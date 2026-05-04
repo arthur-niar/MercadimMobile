@@ -1,5 +1,3 @@
-
-
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useColorScheme as useSystemColorScheme } from 'react-native';
@@ -17,19 +15,12 @@ import i18n from '@/i18n';
 const STORAGE_KEY = '@mercadim:settings';
 
 interface SettingsContextValue {
-  // Estado das preferências
   settings: AppSettings;
   isLoaded: boolean;
-
-  // Tema efetivo (já resolvido se for "system")
   effectiveTheme: 'light' | 'dark';
   colors: typeof Colors.light;
   isDark: boolean;
-
-  // Multiplicador de fonte atual
   fontScale: number;
-
-  // Setters
   setThemeMode: (mode: ThemeMode) => Promise<void>;
   setLanguage: (lang: Language) => Promise<void>;
   setFontSize: (size: FontSize) => Promise<void>;
@@ -42,8 +33,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const systemScheme = useSystemColorScheme();
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(0);
 
-  // Carrega settings do AsyncStorage ao iniciar
   useEffect(() => {
     (async () => {
       try {
@@ -51,7 +42,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (stored) {
           const parsed = JSON.parse(stored) as AppSettings;
           setSettings({ ...DEFAULT_SETTINGS, ...parsed });
-          // Aplica idioma carregado
           if (parsed.language) {
             i18n.changeLanguage(parsed.language);
           }
@@ -64,7 +54,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     })();
   }, []);
 
-  // Persiste mudanças
+  const fontScale = FONT_SIZE_SCALE[settings.fontSize];
+
   const persist = useCallback(async (newSettings: AppSettings) => {
     setSettings(newSettings);
     try {
@@ -83,25 +74,30 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     async (lang: Language) => {
       await i18n.changeLanguage(lang);
       await persist({ ...settings, language: lang });
+      setForceUpdate(prev => prev + 1);
     },
     [settings, persist],
   );
 
   const setFontSize = useCallback(
-    (size: FontSize) => persist({ ...settings, fontSize: size }),
+    async (size: FontSize) => {
+      await persist({ ...settings, fontSize: size });
+      setForceUpdate(prev => prev + 1);
+    },
     [settings, persist],
   );
 
-  const resetSettings = useCallback(() => persist(DEFAULT_SETTINGS), [persist]);
+  const resetSettings = useCallback(async () => {
+    await persist(DEFAULT_SETTINGS);
+    setForceUpdate(prev => prev + 1);
+  }, [persist]);
 
-  // Resolve o tema efetivo (se for 'system', usa o do celular)
   const effectiveTheme: 'light' | 'dark' =
     settings.themeMode === 'system'
       ? systemScheme === 'dark' ? 'dark' : 'light'
       : settings.themeMode;
 
   const colors = Colors[effectiveTheme] as typeof Colors.light;
-  const fontScale = FONT_SIZE_SCALE[settings.fontSize];
 
   const value: SettingsContextValue = {
     settings,
@@ -116,10 +112,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     resetSettings,
   };
 
-  return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
+  return (
+    <SettingsContext.Provider value={value} key={forceUpdate}>
+      {children}
+    </SettingsContext.Provider>
+  );
 };
 
-// Hook pra usar o context em qualquer componente
 export const useSettings = (): SettingsContextValue => {
   const ctx = useContext(SettingsContext);
   if (!ctx) {
