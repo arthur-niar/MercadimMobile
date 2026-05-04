@@ -5,3 +5,4 @@ export * from './HomeView';
 export * from './ProfileView';
 export * from './EstoqueView';
 export * from './SalesView';
+export * from './NotificationsView';
