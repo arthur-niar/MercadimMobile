@@ -5,3 +5,4 @@ export * from './HomeViewModel';
 export * from './ProfileViewModel';
 export * from './useProductsViewModel';
 export * from './SalesViewModel';
+export * from './NotificationsViewModel';

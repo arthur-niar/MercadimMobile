@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator, RefreshControl, Image,
@@ -9,6 +7,7 @@ import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { formatCurrency } from '@/utils';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useRouter } from 'expo-router'; 
 
 interface SaleItem {
   name: string;
@@ -57,6 +56,25 @@ const SettingsIcon = ({ color = '#374151' }: { color?: string }) => (
   </Svg>
 );
 
+
+const NotificationIcon = ({ color = '#374151' }: { color?: string }) => (
+  <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5"
+      stroke={color}
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M9 17a3 3 0 006 0"
+      stroke={color}
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+  </Svg>
+);
+
 const ReportIcon = ({ color = '#374151' }: { color?: string }) => (
   <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
     <Rect x="3" y="3" width="18" height="18" rx="3" stroke={color} strokeWidth="1.6" />
@@ -94,6 +112,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
 }) => {
   const { isDark, fontScale } = useSettings();
   const { t } = useTranslation();
+
+  const router = useRouter(); 
+  const unreadCount = 2; 
+  
+  const [showNotificationPopup, setShowNotificationPopup] = React.useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowNotificationPopup(false);
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const screenBg = isDark ? '#0B0B0D' : '#fff';
   const contentBg = isDark ? '#0B0B0D' : '#F5F5F5';
@@ -153,7 +184,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             overflow: 'hidden',
           }}>
             {profilePhotoUrl ? (
-              <Image 
+              <Image
                 source={{ uri: profilePhotoUrl }}
                 style={{ width: 42, height: 42 }}
               />
@@ -169,18 +200,117 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </View>
         </View>
 
-        <TouchableOpacity
-          onPress={onSettingsPress}
-          style={{
-            width: 42, height: 42, borderRadius: 12,
-            backgroundColor: iconBtnBg,
-            alignItems: 'center', justifyContent: 'center',
-          }}
-          activeOpacity={0.7}
-        >
-          <SettingsIcon color={iconColor} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <TouchableOpacity
+            onPress={() => router.push('/notifications' as any)}
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 12,
+              backgroundColor: iconBtnBg,
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+            }}
+            activeOpacity={0.7}
+          >
+            <NotificationIcon color={iconColor} />
+
+            {unreadCount > 0 && (
+              <View style={{
+                position: 'absolute',
+                top: -4,
+                right: -4,
+                backgroundColor: '#EF4444',
+                borderRadius: 10,
+                minWidth: 16,
+                height: 16,
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingHorizontal: 4,
+              }}>
+                <Text style={{ color: '#fff', fontSize: 10 * fontScale, fontWeight: '700' }}>
+                  {unreadCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={onSettingsPress}
+            style={{
+              width: 42, height: 42, borderRadius: 12,
+              backgroundColor: iconBtnBg,
+              alignItems: 'center', justifyContent: 'center',
+            }}
+            activeOpacity={0.7}
+          >
+            <SettingsIcon color={iconColor} />
+          </TouchableOpacity>
+        </View>
       </View>
+
+      {showNotificationPopup && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.4)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 999,
+          paddingHorizontal: 24,
+        }}>
+          <View style={{
+            width: '100%',
+            backgroundColor: cardBg,
+            borderRadius: 20,
+            padding: 20,
+            borderWidth: 1,
+            borderColor: cardBorder,
+          }}>
+
+            <TouchableOpacity
+              onPress={() => setShowNotificationPopup(false)}
+              style={{
+                position: 'absolute',
+                top: 12,
+                right: 12,
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={{ color: subTextColor, fontSize: 18 * fontScale, fontWeight: '700' }}>
+                ×
+              </Text>
+            </TouchableOpacity>
+
+            <Text style={{
+              color: textColor,
+              fontSize: 16 * fontScale,
+              fontWeight: '800',
+              marginBottom: 8,
+              paddingRight: 28,
+            }}>
+              Estoque baixo
+            </Text>
+
+            <Text style={{
+              color: subTextColor,
+              fontSize: 13 * fontScale,
+              lineHeight: 20,
+            }}>
+              O produto Arroz está com poucas unidades disponíveis. Verifique o estoque para evitar falta de produto.
+            </Text>
+          </View>
+        </View>
+      )}
 
       <ScrollView
         style={{ flex: 1, backgroundColor: contentBg }}
