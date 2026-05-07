@@ -67,11 +67,13 @@ export interface HomeResponse {
 }
 
 export interface Notification {
-  id: string;
+  id: number;
   userId: string;
-  titulo: string;
-  descricao: string;
-  createdAt: Date;
+  title: string;
+  description: string;
+  type?: string;
+  date: string;
+  read: boolean;
 }
 
 export interface Product {

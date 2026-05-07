@@ -1,68 +1,87 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+import * as notificationsService from '@/services/notifications.service';
+import { formatNotificationDate } from '@/utils';
+
 
 export type AppNotification = {
   id: number;
   title: string;
   description: string;
+  type?: string;
   date: string;
   read: boolean;
 };
 
 export const useNotificationsViewModel = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await notificationsService.getNotifications();
+      const currentLocale = i18n.language === 'en' ? 'en-US' : 'pt-BR';
+      const formattedData = data.map(notif => ({
+        ...notif,
+        date: formatNotificationDate(notif.date, currentLocale)
+      }));
+      setNotifications(formattedData);
+    } catch (error) {
+      console.error('Erro ao carregar notificações:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    setNotifications([
-      {
-        id: 1,
-        title: t('notifications.lowStockTitle'),
-        description: t('notifications.lowStockDesc', { name: 'Arroz' }),
-        date: t('notifications.today', { time: '14:30' }),
-        read: false,
-      },
-      {
-        id: 2,
-        title: t('notifications.saleTitle'),
-        description: t('notifications.saleDesc'),
-        date: t('notifications.yesterday', { time: '18:10' }),
-        read: false,
-      },
-      {
-        id: 3,
-        title: t('notifications.weeklySummaryTitle'),
-        description: t('notifications.weeklySummaryDesc'),
-        date: t('notifications.monday', { time: '09:00' }),
-        read: true,
-      },
-    ]);
-  }, [t]);
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   const [selectedNotification, setSelectedNotification] = useState<AppNotification | null>(null);
 
-  const markAsRead = (id: number) => {
-    setNotifications((previousNotifications) =>
-      previousNotifications.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
+  const markAsRead = async (id: number) => {
+    try {
+      await notificationsService.markAsRead(id);
+      setNotifications((previousNotifications) =>
+        previousNotifications.map((notification) =>
+          notification.id === id ? { ...notification, read: true } : notification
+        )
+      );
+    } catch (error) {
+      console.error('Erro ao marcar como lida:', error);
+    }
   };
 
   const openNotification = (notification: AppNotification) => {
     setSelectedNotification(notification);
-    markAsRead(notification.id);
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
   };
 
   const closeNotification = () => {
     setSelectedNotification(null);
   };
 
+  const clearAllNotifications = async () => {
+    try {
+      await notificationsService.clearNotifications();
+      setNotifications([]);
+    } catch (error) {
+      console.error('Erro ao limpar notificações:', error);
+    }
+  };
+
   return {
     notifications,
     selectedNotification,
+    loading,
     markAsRead,
     openNotification,
     closeNotification,
+    clearAllNotifications,
+    refreshNotifications: fetchNotifications,
   };
 };
