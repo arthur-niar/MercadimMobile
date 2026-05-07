@@ -2818,6 +2818,11 @@ expo-glass-effect@~0.1.9:
   resolved "https://registry.npmjs.org/expo-glass-effect/-/expo-glass-effect-0.1.9.tgz"
   integrity sha512-mDnoQKrvdkKEk1kUDgCKRdw1fHsouG25BclBico9lZSrLb7HpfGla3jnlz9rYGqXIiO8i9BTxpsmFhDnc1/4hg==
 
+expo-haptics@^55.0.14:
+  version "55.0.14"
+  resolved "https://registry.npmjs.org/expo-haptics/-/expo-haptics-55.0.14.tgz"
+  integrity sha512-KjDItBsA9mi1f5nRwf8g1wOdfEcLHwvEdt5Jl1sMCDETR/homcGOl+F3QIiPOl/PRlbGVieQsjTtF4DGtHOj6g==
+
 expo-image-loader@~55.0.0:
   version "55.0.0"
   resolved "https://registry.npmjs.org/expo-image-loader/-/expo-image-loader-55.0.0.tgz"
