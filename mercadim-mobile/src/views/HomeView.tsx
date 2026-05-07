@@ -23,6 +23,8 @@ interface HomeViewProps {
   itemsReceived: number;
   averageTicket: number;
   salesItems: SaleItem[];
+  unreadCount?: number;
+  latestNotification?: { title: string; description: string } | null;
   loading?: boolean;
   error?: string | null;
   onRefresh?: () => void;
@@ -104,6 +106,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   itemsReceived,
   averageTicket,
   salesItems,
+  unreadCount = 0,
+  latestNotification = null,
   loading = false,
   error = null,
   onRefresh,
@@ -114,17 +118,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const { t } = useTranslation();
 
   const router = useRouter(); 
-  const unreadCount = 2; 
   
-  const [showNotificationPopup, setShowNotificationPopup] = React.useState(true);
+  const [showNotificationPopup, setShowNotificationPopup] = React.useState(false);
 
   React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowNotificationPopup(false);
-    }, 10000);
-
-    return () => clearTimeout(timer);
-  }, []);
+    if (latestNotification) {
+      setShowNotificationPopup(true);
+      const timer = setTimeout(() => {
+        setShowNotificationPopup(false);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [latestNotification]);
 
   const screenBg = isDark ? '#0B0B0D' : '#fff';
   const contentBg = isDark ? '#0B0B0D' : '#F5F5F5';
@@ -298,7 +303,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
               marginBottom: 8,
               paddingRight: 28,
             }}>
-              {t('home.lowStockTitle')}
+              {latestNotification?.type === 'venda' ? t('notifications.saleTitle') : 
+               latestNotification?.type === 'estoque_baixo' ? t('notifications.lowStockTitle') :
+               latestNotification?.type === 'estoque_entrada' ? t('notifications.estoqueEntradaTitle') :
+               latestNotification?.title}
             </Text>
 
             <Text style={{
@@ -306,7 +314,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
               fontSize: 13 * fontScale,
               lineHeight: 20,
             }}>
-              {t('home.lowStockMsg', { name: 'Arroz' })}
+              {latestNotification?.type === 'venda' ? t('notifications.saleDesc') :
+               latestNotification?.type === 'estoque_baixo' ? t('notifications.lowStockDesc', { name: latestNotification?.description }) :
+               latestNotification?.type === 'estoque_entrada' ? t('notifications.estoqueEntradaDesc', { name: latestNotification?.description }) :
+               latestNotification?.description}
             </Text>
           </View>
         </View>

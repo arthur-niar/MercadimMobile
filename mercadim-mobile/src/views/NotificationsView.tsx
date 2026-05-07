@@ -21,6 +21,18 @@ const BackIcon = ({ color = '#374151' }: { color?: string }) => (
   </Svg>
 );
 
+const TrashIcon = ({ color = '#EF4444' }: { color?: string }) => (
+  <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
 export const NotificationsView: React.FC = () => {
   const router = useRouter();
   const viewModel = useNotificationsViewModel();
@@ -47,31 +59,50 @@ export const NotificationsView: React.FC = () => {
         paddingBottom: 16,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
+        justifyContent: 'space-between',
       }}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{
-            width: 42,
-            height: 42,
-            borderRadius: 12,
-            backgroundColor: iconBtnBg,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          activeOpacity={0.7}
-        >
-          <BackIcon color={iconColor} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 12,
+              backgroundColor: iconBtnBg,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            activeOpacity={0.7}
+          >
+            <BackIcon color={iconColor} />
+          </TouchableOpacity>
 
-        <View>
-          <Text style={{ fontSize: 20, fontWeight: '800', color: textColor }}>
-            {t('notifications.title')}
-          </Text>
-          <Text style={{ fontSize: 12, color: subTextColor }}>
-            {t('notifications.subtitle')}
-          </Text>
+          <View>
+            <Text style={{ fontSize: 20, fontWeight: '800', color: textColor }}>
+              {t('notifications.title')}
+            </Text>
+            <Text style={{ fontSize: 12, color: subTextColor }}>
+              {t('notifications.subtitle')}
+            </Text>
+          </View>
         </View>
+
+        {viewModel.notifications.length > 0 && (
+          <TouchableOpacity
+            onPress={viewModel.clearAllNotifications}
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 12,
+              backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : '#FEE2E2',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            activeOpacity={0.7}
+          >
+            <TrashIcon />
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView
@@ -125,11 +156,17 @@ export const NotificationsView: React.FC = () => {
                     color: textColor,
                     marginBottom: 4,
                   }}>
-                    {notification.title}
+                    {notification.type === 'venda' ? t('notifications.saleTitle') : 
+                     notification.type === 'estoque_baixo' ? t('notifications.lowStockTitle') :
+                     notification.type === 'estoque_entrada' ? t('notifications.estoqueEntradaTitle') :
+                     notification.title}
                   </Text>
 
                   <Text style={{ fontSize: 12, color: subTextColor, lineHeight: 18 }}>
-                    {notification.description}
+                    {notification.type === 'venda' ? t('notifications.saleDesc') :
+                     notification.type === 'estoque_baixo' ? t('notifications.lowStockDesc', { name: notification.description }) :
+                     notification.type === 'estoque_entrada' ? t('notifications.estoqueEntradaDesc', { name: notification.description }) :
+                     notification.description}
                   </Text>
 
                   <Text style={{ fontSize: 11, color: subTextColor, marginTop: 8 }}>
@@ -172,11 +209,17 @@ export const NotificationsView: React.FC = () => {
             borderColor: cardBorder,
           }}>
             <Text style={{ fontSize: 18, fontWeight: '800', color: textColor, marginBottom: 8 }}>
-              {viewModel.selectedNotification?.title}
+              {viewModel.selectedNotification?.type === 'venda' ? t('notifications.saleTitle') : 
+               viewModel.selectedNotification?.type === 'estoque_baixo' ? t('notifications.lowStockTitle') :
+               viewModel.selectedNotification?.type === 'estoque_entrada' ? t('notifications.estoqueEntradaTitle') :
+               viewModel.selectedNotification?.title}
             </Text>
 
             <Text style={{ fontSize: 14, color: subTextColor, lineHeight: 22, marginBottom: 16 }}>
-              {viewModel.selectedNotification?.description}
+              {viewModel.selectedNotification?.type === 'venda' ? t('notifications.saleDesc') :
+               viewModel.selectedNotification?.type === 'estoque_baixo' ? t('notifications.lowStockDesc', { name: viewModel.selectedNotification?.description }) :
+               viewModel.selectedNotification?.type === 'estoque_entrada' ? t('notifications.estoqueEntradaDesc', { name: viewModel.selectedNotification?.description }) :
+               viewModel.selectedNotification?.description}
             </Text>
 
             <Text style={{ fontSize: 12, color: subTextColor, marginBottom: 20 }}>

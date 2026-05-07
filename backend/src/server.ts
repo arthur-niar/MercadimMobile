@@ -7,6 +7,7 @@ import homeRoutes from './routes/home.routes';
 import salesRoutes from './routes/sales.routes';
 import profileRoutes from './routes/profile.routes';
 import productsRoutes from './routes/products.routes';
+import notificationsRoutes from './routes/notifications.routes';
 import { seedSalesData } from './database/seed';
 import { createUser, findUserByEmail } from './database/users';
 
@@ -31,6 +32,7 @@ app.use('/api/home', homeRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/products', productsRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Mercadim API funcionando' });

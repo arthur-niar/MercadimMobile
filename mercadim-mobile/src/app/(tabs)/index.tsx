@@ -19,6 +19,8 @@ export default function HomeScreen() {
       itemsReceived={viewModel.itemsReceived}
       averageTicket={viewModel.averageTicket}
       salesItems={viewModel.salesItems}
+      unreadCount={viewModel.unreadCount}
+      latestNotification={viewModel.latestNotification}
       loading={viewModel.loading}
       error={viewModel.error}
       onRefresh={viewModel.refresh}
