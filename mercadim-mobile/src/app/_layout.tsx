@@ -2,6 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SettingsProvider, useSettings } from '@/contexts/SettingsContext';
 import { ProfileProvider } from '@/contexts/ProfileContext';
 import '@/i18n'; 
@@ -31,12 +32,14 @@ function ThemedStack() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <SettingsProvider>
-        <ProfileProvider>
-          <ThemedStack />
-        </ProfileProvider>
-      </SettingsProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <SettingsProvider>
+          <ProfileProvider>
+            <ThemedStack />
+          </ProfileProvider>
+        </SettingsProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

@@ -20,6 +20,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Skeleton } from '@/components/Skeleton';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { SwipeableItem } from '@/components/SwipeableItem';
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 
@@ -185,8 +186,6 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
   onRetry,
 }) => {
   const { t, isDark, fontScale } = useTranslation();
-  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
-  const [menuTop, setMenuTop] = useState(0);
   const rowRefs = useRef<Record<string, View | null>>({});
 
   // Cores adaptadas ao tema
@@ -196,27 +195,11 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
   const cardBorder = isDark ? 'rgba(255,255,255,0.06)' : '#F3F4F6';
   const textColor = isDark ? '#F3F4F6' : '#111827';
   const subTextColor = isDark ? '#9CA3AF' : '#6B7280';
-  const menuBtnBg = isDark ? '#27282C' : '#F3F4F6';
-  const menuBtnColor = isDark ? '#D1D5DB' : '#6B7280';
   const refreshBtnBg = isDark
     ? (loading ? '#1F2024' : '#27282C')
     : (loading ? '#F9FAFB' : '#F3F4F6');
 
-  const openMenu = (id: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const ref = rowRefs.current[id];
-    if (ref) {
-      ref.measure((_x, _y, _w, h, _pageX, pageY) => {
-        setMenuTop(pageY + h / 2);
-        setMenuOpenId(id);
-      });
-    }
-  };
-
-  const closeMenu = () => setMenuOpenId(null);
-
   const handleDelete = (id: string) => {
-    closeMenu();
     Alert.alert(
       t('stock.confirmDelete'),
       t('stock.confirmDeleteDescription'),
@@ -346,108 +329,63 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
               </View>
 
               {/* Lista de produtos */}
-              <View style={{ paddingHorizontal: 16, gap: 8 }}>
+              <View style={{ paddingHorizontal: 16 }}>
                 {products.map((item, index) => (
                   <Animated.View
                     key={item.id}
                     entering={FadeInDown.delay(index * 50).springify()}
-                    ref={el => { rowRefs.current[item.id] = el; }}
-                    style={{
-                      backgroundColor: cardBg,
-                      borderRadius: 12,
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      borderWidth: 0.5,
-                      borderColor: cardBorder,
-                    }}
                   >
-                    <View style={{ flex: 1, marginRight: 12 }}>
-                      <Text style={{ fontSize: 14 * fontScale, fontWeight: '700', color: textColor }}>
-                        {item.name}
-                      </Text>
-                      <Text style={{ fontSize: 12 * fontScale, color: subTextColor, marginTop: 2 }}>
-                        {formatCurrency(item.price)}
-                        {'  |  '}
-                        <Text style={item.stock < 5 ? { color: '#EF4444', fontWeight: '700' } : undefined}>
-                          {item.stock} {t('stock.units')}
-                        </Text>
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => openMenu(item.id)}
-                      activeOpacity={0.7}
-                      style={{
-                        width: 32, height: 32, borderRadius: 8,
-                        backgroundColor: menuBtnBg,
-                        alignItems: 'center', justifyContent: 'center',
+                    <SwipeableItem
+                      onEdit={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        onEditPress(item);
                       }}
+                      onDelete={() => {
+                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+                        handleDelete(item.id);
+                      }}
+                      editLabel={t('stock.edit')}
+                      deleteLabel={t('stock.delete')}
                     >
-                      <Text style={{ color: menuBtnColor, fontSize: 16 * fontScale, fontWeight: '800', letterSpacing: 1 }}>
-                        ···
-                      </Text>
-                    </TouchableOpacity>
+                      <View
+                        ref={el => { rowRefs.current[item.id] = el; }}
+                        style={{
+                          backgroundColor: cardBg,
+                          borderRadius: 12,
+                          paddingHorizontal: 16,
+                          paddingVertical: 12,
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          borderWidth: 0.5,
+                          borderColor: cardBorder,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 14 * fontScale, fontWeight: '700', color: textColor }}>
+                            {item.name}
+                          </Text>
+                          <Text style={{ fontSize: 12 * fontScale, color: subTextColor, marginTop: 2 }}>
+                            {formatCurrency(item.price)}
+                            {'  |  '}
+                            <Text style={item.stock < 5 ? { color: '#EF4444', fontWeight: '700' } : undefined}>
+                              {item.stock} {t('stock.units')}
+                            </Text>
+                          </Text>
+                        </View>
+                        
+                        <View style={{
+                          width: 8, height: 8, borderRadius: 4,
+                          backgroundColor: item.stock < 5 ? '#EF4444' : '#22C55E',
+                          opacity: 0.5
+                        }} />
+                      </View>
+                    </SwipeableItem>
                   </Animated.View>
                 ))}
               </View>
             </ScrollView>
-
-            {/* Backdrop do menu */}
-            {menuOpenId !== null && (
-              <Pressable className="absolute inset-0 z-40" onPress={closeMenu} />
-            )}
-
-            {/* Popup do menu */}
-            {menuOpenId !== null && (
-              <View
-                style={{
-                  position: 'absolute',
-                  right: 16,
-                  top: menuTop,
-                  backgroundColor: cardBg,
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                  zIndex: 50,
-                  borderWidth: 0.5,
-                  borderColor: cardBorder,
-                  shadowColor: '#000',
-                  shadowOpacity: 0.12,
-                  shadowRadius: 12,
-                  shadowOffset: { width: 0, height: 4 },
-                  elevation: 8,
-                }}
-              >
-                <TouchableOpacity
-                  onPress={() => {
-                    const product = products.find(p => p.id === menuOpenId);
-                    closeMenu();
-                    if (product) onEditPress(product);
-                  }}
-                  activeOpacity={0.7}
-                  style={{
-                    paddingHorizontal: 24,
-                    paddingVertical: 12,
-                    borderBottomWidth: 0.5,
-                    borderBottomColor: cardBorder,
-                  }}
-                >
-                  <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: textColor }}>
-                    {t('stock.edit')}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => handleDelete(menuOpenId)}
-                  activeOpacity={0.7}
-                  style={{ paddingHorizontal: 24, paddingVertical: 12 }}
-                >
-                  <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: '#EF4444' }}>
-                    {t('stock.delete')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
 
             {/* FAB */}
             <TouchableOpacity
