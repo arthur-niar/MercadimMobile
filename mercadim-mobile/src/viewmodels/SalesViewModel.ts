@@ -26,6 +26,7 @@ export const useSalesViewModel = () => {
   const [quantity, setQuantity] = useState('1');
   const [modalVisible, setModalVisible] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [isFinalizing, setIsFinalizing] = useState(false);
 
   const loadData = async () => {
     try {
@@ -148,18 +149,20 @@ export const useSalesViewModel = () => {
     }));
 
     try {
+      setIsFinalizing(true);
       await api.post('/sales', { items });
       
+      setIsFinalizing(false);
       setSuccessMessage(t('sales.vendaSuccess'));
       setCart([]);
       
-
       loadData();
 
       setTimeout(() => {
         setSuccessMessage('');
-      }, 3000);
+      }, 2500);
     } catch (error: any) {
+       setIsFinalizing(false);
        Alert.alert(t('sales.saleError'), error.response?.data?.message || t('sales.saleErrorMsg'));
     }
   };
@@ -174,6 +177,7 @@ export const useSalesViewModel = () => {
     quantity,
     modalVisible,
     successMessage,
+    isFinalizing,
     total,
     totalItems,
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  Modal, StatusBar, Image,
+  Modal, StatusBar, Image, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,6 +14,8 @@ import Svg, { Path, Circle } from 'react-native-svg';
 import { router } from 'expo-router';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import * as Haptics from 'expo-haptics';
+import Animated, { FadeInDown, FadeInRight, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 const ORANGE = '#FF662A';
 const YELLOW = '#FCA537';
@@ -70,6 +72,17 @@ export const SalesView = () => {
   const inputBg = isDark ? '#27282C' : '#F3F4F6';
 
   const styles = makeStyles({ textColor, subTextColor, labelColor, dividerColor, cardBg, chipBg, inputBg, fontScale });
+
+  const handleFinalize = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await vm.finalizeSale();
+  };
+
+  React.useEffect(() => {
+    if (vm.successMessage) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  }, [vm.successMessage]);
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: screenBg }}>
@@ -148,8 +161,12 @@ export const SalesView = () => {
                 <CartIcon size={40} color={isDark ? '#6B7280' : '#9CA3AF'} />
               </View>
             ) : (
-              vm.cart.map((item) => (
-                <View key={item.id} style={styles.item}>
+              vm.cart.map((item, index) => (
+                <Animated.View 
+                  key={item.id} 
+                  entering={FadeInDown.delay(index * 100).springify()}
+                  style={styles.item}
+                >
                   <View style={{ flex: 1 }}>
                     <Text style={styles.name}>{item.name}</Text>
                     <Text style={styles.detail}>
@@ -172,7 +189,7 @@ export const SalesView = () => {
                       </TouchableOpacity>
                     </View>
                   </View>
-                </View>
+                </Animated.View>
               ))
             )}
           </View>
@@ -188,22 +205,46 @@ export const SalesView = () => {
 
           <TouchableOpacity
             style={[styles.finish, vm.cart.length === 0 && { opacity: 0.4 }]}
-            onPress={vm.finalizeSale}
+            onPress={handleFinalize}
             disabled={vm.cart.length === 0}
+            activeOpacity={0.7}
           >
             <CheckIcon />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.floating} onPress={vm.openAddProduct}>
+        <TouchableOpacity 
+          style={styles.floating} 
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            vm.openAddProduct();
+          }}
+        >
           <PlusIcon size={26} />
         </TouchableOpacity>
 
-        {vm.successMessage ? (
-          <View style={styles.successBox}>
-            <Text style={styles.successText}>{vm.successMessage}</Text>
+        <Modal
+          visible={vm.isFinalizing || !!vm.successMessage}
+          transparent
+          animationType="fade"
+        >
+          <View style={styles.confirmationOverlay}>
+            <View style={styles.confirmationBox}>
+              {vm.isFinalizing ? (
+                <ActivityIndicator size="large" color="#fff" />
+              ) : (
+                <>
+                  <View style={styles.checkCircle}>
+                    <CheckIcon size={40} color="#fff" />
+                  </View>
+                  <Text style={styles.confirmationText}>
+                    {vm.successMessage}
+                  </Text>
+                </>
+              )}
+            </View>
           </View>
-        ) : null}
+        </Modal>
       </View>
 
       <Modal visible={vm.modalVisible} transparent animationType="fade">
@@ -400,21 +441,6 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  successBox: {
-    position: 'absolute' as const,
-    bottom: 100,
-    left: 20,
-    right: 20,
-    backgroundColor: '#22C55E',
-    borderRadius: 16,
-    padding: 14,
-    alignItems: 'center' as const,
-  },
-  successText: {
-    color: '#fff',
-    fontWeight: '800' as const,
-    fontSize: 14 * fontScale,
-  },
   modalOverlay: {
     flex: 1,
     backgroundColor: '#00000099',
@@ -496,5 +522,42 @@ const makeStyles = ({ textColor, subTextColor, labelColor, dividerColor, cardBg,
     color: '#fff',
     fontWeight: '700' as const,
     fontSize: 14 * fontScale,
+  },
+  confirmationOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  confirmationBox: {
+    width: 160,
+    height: 160,
+    backgroundColor: 'rgba(30, 30, 30, 0.95)',
+    borderRadius: 28,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  checkCircle: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 2.5,
+    borderColor: '#fff',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginBottom: 16,
+  },
+  confirmationText: {
+    color: '#fff',
+    fontSize: 14 * fontScale,
+    fontWeight: '700' as const,
+    textAlign: 'center' as const,
+    lineHeight: 18,
   },
 });

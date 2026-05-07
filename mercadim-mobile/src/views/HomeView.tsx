@@ -8,7 +8,8 @@ import { formatCurrency } from '@/utils';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'expo-router'; 
-
+import { Skeleton } from '@/components/Skeleton';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 interface SaleItem {
   name: string;
   quantity: number;
@@ -160,9 +161,32 @@ export const HomeView: React.FC<HomeViewProps> = ({
     return (
       <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: screenBg }}>
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={screenBg} />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#FF662A" />
-          <Text style={{ marginTop: 12, fontSize: 14 * fontScale, color: subTextColor }}>{t('home.loadingData')}</Text>
+        <View style={{ padding: 20 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 }}>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <Skeleton width={42} height={42} borderRadius={21} />
+              <View style={{ gap: 4 }}>
+                <Skeleton width={60} height={12} />
+                <Skeleton width={100} height={16} />
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <Skeleton width={42} height={42} borderRadius={12} />
+              <Skeleton width={42} height={42} borderRadius={12} />
+            </View>
+          </View>
+
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
+            <Skeleton height={80} style={{ flex: 1 }} borderRadius={16} />
+            <Skeleton height={80} style={{ flex: 1 }} borderRadius={16} />
+          </View>
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 24 }}>
+            <Skeleton height={80} style={{ flex: 1 }} borderRadius={16} />
+            <Skeleton height={80} style={{ flex: 1 }} borderRadius={16} />
+          </View>
+
+          <Skeleton height={50} borderRadius={14} style={{ marginBottom: 16 }} />
+          <Skeleton height={200} borderRadius={16} />
         </View>
       </SafeAreaView>
     );
@@ -351,96 +375,99 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <Text style={{ fontSize: 12 * fontScale, color: isDark ? '#F87171' : '#7F1D1D' }}>{error}</Text>
           </View>
         )}
-
-        <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
+        <Animated.View entering={FadeInDown.delay(100)} style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
           <SummaryCard value={formatCurrency(totalSales)} label={t('home.totalSales')} color="#FF8C3A" fontScale={fontScale} />
           <SummaryCard value={`${itemsSold} Unid.`} label={t('home.itemsSold')} color="#FCA53A" fontScale={fontScale} />
-        </View>
-        <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+        </Animated.View>
+        <Animated.View entering={FadeInDown.delay(200)} style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
           <SummaryCard value={`${itemsReceived} Unid.`} label={t('home.itemsReceived')} color="#FF7A2A" fontScale={fontScale} />
           <SummaryCard value={formatCurrency(averageTicket)} label={t('home.averageTicket')} color="#FFB84A" fontScale={fontScale} />
-        </View>
+        </Animated.View>
 
-        <TouchableOpacity
-          onPress={onReportPress}
-          style={{
-            backgroundColor: cardBg,
-            borderRadius: 14,
-            padding: 14,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 10,
-            marginBottom: 16,
-            borderWidth: 1,
-            borderColor: cardBorder,
-          }}
-          activeOpacity={0.7}
-        >
-          <ReportIcon color={iconColor} />
-          <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: isDark ? '#D1D5DB' : '#374151' }}>
-            {t('home.salesReport')}
-          </Text>
-        </TouchableOpacity>
-
-        {hasSales ? (
-          <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: cardBorder }}>
-            <Text style={{ fontSize: 15 * fontScale, fontWeight: '800', color: textColor, marginBottom: 12 }}>
-              {t('home.productSales')}
+        <Animated.View entering={FadeInDown.delay(300)}>
+          <TouchableOpacity
+            onPress={onReportPress}
+            style={{
+              backgroundColor: cardBg,
+              borderRadius: 14,
+              padding: 14,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              marginBottom: 16,
+              borderWidth: 1,
+              borderColor: cardBorder,
+            }}
+            activeOpacity={0.7}
+          >
+            <ReportIcon color={iconColor} />
+            <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: isDark ? '#D1D5DB' : '#374151' }}>
+              {t('home.salesReport')}
             </Text>
-            <View style={{ height: 10, borderRadius: 5, overflow: 'hidden', flexDirection: 'row', marginBottom: 10 }}>
-              {salesItems.map((item, index) => (
-                <View key={index} style={{ flex: item.quantity / totalQuantity, backgroundColor: item.color }} />
-              ))}
-            </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
-              {salesItems.map((item, index) => (
-                <View key={index} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: item.color }} />
-                  <Text style={{ fontSize: 11 * fontScale, color: subTextColor }}>{item.name}</Text>
-                </View>
-              ))}
-            </View>
-            <View style={{ borderTopWidth: 1, borderTopColor: dividerColor }}>
-              {salesItems.map((item, index) => (
-                <View key={index} style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingVertical: 10,
-                  borderBottomWidth: index < salesItems.length - 1 ? 1 : 0,
-                  borderBottomColor: dividerColor,
-                }}>
-                  <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: textColor }}>{item.name}</Text>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={{ fontSize: 14 * fontScale, fontWeight: '700', color: textColor }}>{item.quantity}</Text>
-                    <Text style={{ fontSize: 10 * fontScale, color: labelColor }}>{t('home.sales')}</Text>
+          </TouchableOpacity>
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(400)}>
+          {hasSales ? (
+            <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: cardBorder }}>
+              <Text style={{ fontSize: 15 * fontScale, fontWeight: '800', color: textColor, marginBottom: 12 }}>
+                {t('home.productSales')}
+              </Text>
+              <View style={{ height: 10, borderRadius: 5, overflow: 'hidden', flexDirection: 'row', marginBottom: 10 }}>
+                {salesItems.map((item, index) => (
+                  <View key={index} style={{ flex: item.quantity / totalQuantity, backgroundColor: item.color }} />
+                ))}
+              </View>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
+                {salesItems.map((item, index) => (
+                  <View key={index} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: item.color }} />
+                    <Text style={{ fontSize: 11 * fontScale, color: subTextColor }}>{item.name}</Text>
                   </View>
-                </View>
-              ))}
+                ))}
+              </View>
+              <View style={{ borderTopWidth: 1, borderTopColor: dividerColor }}>
+                {salesItems.map((item, index) => (
+                  <View key={index} style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingVertical: 10,
+                    borderBottomWidth: index < salesItems.length - 1 ? 1 : 0,
+                    borderBottomColor: dividerColor,
+                  }}>
+                    <Text style={{ fontSize: 14 * fontScale, fontWeight: '600', color: textColor }}>{item.name}</Text>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={{ fontSize: 14 * fontScale, fontWeight: '700', color: textColor }}>{item.quantity}</Text>
+                      <Text style={{ fontSize: 10 * fontScale, color: labelColor }}>{t('home.sales')}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
             </View>
-          </View>
-        ) : (
-          <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 28, alignItems: 'center', borderWidth: 0.5, borderColor: cardBorder }}>
-            <View style={{
-              width: 52, height: 52, borderRadius: 26,
-              backgroundColor: emptyIconBg,
-              alignItems: 'center', justifyContent: 'center',
-              marginBottom: 12,
-            }}>
-              <Svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                <Rect x="5" y="2" width="14" height="17" rx="2" stroke="#FF662A" strokeWidth="1.8" />
-                <Path d="M9 2v2a1 1 0 001 1h4a1 1 0 001-1V2" stroke="#FF662A" strokeWidth="1.8" />
-                <Path d="M9 10l1.5 1.5L13 8" stroke="#FF662A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </Svg>
+          ) : (
+            <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 28, alignItems: 'center', borderWidth: 0.5, borderColor: cardBorder }}>
+              <View style={{
+                width: 52, height: 52, borderRadius: 26,
+                backgroundColor: emptyIconBg,
+                alignItems: 'center', justifyContent: 'center',
+                marginBottom: 12,
+              }}>
+                <Svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                  <Rect x="5" y="2" width="14" height="17" rx="2" stroke="#FF662A" strokeWidth="1.8" />
+                  <Path d="M9 2v2a1 1 0 001 1h4a1 1 0 001-1V2" stroke="#FF662A" strokeWidth="1.8" />
+                  <Path d="M9 10l1.5 1.5L13 8" stroke="#FF662A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </Svg>
+              </View>
+              <Text style={{ fontSize: 14 * fontScale, fontWeight: '700', color: textColor, marginBottom: 6 }}>
+                {t('home.noSales')}
+              </Text>
+              <Text style={{ fontSize: 12 * fontScale, color: labelColor, textAlign: 'center', lineHeight: 18 }}>
+                {t('home.noSalesDescription')}
+              </Text>
             </View>
-            <Text style={{ fontSize: 14 * fontScale, fontWeight: '700', color: textColor, marginBottom: 6 }}>
-              {t('home.noSales')}
-            </Text>
-            <Text style={{ fontSize: 12 * fontScale, color: labelColor, textAlign: 'center', lineHeight: 18 }}>
-              {t('home.noSalesDescription')}
-            </Text>
-          </View>
-        )}
+          )}
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );

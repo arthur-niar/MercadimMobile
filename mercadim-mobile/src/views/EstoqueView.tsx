@@ -17,6 +17,9 @@ import { Product } from '@/models/Product';
 import { formatCurrency } from '@/utils';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Skeleton } from '@/components/Skeleton';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 
@@ -200,6 +203,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
     : (loading ? '#F9FAFB' : '#F3F4F6');
 
   const openMenu = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const ref = rowRefs.current[id];
     if (ref) {
       ref.measure((_x, _y, _w, h, _pageX, pageY) => {
@@ -229,11 +233,16 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
       <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: screenBg }}>
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={screenBg} />
         <Header username={username} profilePhotoUrl={profilePhotoUrl} onSettingsPress={onSettingsPress} isDark={isDark} fontScale={fontScale} t={t} />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: screenBg }}>
-          <ActivityIndicator size="large" color="#FF8C3A" />
-          <Text style={{ marginTop: 12, fontSize: 14 * fontScale, color: subTextColor }}>
-            {t('stock.loadingProducts')}
-          </Text>
+        <View style={{ flex: 1, backgroundColor: contentBg, padding: 16 }}>
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+            <Skeleton height={80} style={{ flex: 1 }} borderRadius={16} />
+            <Skeleton height={80} style={{ flex: 1 }} borderRadius={16} />
+          </View>
+          <View style={{ gap: 8 }}>
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <Skeleton key={i} height={60} borderRadius={12} />
+            ))}
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -338,9 +347,10 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
 
               {/* Lista de produtos */}
               <View style={{ paddingHorizontal: 16, gap: 8 }}>
-                {products.map(item => (
-                  <View
+                {products.map((item, index) => (
+                  <Animated.View
                     key={item.id}
+                    entering={FadeInDown.delay(index * 50).springify()}
                     ref={el => { rowRefs.current[item.id] = el; }}
                     style={{
                       backgroundColor: cardBg,
@@ -379,7 +389,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                         ···
                       </Text>
                     </TouchableOpacity>
-                  </View>
+                  </Animated.View>
                 ))}
               </View>
             </ScrollView>
@@ -441,7 +451,10 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
 
             {/* FAB */}
             <TouchableOpacity
-              onPress={onCreatePress}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onCreatePress();
+              }}
               activeOpacity={0.85}
               style={{
                 position: 'absolute',
