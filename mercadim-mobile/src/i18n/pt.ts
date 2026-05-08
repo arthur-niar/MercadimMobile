@@ -159,6 +159,7 @@ export const pt = {
     greeting: 'Olá,',
     user: 'Usuário',
     editProfile: 'Editar perfil',
+    edit: 'Editar',
     changePhoto: 'Alterar foto',
     removePhoto: 'Remover foto',
     name: 'Nome',
@@ -175,6 +176,11 @@ export const pt = {
     photoError: 'Erro ao enviar foto',
     permissionDenied: 'Permissão para acessar galeria foi negada',
     selectImageError: 'Erro ao selecionar imagem',
+    editPhotoTitle: 'Editar foto do perfil',
+    takePhoto: 'Tirar foto',
+    choosePhoto: 'Escolher foto',
+    deletePhoto: 'Apagar foto',
+    cameraPermissionDenied: 'Permissão para acessar câmera foi negada',
   },
   auth: {
     login: {

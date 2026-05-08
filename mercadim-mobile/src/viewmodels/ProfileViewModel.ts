@@ -25,6 +25,7 @@ export const useProfileViewModel = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoSheetVisible, setPhotoSheetVisible] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -93,13 +94,16 @@ export const useProfileViewModel = () => {
 
   const handlePickImage = async () => {
     try {
+      // Pede permissão enquanto o sheet ainda está aberto
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+
       if (!permissionResult.granted) {
+        setPhotoSheetVisible(false);
         setErrorMessage(t('profile.permissionDenied'));
         return;
       }
 
+      // Abre a galeria enquanto o Modal ainda está montado (evita conflito Android)
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsEditing: true,
@@ -107,12 +111,46 @@ export const useProfileViewModel = () => {
         quality: 0.8,
       });
 
+      // Só fecha o sheet após o picker retornar
+      setPhotoSheetVisible(false);
+
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const imageUri = result.assets[0].uri;
-        await handleUploadPhoto(imageUri);
+        await handleUploadPhoto(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error picking image:', error);
+      setPhotoSheetVisible(false);
+      setErrorMessage(t('profile.selectImageError'));
+    }
+  };
+
+  const handleTakePhoto = async () => {
+    try {
+      // Pede permissão enquanto o sheet ainda está aberto
+      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+
+      if (!permissionResult.granted) {
+        setPhotoSheetVisible(false);
+        setErrorMessage(t('profile.cameraPermissionDenied'));
+        return;
+      }
+
+      // Abre a câmera enquanto o Modal ainda está montado (evita conflito Android)
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      // Só fecha o sheet após a câmera retornar
+      setPhotoSheetVisible(false);
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        await handleUploadPhoto(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      setPhotoSheetVisible(false);
       setErrorMessage(t('profile.selectImageError'));
     }
   };
@@ -139,6 +177,7 @@ export const useProfileViewModel = () => {
   };
 
   const handleRemovePhoto = async () => {
+    setPhotoSheetVisible(false);
     try {
       setUploadingPhoto(true);
       setErrorMessage('');
@@ -190,12 +229,16 @@ export const useProfileViewModel = () => {
     closeModal,
     handleSave,
 
+    photoSheetVisible,
+    setPhotoSheetVisible,
+
     loading,
     loadingProfile: contextLoading,
     uploadingPhoto,
     refreshProfile,
     handleLogout,
     handlePickImage,
+    handleTakePhoto,
     handleRemovePhoto,
   };
 };
