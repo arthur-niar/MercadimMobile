@@ -160,6 +160,7 @@ export const en = {
     greeting: 'Hello,',
     user: 'User',
     editProfile: 'Edit profile',
+    edit: 'Edit',
     changePhoto: 'Change photo',
     removePhoto: 'Remove photo',
     name: 'Name',
@@ -176,6 +177,11 @@ export const en = {
     photoError: 'Error uploading photo',
     permissionDenied: 'Permission to access gallery was denied',
     selectImageError: 'Error selecting image',
+    editPhotoTitle: 'Edit profile photo',
+    takePhoto: 'Take photo',
+    choosePhoto: 'Choose photo',
+    deletePhoto: 'Delete photo',
+    cameraPermissionDenied: 'Permission to access camera was denied',
   },
   auth: {
     login: {

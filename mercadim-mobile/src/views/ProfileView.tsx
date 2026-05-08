@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView, Platform, StatusBar, Modal, ActivityIndicator, Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useProfileViewModel } from '@/viewmodels';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -23,6 +24,9 @@ export const ProfileView: React.FC = () => {
   const inputBorder = isDark ? 'rgba(255,255,255,0.08)' : '#E5E7EB';
   const inputErrorBg = isDark ? '#3F1212' : '#FEF2F2';
   const inputErrorBorder = isDark ? '#7F1D1D' : '#FCA5A5';
+  const sheetBg = isDark ? '#1E1E1E' : '#FFFFFF';
+  const sheetItemBg = isDark ? '#2A2A2A' : '#F5F5F5';
+  const sheetItemBorder = isDark ? '#3A3A3A' : '#E8E8E8';
 
   if (viewModel.loadingProfile) {
     return (
@@ -39,91 +43,61 @@ export const ProfileView: React.FC = () => {
       <LinearGradient colors={['#FF662A', '#FCA537']} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 
+          {/* ── Seção da foto estilo WhatsApp ── */}
           <View style={{
-            height: 260,
+            height: 280,
             justifyContent: 'center',
             alignItems: 'center',
           }}>
 
-            <View style={{
-              width: 110,
-              height: 110,
-              borderRadius: 55,
-              backgroundColor: '#E5E7EB',
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderWidth: 4,
-              borderColor: '#fff',
-              zIndex: 2,
-              overflow: 'hidden',
-            }}>
-              {viewModel.profilePhotoUrl ? (
-                <Image 
+            {/* Avatar */}
+            <TouchableOpacity
+              onPress={() => viewModel.setPhotoSheetVisible(true)}
+              disabled={viewModel.uploadingPhoto}
+              activeOpacity={0.85}
+              style={{
+                width: 130,
+                height: 130,
+                borderRadius: 65,
+                backgroundColor: '#E5E7EB',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderWidth: 3,
+                borderColor: 'rgba(255,255,255,0.6)',
+                overflow: 'hidden',
+              }}
+            >
+            {viewModel.uploadingPhoto ? (
+                <ActivityIndicator size="large" color="#FF662A" />
+              ) : viewModel.profilePhotoUrl ? (
+                <Image
                   source={{ uri: viewModel.profilePhotoUrl }}
                   style={{ width: '100%', height: '100%' }}
                 />
               ) : (
-                <Text style={{ fontSize: 42 * fontScale }}>👤</Text>
+                <Ionicons name="person" size={60} color="#9CA3AF" />
               )}
-            </View>
+            </TouchableOpacity>
 
-            {/* Botões de ação para foto */}
-            {!viewModel.uploadingPhoto ? (
-              <View style={{
-                flexDirection: 'row',
-                marginTop: 16,
-                gap: 12,
-                justifyContent: 'center',
+            {/* Botão Editar branco */}
+            <TouchableOpacity
+              onPress={() => viewModel.setPhotoSheetVisible(true)}
+              disabled={viewModel.uploadingPhoto}
+              style={{ marginTop: 14 }}
+            >
+              <Text style={{
+                color: '#FFFFFF',
+                fontSize: 17 * fontScale,
+                fontWeight: '700',
+                letterSpacing: 0.3,
               }}>
-                <TouchableOpacity 
-                  onPress={viewModel.handlePickImage}
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, 0.5)',
-                  }}
-                >
-                  <Text style={{
-                    color: '#fff',
-                    fontSize: 12 * fontScale,
-                    fontWeight: '600',
-                  }}>
-                    📷 {t('profile.changePhoto')}
-                  </Text>
-                </TouchableOpacity>
+                {t('profile.edit')}
+              </Text>
+            </TouchableOpacity>
 
-                {viewModel.profilePhotoUrl && (
-                  <TouchableOpacity 
-                    onPress={viewModel.handleRemovePhoto}
-                    style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 16,
-                      borderWidth: 1,
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
-                    }}
-                  >
-                    <Text style={{
-                      color: 'rgba(255, 255, 255, 0.8)',
-                      fontSize: 12 * fontScale,
-                      fontWeight: '600',
-                    }}>
-                      ✕ {t('profile.removePhoto')}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            ) : (
-              <View style={{ marginTop: 16 }}>
-                <ActivityIndicator size="small" color="#fff" />
-              </View>
-            )}
           </View>
 
+          {/* ── Restante da tela (nome, email, botão editar perfil, logout) ── */}
           <View style={{
             flex: 1,
             backgroundColor: cardBg,
@@ -210,6 +184,7 @@ export const ProfileView: React.FC = () => {
 
         </ScrollView>
 
+        {/* ── Modal de editar perfil (nome/email) ── */}
         <Modal visible={viewModel.modalVisible} transparent animationType="slide">
           <View style={{
             flex: 1,
@@ -302,6 +277,129 @@ export const ProfileView: React.FC = () => {
               </TouchableOpacity>
 
             </View>
+          </View>
+        </Modal>
+
+        {/* ── Bottom Sheet estilo WhatsApp: Editar foto do perfil ── */}
+        <Modal
+          visible={viewModel.photoSheetVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => viewModel.setPhotoSheetVisible(false)}
+        >
+          <TouchableOpacity
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+            activeOpacity={1}
+            onPress={() => viewModel.setPhotoSheetVisible(false)}
+          />
+          <View style={{
+            backgroundColor: sheetBg,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+            paddingTop: 8,
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }}>
+
+            {/* Handle bar */}
+            <View style={{
+              width: 36,
+              height: 4,
+              borderRadius: 2,
+              backgroundColor: isDark ? '#555' : '#CCC',
+              alignSelf: 'center',
+              marginBottom: 16,
+            }} />
+
+            {/* Título */}
+            <Text style={{
+              color: textColor,
+              fontSize: 16 * fontScale,
+              fontWeight: '700',
+              textAlign: 'center',
+              marginBottom: 16,
+              paddingHorizontal: 20,
+            }}>
+              {t('profile.editPhotoTitle')}
+            </Text>
+
+            {/* ── Tirar foto ── */}
+            <TouchableOpacity
+              onPress={viewModel.handleTakePhoto}
+              activeOpacity={0.7}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: sheetItemBg,
+                marginHorizontal: 16,
+                marginBottom: 2,
+                paddingHorizontal: 18,
+                paddingVertical: 16,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: sheetItemBorder,
+              }}
+            >
+              <Text style={{ color: textColor, fontSize: 15 * fontScale, fontWeight: '500' }}>
+                {t('profile.takePhoto')}
+              </Text>
+              <Ionicons name="camera-outline" size={22} color={textColor} />
+            </TouchableOpacity>
+
+            {/* ── Escolher foto ── */}
+            <TouchableOpacity
+              onPress={viewModel.handlePickImage}
+              activeOpacity={0.7}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: sheetItemBg,
+                marginHorizontal: 16,
+                marginBottom: 2,
+                paddingHorizontal: 18,
+                paddingVertical: 16,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: sheetItemBorder,
+              }}
+            >
+              <Text style={{ color: textColor, fontSize: 15 * fontScale, fontWeight: '500' }}>
+                {t('profile.choosePhoto')}
+              </Text>
+              <Ionicons name="image-outline" size={22} color={textColor} />
+            </TouchableOpacity>
+
+            {/* ── Apagar foto (só aparece se tiver foto) ── */}
+            {viewModel.profilePhotoUrl && (
+              <TouchableOpacity
+                onPress={viewModel.handleRemovePhoto}
+                activeOpacity={0.7}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: sheetItemBg,
+                  marginHorizontal: 16,
+                  marginTop: 10,
+                  paddingHorizontal: 18,
+                  paddingVertical: 16,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: sheetItemBorder,
+                }}
+              >
+                <Text style={{ color: '#EF4444', fontSize: 15 * fontScale, fontWeight: '500' }}>
+                  {t('profile.deletePhoto')}
+                </Text>
+                <Ionicons name="trash-outline" size={22} color="#EF4444" />
+              </TouchableOpacity>
+            )}
+
           </View>
         </Modal>
 
