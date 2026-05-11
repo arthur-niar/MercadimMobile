@@ -200,14 +200,17 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
     : (loading ? '#F9FAFB' : '#F3F4F6');
 
   const handleDelete = (id: string) => {
-    Alert.alert(
-      t('stock.confirmDelete'),
-      t('stock.confirmDeleteDescription'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: () => onDeletePress(id) },
-      ],
-    );
+    // No Android, é melhor disparar o alerta após o término do gesto de swipe
+    setTimeout(() => {
+      Alert.alert(
+        t('stock.confirmDelete'),
+        t('stock.confirmDeleteDescription'),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: 'Excluir', style: 'destructive', onPress: () => onDeletePress(id) },
+        ],
+      );
+    }, 0);
   };
 
   // ── Loading inicial ────────────────────────────────────────────────────────

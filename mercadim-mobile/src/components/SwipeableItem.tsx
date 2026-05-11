@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import { Swipeable } from 'react-native-gesture-handler';
+import { View, Text, StyleSheet, Animated } from 'react-native';
+import { Swipeable, RectButton } from 'react-native-gesture-handler';
 import Svg, { Path } from 'react-native-svg';
 
 const TrashIcon = () => (
@@ -31,39 +31,33 @@ export const SwipeableItem: React.FC<SwipeableItemProps> = ({
   editLabel = 'Editar'
 }) => {
 
-  const renderRightActions = (progress: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
-    const trans = dragX.interpolate({
-      inputRange: [-100, 0],
-      outputRange: [0, 100],
-    });
-
+  const renderRightActions = (
+    progress: Animated.AnimatedInterpolation<number>, 
+    dragX: Animated.AnimatedInterpolation<number>
+  ) => {
     return (
-      <TouchableOpacity 
+      <RectButton 
         onPress={onDelete}
-        activeOpacity={0.8}
         style={styles.rightAction}
       >
         <TrashIcon />
         <Text style={styles.actionText}>{deleteLabel}</Text>
-      </TouchableOpacity>
+      </RectButton>
     );
   };
 
-  const renderLeftActions = (progress: Animated.AnimatedInterpolation<number>, dragX: Animated.AnimatedInterpolation<number>) => {
-    const trans = dragX.interpolate({
-      inputRange: [0, 100],
-      outputRange: [-100, 0],
-    });
-
+  const renderLeftActions = (
+    progress: Animated.AnimatedInterpolation<number>, 
+    dragX: Animated.AnimatedInterpolation<number>
+  ) => {
     return (
-      <TouchableOpacity 
+      <RectButton 
         onPress={onEdit}
-        activeOpacity={0.8}
         style={styles.leftAction}
       >
         <EditIcon />
         <Text style={styles.actionText}>{editLabel}</Text>
-      </TouchableOpacity>
+      </RectButton>
     );
   };
 
@@ -74,6 +68,8 @@ export const SwipeableItem: React.FC<SwipeableItemProps> = ({
       friction={2}
       leftThreshold={40}
       rightThreshold={40}
+      overshootLeft={false}
+      overshootRight={false}
     >
       {children}
     </Swipeable>
@@ -88,7 +84,6 @@ const styles = StyleSheet.create({
     width: 90,
     borderRadius: 12,
     marginBottom: 8,
-    marginRight: -10,
   },
   rightAction: {
     backgroundColor: '#EF4444',
@@ -97,7 +92,6 @@ const styles = StyleSheet.create({
     width: 90,
     borderRadius: 12,
     marginBottom: 8,
-    marginLeft: -10,
   },
   actionText: {
     color: '#fff',
