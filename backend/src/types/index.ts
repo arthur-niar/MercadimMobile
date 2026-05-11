@@ -106,3 +106,11 @@ export interface ProductsListResponse {
   page: number;
   limit: number;
 }
+
+export interface Report {
+  nomeProduto: string;
+  lucroTotal: number;
+  vendasTotais: number;
+  vendasSemanais: number;
+  aumentoEstoque: number;
+}
