@@ -1,5 +1,3 @@
-// SUBSTITUI: src/app/(tabs)/index.tsx
-// Mudança: onSettingsPress agora navega para /configuracoes
 
 import React from 'react';
 import { useRouter } from 'expo-router';
@@ -25,7 +23,7 @@ export default function HomeScreen() {
       error={viewModel.error}
       onRefresh={viewModel.refresh}
       onSettingsPress={() => router.push('/configuracoes' as any)}
-      onReportPress={() => {}}
+      onReportPress={() => router.push('/relatorio' as any)}
     />
   );
 }

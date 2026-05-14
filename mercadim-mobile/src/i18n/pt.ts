@@ -102,6 +102,33 @@ export const pt = {
     loadError: 'Erro ao carregar dados',
   },
 
+  report: {
+    title: 'Relatório',
+    totalSales: 'Total de Vendas',
+    itemsSold: 'Itens Vendidos',
+    salesCount: 'Nº de Vendas',
+    averageTicket: 'Ticket Médio',
+    dailySales: 'Vendas por dia',
+    last7days: '7 dias',
+    movements: 'Movimentações',
+    records: 'registros',
+    sale: 'Venda',
+    items: 'itens',
+    noMovements: 'Nenhuma venda',
+    noMovementsDesc: 'Não há vendas registradas neste período.',
+    loadError: 'Erro ao carregar o relatório. Tente novamente.',
+    periods: {
+      today: 'Hoje',
+      week: 'Semana',
+      month: 'Mês',
+    },
+    periodLabels: {
+      today: 'Hoje',
+      week: 'Últimos 7 dias',
+      month: 'Últimos 30 dias',
+    },
+  },
+
   sales: {
     quantity: 'Quantidade',
     confirm: 'Confirmar',
