@@ -322,4 +322,32 @@ export const en = {
     confirm: 'Confirm',
     loading: 'Loading...',
   },
+  report: {
+    title: 'Report',
+    totalSales: 'Total Sales',
+    itemsSold: 'Items Sold',
+    salesCount: 'Sales Count',
+    averageTicket: 'Average Ticket',
+    dailySales: 'Daily sales',
+    last7days: '7 days',
+    movements: 'Movements',
+    records: 'records',
+    sale: 'Sale',
+    items: 'items',
+    noMovements: 'No sales',
+    noMovementsDesc: 'There are no sales recorded in this period.',
+    loadError: 'Error loading the report. Please try again.',
+    periods: {
+      today: 'Today',
+      week: 'Week',
+      month: 'Month',
+    },
+    periodLabels: {
+      today: 'Today',
+      week: 'Last 7 days',
+      month: 'Last 30 days',
+    },
+  },
+
+  
 };
