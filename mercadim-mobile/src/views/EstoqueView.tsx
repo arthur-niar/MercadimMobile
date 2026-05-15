@@ -165,6 +165,7 @@ interface EstoqueViewProps {
   onDeletePress: (id: string) => void;
   onRefresh: () => void;
   onRetry: () => void;
+  onProductPress: (product: Product) => void;
 }
 
 // ── View ──────────────────────────────────────────────────────────────────────
@@ -184,6 +185,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
   onDeletePress,
   onRefresh,
   onRetry,
+  onProductPress,
 }) => {
   const { t, isDark, fontScale } = useTranslation();
   const rowRefs = useRef<Record<string, View | null>>({});
@@ -350,8 +352,9 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                       editLabel={t('stock.edit')}
                       deleteLabel={t('stock.delete')}
                     >
-                      <View
-                        ref={el => { rowRefs.current[item.id] = el; }}
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() => onProductPress(item)}
                         style={{
                           backgroundColor: cardBg,
                           borderRadius: 12,
@@ -383,7 +386,7 @@ export const EstoqueView: React.FC<EstoqueViewProps> = ({
                           backgroundColor: item.stock < 5 ? '#EF4444' : '#22C55E',
                           opacity: 0.5
                         }} />
-                      </View>
+                      </TouchableOpacity>
                     </SwipeableItem>
                   </Animated.View>
                 ))}

@@ -55,6 +55,7 @@ export default function EstoqueScreen() {
         onDeletePress={viewModel.removeProduct}
         onRefresh={viewModel.loadProducts}
         onRetry={viewModel.loadProducts}
+        onProductPress={(product) => router.push({ pathname: '/product/[id]', params: { id: product.id } })}
       />
 
       <ProductFormModal
