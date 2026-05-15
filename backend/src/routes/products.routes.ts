@@ -6,6 +6,7 @@ import {
   createNewProduct,
   updateExistingProduct,
   deleteExistingProduct,
+  getProductHistory,
 } from '../controllers/products.controller';
 
 const router = Router();
@@ -13,6 +14,8 @@ const router = Router();
 router.use(authMiddleware);
 
 router.get('/', getProducts);
+
+router.get('/:id/history', getProductHistory);
 
 router.get('/:id', getProduct);
 
