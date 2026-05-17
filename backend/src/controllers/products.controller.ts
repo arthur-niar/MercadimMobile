@@ -6,6 +6,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  getProductHistoryFromDb,
 } from '../database/products';
 import { CreateProductRequest, UpdateProductRequest } from '../types';
 
@@ -144,5 +145,29 @@ export async function deleteExistingProduct(req: AuthRequest, res: Response) {
       return res.status(400).json({ message: error.message });
     }
     return res.status(500).json({ message: 'Erro ao deletar produto' });
+  }
+}
+
+export async function getProductHistory(req: AuthRequest, res: Response) {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Usuário não autenticado' });
+    }
+
+    const { id } = req.params;
+    
+    
+    const product = await getProductById(id, userId);
+    if (!product) {
+      return res.status(404).json({ message: 'Produto não encontrado' });
+    }
+
+    const history = await getProductHistoryFromDb(id, userId);
+
+    return res.status(200).json(history);
+  } catch (error) {
+    console.error('Erro ao buscar histórico do produto:', error);
+    return res.status(500).json({ message: 'Erro ao buscar histórico do produto' });
   }
 }

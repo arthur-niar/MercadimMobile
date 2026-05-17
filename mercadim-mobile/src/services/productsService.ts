@@ -43,4 +43,20 @@ export const deleteProduct = async (id: string): Promise<void> => {
   }
 };
 
+export const getProduct = async (id: string): Promise<Product> => {
+  try {
+    const response = await api.get(`/products/${id}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Erro ao buscar produto');
+  }
+};
 
+export const getProductHistory = async (id: string): Promise<any[]> => {
+  try {
+    const response = await api.get(`/products/${id}/history`);
+    return response.data || [];
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Erro ao buscar histórico do produto');
+  }
+};

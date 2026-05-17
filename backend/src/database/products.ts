@@ -97,7 +97,7 @@ export async function createProduct(
   }
 
   
-  const now = new Date().toISOString().split('T')[0];
+  const now = new Date().toISOString();
   const { data: produto, error: produtoError } = await supabase
     .from('produto')
     .insert({
@@ -166,7 +166,7 @@ export async function updateProduct(
 
  
   const updateData: any = {
-    dataatualizacao: new Date().toISOString().split('T')[0],
+    dataatualizacao: new Date().toISOString(),
   };
 
   if (updates.name !== undefined) updateData.nome = updates.name;
@@ -279,4 +279,55 @@ export async function updateStockAfterSale(
     console.error('Erro ao atualizar estoque após venda:', updateError);
     throw new Error('Erro ao atualizar estoque');
   }
+}
+
+export async function getProductHistoryFromDb(productId: string, userId: string) {
+ 
+  const { data: vendas, error } = await supabase
+    .from('produtovenda')
+    .select('*, venda!inner(*)')
+    .eq('idproduto', parseInt(productId))
+    .eq('venda.idusuario', parseInt(userId));
+
+  if (error) {
+    console.error('Erro ao buscar historico:', error);
+    throw new Error('Erro ao buscar histórico do produto');
+  }
+
+  
+  const { data: produto } = await supabase
+    .from('produto')
+    .select('datacriacao, estoque!inner(quantprodutos)')
+    .eq('idproduto', parseInt(productId))
+    .single();
+
+  const history = [];
+
+  (vendas || []).forEach((v: any) => {
+    history.push({
+      id: `exit_${v.idprodutovenda}`,
+      type: 'saida',
+      quantity: v.quantidade,
+      date: v.venda.datavenda,
+      description: `Venda #${v.venda.idvenda}`,
+      value: v.precounitario * v.quantidade
+    });
+  });
+
+  if (produto) {
+    const totalSold = history.reduce((acc, curr) => acc + curr.quantity, 0);
+    const currentStock = produto.estoque?.quantprodutos || 0;
+    const initialEntry = currentStock + totalSold;
+
+    history.push({
+      id: `entry_0`,
+      type: 'entrada',
+      quantity: initialEntry,
+      date: produto.datacriacao,
+      description: 'Estoque inicial',
+    });
+  }
+
+  
+  return history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }

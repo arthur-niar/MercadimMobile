@@ -108,9 +108,8 @@ export interface ProductsListResponse {
 }
 
 export interface Report {
-  nomeProduto: string;
-  lucroTotal: number;
-  vendasTotais: number;
-  vendasSemanais: number;
-  aumentoEstoque: number;
+  itensVendidos: number;
+  numeroVendas: number;
+  ticketMedio: number;
+  totalVendas: number;
 }
