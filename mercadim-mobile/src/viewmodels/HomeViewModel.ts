@@ -1,11 +1,11 @@
-import { useState, useCallback } from 'react';
-import { useFocusEffect } from 'expo-router';
-import { homeService, SalesItem } from '@/services/home.service';
-import * as notificationsService from '@/services/notifications.service';
-import { useProfile } from '@/contexts/ProfileContext';
-import { useTranslation } from '@/hooks/useTranslation';
-import { formatNotificationDate } from '@/utils';
-import { AppNotification } from './NotificationsViewModel';
+import { useState, useCallback } from "react";
+import { useFocusEffect } from "expo-router";
+import { homeService, SalesItem } from "@/services/home.service";
+import * as notificationsService from "@/services/notifications.service";
+import { useProfile } from "@/contexts/ProfileContext";
+import { useTranslation } from "@/hooks/useTranslation";
+import { formatNotificationDate } from "@/utils";
+import { AppNotification } from "./NotificationsViewModel";
 
 export const useHomeViewModel = () => {
   const { profile } = useProfile();
@@ -16,9 +16,13 @@ export const useHomeViewModel = () => {
   const [averageTicket, setAverageTicket] = useState(0);
   const [salesItems, setSalesItems] = useState<SalesItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [latestNotification, setLatestNotification] = useState<AppNotification | null>(null);
+  const [latestNotification, setLatestNotification] =
+    useState<AppNotification | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notificationShown, setNotificationShown] = useState<number | null>(
+    null,
+  );
 
   const loadData = async () => {
     try {
@@ -27,7 +31,7 @@ export const useHomeViewModel = () => {
 
       const [homeData, notifications] = await Promise.all([
         homeService.getHomeSummary(),
-        notificationsService.getNotifications()
+        notificationsService.getNotifications(),
       ]);
 
       setTotalSales(homeData.summary.totalSales);
@@ -35,33 +39,51 @@ export const useHomeViewModel = () => {
       setItemsReceived(homeData.summary.itemsReceived);
       setAverageTicket(homeData.summary.averageTicket);
       setSalesItems(homeData.salesItems);
-      
-      const unread = notifications.filter(n => !n.read);
+
+      const unread = notifications.filter((n) => !n.read);
       setUnreadCount(unread.length);
       if (unread.length > 0) {
         const latest = unread[0];
-        const currentLocale = i18n.language === 'en' ? 'en-US' : 'pt-BR';
-        setLatestNotification({
-          ...latest,
-          date: formatNotificationDate(latest.date, currentLocale)
-        });
+        // Só mostra a notificação se ela não foi mostrada ainda nesta sessão
+        if (notificationShown !== latest.id) {
+          const currentLocale = i18n.language === "en" ? "en-US" : "pt-BR";
+          setLatestNotification({
+            ...latest,
+            date: formatNotificationDate(latest.date, currentLocale),
+          });
+        } else {
+          setLatestNotification(null);
+        }
+      } else {
+        setLatestNotification(null);
       }
     } catch (err: any) {
-      console.error(t('home.loadError'), err);
-      setError(err.message || t('home.loadError'));
+      console.error(t("home.loadError"), err);
+      setError(err.message || t("home.loadError"));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const markNotificationAsRead = async (notificationId: number) => {
+    try {
+      await notificationsService.markAsRead(notificationId);
+      setNotificationShown(notificationId);
+      setLatestNotification(null);
+      setUnreadCount(Math.max(0, unreadCount - 1));
+    } catch (error) {
+      console.error("Erro ao marcar notificação como lida:", error);
     }
   };
 
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [])
+    }, [notificationShown]),
   );
 
   return {
-    username: profile?.name || '',
+    username: profile?.name || "",
     profilePhotoUrl: profile?.url || null,
     totalSales,
     itemsSold,
@@ -73,5 +95,6 @@ export const useHomeViewModel = () => {
     loading,
     error,
     refresh: loadData,
+    markNotificationAsRead,
   };
 };

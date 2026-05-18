@@ -1,8 +1,7 @@
-
-import React from 'react';
-import { useRouter } from 'expo-router';
-import { HomeView } from '@/views';
-import { useHomeViewModel } from '@/viewmodels';
+import React from "react";
+import { useRouter } from "expo-router";
+import { HomeView } from "@/views";
+import { useHomeViewModel } from "@/viewmodels";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -22,8 +21,9 @@ export default function HomeScreen() {
       loading={viewModel.loading}
       error={viewModel.error}
       onRefresh={viewModel.refresh}
-      onSettingsPress={() => router.push('/configuracoes' as any)}
-      onReportPress={() => router.push('/relatorio' as any)}
+      onSettingsPress={() => router.push("/configuracoes" as any)}
+      onReportPress={() => router.push("/relatorio" as any)}
+      onMarkNotificationAsRead={viewModel.markNotificationAsRead}
     />
   );
 }
