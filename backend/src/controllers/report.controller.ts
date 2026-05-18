@@ -5,8 +5,8 @@ const reportController = {
     createReport: async (req: Request, res: Response) => {
         try {
             const user = (req as any).user;
-            const { nomeProduto, lucroTotal, vendasTotais, vendasSemanais, aumentoEstoque } = req.body;
-            const report = await createReport(user.id, { nomeProduto, lucroTotal, vendasTotais, vendasSemanais, aumentoEstoque });
+            const { itensVendidos, numeroVendas, ticketMedio, totalVendas } = req.body;
+            const report = await createReport(user.id, { itensVendidos, numeroVendas, ticketMedio, totalVendas });
             res.status(201).json(report);
         } catch (error) {
             res.status(500).json({ error: 'Error creating report' });

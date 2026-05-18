@@ -20,11 +20,10 @@ export async function createReport(userId: string, reportData: Omit<Report, 'id'
         .from('relatorio')
         .insert({
             idusuario: parseInt(userId),
-            nomeProduto: reportData.nomeProduto,
-            lucroTotal: reportData.lucroTotal,
-            vendasTotais: reportData.vendasTotais,
-            vendasSemanais: reportData.vendasSemanais,
-            aumentoEstoque: reportData.aumentoEstoque
+            itensVendidos: reportData.itensVendidos,
+            numeroVendas: reportData.numeroVendas,
+            ticketMedio: reportData.ticketMedio,
+            totalVendas: reportData.totalVendas
         })
         .select('*')
         .single();

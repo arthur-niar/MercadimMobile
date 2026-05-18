@@ -83,7 +83,7 @@ export const createSale = async (data: { userId: string; items: { productId: str
            idvenda: vendaData.idvenda,
            quantidade: item.quantity,
            precounitario: item.unitPrice,
-           idrelatorio: relatorioId
+//           idrelatorio: relatorioId
       }]);
 
     if (pvError) throw new Error(`Erro ao inserir item na venda: ${pvError.message}`);
