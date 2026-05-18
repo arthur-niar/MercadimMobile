@@ -54,25 +54,6 @@ export const createSale = async (data: { userId: string; items: { productId: str
   if (vendaError) throw new Error(`Erro ao criar venda: ${vendaError.message}`);
 
 
-  let relatorioId;
-  const { data: relatorios } = await supabase.from('relatorio').select('*').limit(1);
-  const existRelatorio = relatorios && relatorios.length > 0 ? relatorios[0] : null;
-  
-  if (existRelatorio) {
-       relatorioId = existRelatorio.idrelatorio;
-  } else {
-       const { data: rootRelatorio, error: relError } = await supabase
-           .from('relatorio')
-           .insert([{
-              nomeproduto: 'Geral', lucrototal: 0, vendastotais: 0, vendassemanais: 0, aumentoestoque: 0
-           }])
-           .select()
-           .single();
-       if (relError) throw new Error(`Erro ao criar relatorio: ${relError.message}`);
-       relatorioId = rootRelatorio.idrelatorio;
-  }
-
-
   const finalItems: SaleItem[] = [];
 
   for (const item of processedItems) {

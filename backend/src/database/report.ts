@@ -1,51 +1,41 @@
 import { supabase } from '../config/supabase';
-import { Report } from '../types';
 
-export async function createReport(userId: string, reportData: Omit<Report, 'id'>): Promise<Report | null> {
-    const { data: existingReport, error: fetchError } = await supabase
-        .from('relatorio')
-        .select('*')
-        .eq('idusuario', parseInt(userId))
-        .maybeSingle();
-
-    if (fetchError) {
-        throw new Error('Error checking existing report');
-    }
-
-    if (existingReport) {
-        return null;
-    }
-
-    const { data: insertedReport, error } = await supabase
-        .from('relatorio')
-        .insert({
-            idusuario: parseInt(userId),
-            itensVendidos: reportData.itensVendidos,
-            numeroVendas: reportData.numeroVendas,
-            ticketMedio: reportData.ticketMedio,
-            totalVendas: reportData.totalVendas
-        })
-        .select('*')
-        .single();
-
-    if (error) {
-        throw new Error('Error creating report');
-    }
-
-    return insertedReport as Report;
+export interface ReportSummary {
+  totalVendas: number;
+  itensVendidos: number;
+  numeroVendas: number;
+  ticketMedio: number;
 }
 
-export async function getReport(userId: string): Promise<Report | null> {
-    const { data: reportData, error } = await supabase
-        .from('relatorio')
-        .select('*')
-        .eq('idusuario', parseInt(userId))
-        .single();
-
-    if (error) {
-        throw new Error('Error fetching report');
-    }
-    return reportData as Report | null;
+export interface VendaRow {
+  idvenda: number;
+  idusuario: number;
+  quantproduto: number;
+  precototal: number;
+  datavenda: string;
 }
 
+export async function getVendasByUserId(userId: string): Promise<VendaRow[]> {
+  const { data, error } = await supabase
+    .from('venda')
+    .select('idvenda, idusuario, quantproduto, precototal, datavenda')
+    .eq('idusuario', parseInt(userId))
+    .order('datavenda', { ascending: false });
 
+  if (error) {
+    throw new Error(`Erro ao buscar vendas: ${error.message}`);
+  }
+
+  return (data || []) as VendaRow[];
+}
+
+export async function getReportSummaryByUserId(userId: string): Promise<ReportSummary> {
+  const vendas = await getVendasByUserId(userId);
+
+  const numeroVendas = vendas.length;
+  const totalVendas = vendas.reduce((sum, v) => sum + Number(v.precototal), 0);
+  const itensVendidos = vendas.reduce((sum, v) => sum + Number(v.quantproduto), 0);
+  const ticketMedio = numeroVendas > 0 ? totalVendas / numeroVendas : 0;
+
+  return { totalVendas, itensVendidos, numeroVendas, ticketMedio };
+}

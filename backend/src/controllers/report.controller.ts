@@ -1,24 +1,33 @@
-import { Request, Response } from 'express';
-import { createReport, getReport } from '../database/report';
+import { Response } from 'express';
+import { AuthRequest } from '../middleware/auth';
+import { getVendasByUserId, getReportSummaryByUserId } from '../database/report';
 
-const reportController = {
-    createReport: async (req: Request, res: Response) => {
-        try {
-            const user = (req as any).user;
-            const { itensVendidos, numeroVendas, ticketMedio, totalVendas } = req.body;
-            const report = await createReport(user.id, { itensVendidos, numeroVendas, ticketMedio, totalVendas });
-            res.status(201).json(report);
-        } catch (error) {
-            res.status(500).json({ error: 'Error creating report' });
-        }
-    },
-    getReport: async (req: Request, res: Response) => {
-        try {
-            const user = (req as any).user;
-            const report = await getReport(user.id);
-            res.json(report);
-        } catch (error) {
-            res.status(500).json({ error: 'Error fetching report' });
-        }
+export const getReportHandler = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Usuário não autenticado' });
     }
+
+    const userId = req.user.userId;
+    const vendas = await getVendasByUserId(userId);
+    return res.json({ venda: vendas });
+  } catch (error: any) {
+    console.error('Erro ao buscar relatório:', error);
+    return res.status(500).json({ message: error.message || 'Erro ao buscar relatório' });
+  }
+};
+
+export const getReportSummaryHandler = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Usuário não autenticado' });
+    }
+
+    const userId = req.user.userId;
+    const summary = await getReportSummaryByUserId(userId);
+    return res.json(summary);
+  } catch (error: any) {
+    console.error('Erro ao buscar resumo do relatório:', error);
+    return res.status(500).json({ message: error.message || 'Erro ao buscar resumo do relatório' });
+  }
 };

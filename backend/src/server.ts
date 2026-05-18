@@ -8,6 +8,9 @@ import salesRoutes from './routes/sales.routes';
 import profileRoutes from './routes/profile.routes';
 import productsRoutes from './routes/products.routes';
 import notificationsRoutes from './routes/notifications.routes';
+import reportRoutes from './routes/report.routes';
+import { authMiddleware } from './middleware/auth';
+import { AuthRequest } from './middleware/auth';
 import { seedSalesData } from './database/seed';
 import { createUser, findUserByEmail } from './database/users';
 
@@ -33,6 +36,7 @@ app.use('/api/sales', salesRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/report', reportRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Mercadim API funcionando' });
@@ -48,16 +52,23 @@ app.post('/api/seed', async (_req, res) => {
 });
 
 
-app.get('/venda', async (_req, res) => {
+app.get('/venda', authMiddleware, async (req: AuthRequest, res) => {
+  const userId = req.user?.userId;
+  if (!userId) {
+    return res.status(401).json({ error: 'Usuário não autenticado' });
+  }
 
-  const { data, error } = await supabase.from('venda').select('*');
+  const { data, error } = await supabase
+    .from('venda')
+    .select('*')
+    .eq('idusuario', parseInt(userId))
+    .order('datavenda', { ascending: false });
 
   if (error) {
     console.error('Erro ao buscar vendas:', error);
     return res.status(500).json({ error: 'Erro ao buscar vendas' });
   }
   return res.status(200).json({ venda: data });
-
 });
 
 
