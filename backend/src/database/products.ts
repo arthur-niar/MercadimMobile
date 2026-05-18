@@ -1,33 +1,32 @@
-import { supabase } from '../config/supabase';
-import { Product, CreateProductRequest, UpdateProductRequest } from '../types';
-
+import { supabase } from "../config/supabase";
+import { Product, CreateProductRequest, UpdateProductRequest } from "../types";
 
 export async function listProducts(
   userId: string,
   page: number = 1,
-  limit: number = 100
+  limit: number = 100,
 ): Promise<{ products: Product[]; total: number }> {
   const offset = (page - 1) * limit;
 
- 
-  const { data: produtos, error, count } = await supabase
-    .from('produto')
-    .select('*, estoque!inner(idusuario, quantprodutos)', { count: 'exact' })
-    .eq('ativo', true)
-    .eq('estoque.idusuario', parseInt(userId))
-    .order('datacriacao', { ascending: false })
+  const {
+    data: produtos,
+    error,
+    count,
+  } = await supabase
+    .from("produto")
+    .select("*, estoque!inner(idusuario, quantprodutos)", { count: "exact" })
+    .eq("ativo", true)
+    .eq("estoque.idusuario", parseInt(userId))
+    .order("datacriacao", { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (error) {
-    console.error('Erro ao listar produtos:', error);
-    throw new Error('Erro ao buscar produtos');
+    console.error("Erro ao listar produtos:", error);
+    throw new Error("Erro ao buscar produtos");
   }
 
-  
   const productsWithStock = await Promise.all(
     (produtos || []).map(async (p) => {
-      
-
       const stock = (p as any).estoque?.quantprodutos || 0;
 
       return {
@@ -39,7 +38,7 @@ export async function listProducts(
         createdAt: p.datacriacao,
         ativo: p.ativo ?? true,
       };
-    })
+    }),
   );
 
   return {
@@ -48,14 +47,16 @@ export async function listProducts(
   };
 }
 
-
-export async function getProductById(productId: string, userId: string): Promise<Product | null> {
+export async function getProductById(
+  productId: string,
+  userId: string,
+): Promise<Product | null> {
   const { data: produto, error } = await supabase
-    .from('produto')
-    .select('*, estoque!inner(idusuario, quantprodutos)')
-    .eq('idproduto', parseInt(productId))
-    .eq('ativo', true)
-    .eq('estoque.idusuario', parseInt(userId))
+    .from("produto")
+    .select("*, estoque!inner(idusuario, quantprodutos)")
+    .eq("idproduto", parseInt(productId))
+    .eq("ativo", true)
+    .eq("estoque.idusuario", parseInt(userId))
     .single();
 
   if (error || !produto) {
@@ -75,14 +76,12 @@ export async function getProductById(productId: string, userId: string): Promise
   };
 }
 
-
 export async function createProduct(
   userId: string,
-  productData: CreateProductRequest
+  productData: CreateProductRequest,
 ): Promise<Product> {
-  
   const { data: estoqueData, error: estoqueError } = await supabase
-    .from('estoque')
+    .from("estoque")
     .insert({
       quantprodutos: productData.stock,
       quantbaixoestoque: productData.stock < 5 ? 1 : 0,
@@ -92,14 +91,13 @@ export async function createProduct(
     .single();
 
   if (estoqueError || !estoqueData) {
-    console.error('Erro ao criar estoque:', estoqueError);
-    throw new Error('Erro ao criar estoque do produto');
+    console.error("Erro ao criar estoque:", estoqueError);
+    throw new Error("Erro ao criar estoque do produto");
   }
 
-  
   const now = new Date().toISOString();
   const { data: produto, error: produtoError } = await supabase
-    .from('produto')
+    .from("produto")
     .insert({
       nome: productData.name,
       preco: productData.price,
@@ -113,10 +111,13 @@ export async function createProduct(
     .single();
 
   if (produtoError || !produto) {
-    console.error('Erro ao criar produto:', produtoError);
-    
-    await supabase.from('estoque').delete().eq('idestoque', estoqueData.idestoque);
-    throw new Error('Erro ao criar produto');
+    console.error("Erro ao criar produto:", produtoError);
+
+    await supabase
+      .from("estoque")
+      .delete()
+      .eq("idestoque", estoqueData.idestoque);
+    throw new Error("Erro ao criar produto");
   }
 
   return {
@@ -130,41 +131,37 @@ export async function createProduct(
   };
 }
 
-
 export async function updateProduct(
   productId: string,
   userId: string,
-  updates: UpdateProductRequest
+  updates: UpdateProductRequest,
 ): Promise<Product> {
-  
   const { data: produtoExistente, error: checkError } = await supabase
-    .from('produto')
-    .select('*, estoque!inner(idestoque, quantprodutos, idusuario)')
-    .eq('idproduto', parseInt(productId))
-    .eq('estoque.idusuario', parseInt(userId))
+    .from("produto")
+    .select("*, estoque!inner(idestoque, quantprodutos, idusuario)")
+    .eq("idproduto", parseInt(productId))
+    .eq("estoque.idusuario", parseInt(userId))
     .single();
 
   if (checkError || !produtoExistente) {
-    throw new Error('Produto não encontrado');
+    throw new Error("Produto não encontrado");
   }
 
-  
   if (updates.stock !== undefined) {
     const { error: estoqueError } = await supabase
-      .from('estoque')
+      .from("estoque")
       .update({
         quantprodutos: updates.stock,
         quantbaixoestoque: updates.stock < 5 ? 1 : 0,
       })
-      .eq('idestoque', produtoExistente.estoque.idestoque);
+      .eq("idestoque", produtoExistente.estoque.idestoque);
 
     if (estoqueError) {
-      console.error('Erro ao atualizar estoque:', estoqueError);
-      throw new Error('Erro ao atualizar estoque');
+      console.error("Erro ao atualizar estoque:", estoqueError);
+      throw new Error("Erro ao atualizar estoque");
     }
   }
 
- 
   const updateData: any = {
     dataatualizacao: new Date().toISOString(),
   };
@@ -174,15 +171,15 @@ export async function updateProduct(
   if (updates.category !== undefined) updateData.categoria = updates.category;
 
   const { data: produto, error: produtoError } = await supabase
-    .from('produto')
+    .from("produto")
     .update(updateData)
-    .eq('idproduto', parseInt(productId))
+    .eq("idproduto", parseInt(productId))
     .select()
     .single();
 
   if (produtoError || !produto) {
-    console.error('Erro ao atualizar produto:', produtoError);
-    throw new Error('Erro ao atualizar produto');
+    console.error("Erro ao atualizar produto:", produtoError);
+    throw new Error("Erro ao atualizar produto");
   }
 
   return {
@@ -196,138 +193,143 @@ export async function updateProduct(
   };
 }
 
-
-export async function deleteProduct(productId: string, userId: string): Promise<void> {
- 
+export async function deleteProduct(
+  productId: string,
+  userId: string,
+): Promise<void> {
   const { data: produto, error: checkError } = await supabase
-    .from('produto')
-    .select('*, estoque!inner(idestoque, idusuario)')
-    .eq('idproduto', parseInt(productId))
-    .eq('ativo', true)
-    .eq('estoque.idusuario', parseInt(userId))
+    .from("produto")
+    .select("*, estoque!inner(idestoque, idusuario)")
+    .eq("idproduto", parseInt(productId))
+    .eq("ativo", true)
+    .eq("estoque.idusuario", parseInt(userId))
     .single();
 
   if (checkError || !produto) {
-    throw new Error('Produto não encontrado');
+    throw new Error("Produto não encontrado");
   }
 
-  
   const { data: vendas } = await supabase
-    .from('produtovenda')
-    .select('idprodutovenda')
-    .eq('idproduto', parseInt(productId))
+    .from("produtovenda")
+    .select("idprodutovenda")
+    .eq("idproduto", parseInt(productId))
     .limit(1);
 
   if (vendas && vendas.length > 0) {
-   
     const { error: updateError } = await supabase
-      .from('produto')
+      .from("produto")
       .update({ ativo: false })
-      .eq('idproduto', parseInt(productId));
+      .eq("idproduto", parseInt(productId));
 
     if (updateError) {
-      console.error('Erro ao desativar produto:', updateError);
-      throw new Error('Erro ao desativar produto');
+      console.error("Erro ao desativar produto:", updateError);
+      throw new Error("Erro ao desativar produto");
     }
   } else {
-   
     const { error: deleteError } = await supabase
-      .from('produto')
+      .from("produto")
       .delete()
-      .eq('idproduto', parseInt(productId));
+      .eq("idproduto", parseInt(productId));
 
     if (deleteError) {
-      console.error('Erro ao deletar produto:', deleteError);
-      throw new Error('Erro ao deletar produto');
+      console.error("Erro ao deletar produto:", deleteError);
+      throw new Error("Erro ao deletar produto");
     }
 
- 
     await supabase
-      .from('estoque')
+      .from("estoque")
       .delete()
-      .eq('idestoque', produto.estoque.idestoque);
+      .eq("idestoque", produto.estoque.idestoque);
   }
 }
 
-
 export async function updateStockAfterSale(
   productId: string,
-  quantitySold: number
+  quantitySold: number,
 ): Promise<void> {
   const { data: produto, error } = await supabase
-    .from('produto')
-    .select('idestoque, estoque(quantprodutos)')
-    .eq('idproduto', parseInt(productId))
+    .from("produto")
+    .select("idestoque, estoque(quantprodutos)")
+    .eq("idproduto", parseInt(productId))
     .single();
 
   if (error || !produto) {
-    throw new Error('Produto não encontrado');
+    throw new Error("Produto não encontrado");
   }
 
-  const currentStock = produto.estoque?.quantprodutos || 0;
+  const currentStock = (produto.estoque as any[])?.[0]?.quantprodutos || 0;
   const newStock = Math.max(0, currentStock - quantitySold);
 
   const { error: updateError } = await supabase
-    .from('estoque')
+    .from("estoque")
     .update({
       quantprodutos: newStock,
       quantbaixoestoque: newStock < 5 ? 1 : 0,
     })
-    .eq('idestoque', produto.idestoque);
+    .eq("idestoque", produto.idestoque);
 
   if (updateError) {
-    console.error('Erro ao atualizar estoque após venda:', updateError);
-    throw new Error('Erro ao atualizar estoque');
+    console.error("Erro ao atualizar estoque após venda:", updateError);
+    throw new Error("Erro ao atualizar estoque");
   }
 }
 
-export async function getProductHistoryFromDb(productId: string, userId: string) {
- 
+export async function getProductHistoryFromDb(
+  productId: string,
+  userId: string,
+) {
   const { data: vendas, error } = await supabase
-    .from('produtovenda')
-    .select('*, venda!inner(*)')
-    .eq('idproduto', parseInt(productId))
-    .eq('venda.idusuario', parseInt(userId));
+    .from("produtovenda")
+    .select("*, venda!inner(*)")
+    .eq("idproduto", parseInt(productId))
+    .eq("venda.idusuario", parseInt(userId));
 
   if (error) {
-    console.error('Erro ao buscar historico:', error);
-    throw new Error('Erro ao buscar histórico do produto');
+    console.error("Erro ao buscar historico:", error);
+    throw new Error("Erro ao buscar histórico do produto");
   }
 
-  
   const { data: produto } = await supabase
-    .from('produto')
-    .select('datacriacao, estoque!inner(quantprodutos)')
-    .eq('idproduto', parseInt(productId))
+    .from("produto")
+    .select("datacriacao, estoque!inner(quantprodutos)")
+    .eq("idproduto", parseInt(productId))
     .single();
 
-  const history = [];
+  const history: Array<{
+    id: string;
+    type: string;
+    quantity: number;
+    date: string;
+    description: string;
+    value?: number;
+  }> = [];
 
   (vendas || []).forEach((v: any) => {
     history.push({
       id: `exit_${v.idprodutovenda}`,
-      type: 'saida',
+      type: "saida",
       quantity: v.quantidade,
       date: v.venda.datavenda,
       description: `Venda #${v.venda.idvenda}`,
-      value: v.precounitario * v.quantidade
+      value: v.precounitario * v.quantidade,
     });
   });
 
   if (produto) {
     const totalSold = history.reduce((acc, curr) => acc + curr.quantity, 0);
-    const currentStock = produto.estoque?.quantprodutos || 0;
+    const currentStock = (produto.estoque as any)?.quantprodutos || 0;
     const initialEntry = currentStock + totalSold;
 
     history.push({
       id: `entry_0`,
-      type: 'entrada',
+      type: "entrada",
       quantity: initialEntry,
       date: produto.datacriacao,
-      description: 'Estoque inicial',
+      description: "Estoque inicial",
     });
   }
 
-  
-  return history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return history.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
 }

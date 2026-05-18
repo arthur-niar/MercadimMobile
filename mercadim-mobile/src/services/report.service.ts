@@ -1,31 +1,7 @@
-// Service do Relatório de Vendas
-// Local final: src/services/report.service.ts
-//
-// Este service consome DADOS REAIS do backend, pelo endpoint /venda.
-// Não tem mais nada mockado aqui.
-//
-// Formato que o /venda retorna:
-//   { "venda": [
-//       { "idvenda": 2, "idusuario": 4, "quantproduto": 17,
-//         "precototal": 440.29, "datavenda": "2026-04-19" },
-//       ...
-//   ]}
 
 import api from './api';
 import { ReportData, PeriodFilter, SaleMovement } from '@/models/Report';
 
-// ───────────────────────────────────────────────────────────────────────────
-// O endpoint /venda fica na RAIZ do servidor (http://IP:3000/venda),
-// e NÃO embaixo de /api como os outros endpoints.
-// Como o "api" tem baseURL terminando em /api, a gente monta a URL da raiz
-// removendo o "/api" do final. Assim continua respeitando o IP configurado
-// no api.ts (cada pessoa do grupo usa o seu) sem hardcodar nada.
-// ───────────────────────────────────────────────────────────────────────────
-const getVendaEndpoint = (): string => {
-  const base = api.defaults.baseURL || '';
-  const root = base.replace(/\/api\/?$/, ''); // tira "/api" do final, se existir
-  return `${root}/venda`;
-};
 
 // Formato cru que vem do backend
 interface VendaApiItem {
@@ -100,18 +76,10 @@ const buildReportData = (movements: SaleMovement[]): ReportData => {
 // ───────────────────────────────────────────────────────────────────────────
 
 class ReportService {
-  /**
-   * Busca as vendas reais do backend (/venda) e monta o relatório
-   * já filtrado pelo período escolhido.
-   */
   async getReport(period: PeriodFilter): Promise<ReportData> {
-    const url = getVendaEndpoint();
-
-    // O /venda retorna { venda: [...] }
-    const response = await api.get<{ venda: VendaApiItem[] }>(url);
+    const response = await api.get<{ venda: VendaApiItem[] }>('/report/vendas');
     const allVendas = response.data?.venda ?? [];
 
-    // Converte o formato do backend para o nosso SaleMovement
     const allMovements: SaleMovement[] = allVendas.map((v) => ({
       id: `MV-${String(v.idvenda).padStart(4, '0')}`,
       saleNumber: v.idvenda,
@@ -120,10 +88,8 @@ class ReportService {
       date: v.datavenda,
     }));
 
-    // Filtra pelo período
     const filtered = filterByPeriod(allMovements, period);
 
-    // Ordena da venda mais recente para a mais antiga
     filtered.sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
 
     return buildReportData(filtered);
