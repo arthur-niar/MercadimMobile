@@ -1,508 +1,605 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Mercadim API - Documentação</title>
-    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css"
+    />
     <style>
-        body { margin: 0; padding: 0; }
-        @media print {
-            .swagger-ui .topbar { display: none; }
-            .swagger-ui .information-container { margin-top: 0; }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      @media print {
+        .swagger-ui .topbar {
+          display: none;
         }
+        .swagger-ui .information-container {
+          margin-top: 0;
+        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js" crossorigin></script>
-    <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js" crossorigin></script>
+    <script
+      src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js"
+      crossorigin
+    ></script>
     <script>
-        window.onload = () => {
-            const spec = {
-  "openapi": "3.0.0",
-  "info": {
-    "title": "Mercadim API",
-    "description": "Documentação das APIs do Mercadim Mobile.",
-    "version": "1.0.0"
-  },
-  "servers": [
-    {
-      "url": "http://localhost:3000",
-      "description": "Servidor Local"
-    }
-  ],
-  "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
-      }
-    },
-    "schemas": {
-      "User": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "email": { "type": "string" },
-          "name": { "type": "string" },
-          "url": { "type": "string", "nullable": true }
-        }
-      },
-      "Product": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "price": { "type": "number" },
-          "stock": { "type": "integer" },
-          "category": { "type": "string" },
-          "createdAt": { "type": "string" },
-          "ativo": { "type": "boolean" }
-        }
-      },
-      "SaleItem": {
-        "type": "object",
-        "properties": {
-          "productId": { "type": "string" },
-          "productName": { "type": "string" },
-          "quantity": { "type": "integer" },
-          "unitPrice": { "type": "number" }
-        }
-      },
-      "Sale": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "userId": { "type": "string" },
-          "items": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/SaleItem" }
+      window.onload = () => {
+        const spec = {
+          openapi: "3.0.0",
+          info: {
+            title: "Mercadim API",
+            description: "Documentação das APIs do Mercadim Mobile.",
+            version: "1.0.0",
           },
-          "totalPrice": { "type": "number" },
-          "createdAt": { "type": "string", "format": "date-time" }
-        }
-      },
-      "Notification": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer" },
-          "title": { "type": "string" },
-          "description": { "type": "string" },
-          "read": { "type": "boolean" },
-          "date": { "type": "string", "format": "date-time" }
-        }
-      }
-    }
-  },
-  "security": [
-    { "bearerAuth": [] }
-  ],
-  "paths": {
-    "/api/auth/register/request": {
-      "post": {
-        "tags": ["Auth"],
-        "summary": "Solicitar registro",
-        "security": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["email", "password", "name"],
-                "properties": {
-                  "email": { "type": "string" },
-                  "password": { "type": "string", "minLength": 6 },
-                  "name": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Código de verificação enviado" }
-        }
-      }
-    },
-    "/api/auth/register/verify": {
-      "post": {
-        "tags": ["Auth"],
-        "summary": "Verificar código de registro",
-        "security": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["email", "code"],
-                "properties": {
-                  "email": { "type": "string" },
-                  "code": { "type": "string", "minLength": 6, "maxLength": 6 }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": { "description": "Usuário registrado" }
-        }
-      }
-    },
-    "/api/auth/login": {
-      "post": {
-        "tags": ["Auth"],
-        "summary": "Login do usuário",
-        "security": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["email", "password"],
-                "properties": {
-                  "email": { "type": "string" },
-                  "password": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Login realizado com sucesso" }
-        }
-      }
-    },
-    "/api/auth/forgot-password": {
-      "post": {
-        "tags": ["Auth"],
-        "summary": "Esqueci a senha",
-        "security": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["email"],
-                "properties": {
-                  "email": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Código enviado" }
-        }
-      }
-    },
-    "/api/auth/reset-password": {
-      "post": {
-        "tags": ["Auth"],
-        "summary": "Redefinir senha",
-        "security": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["email", "code", "newPassword"],
-                "properties": {
-                  "email": { "type": "string" },
-                  "code": { "type": "string" },
-                  "newPassword": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Senha redefinida" }
-        }
-      }
-    },
-    "/api/products": {
-      "get": {
-        "tags": ["Products"],
-        "summary": "Listar produtos",
-        "parameters": [
-          { "in": "query", "name": "page", "schema": { "type": "integer" } },
-          { "in": "query", "name": "limit", "schema": { "type": "integer" } }
-        ],
-        "responses": {
-          "200": { "description": "Lista de produtos" }
-        }
-      },
-      "post": {
-        "tags": ["Products"],
-        "summary": "Criar produto",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["name", "price", "stock"],
-                "properties": {
-                  "name": { "type": "string" },
-                  "price": { "type": "number" },
-                  "stock": { "type": "integer" },
-                  "category": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": { "description": "Produto criado" }
-        }
-      }
-    },
-    "/api/products/{id}": {
-      "get": {
-        "tags": ["Products"],
-        "summary": "Buscar produto por ID",
-        "parameters": [
-          { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "200": { "description": "Detalhes do produto" }
-        }
-      },
-      "put": {
-        "tags": ["Products"],
-        "summary": "Atualizar produto",
-        "parameters": [
-          { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": { "type": "string" },
-                  "price": { "type": "number" },
-                  "stock": { "type": "integer" },
-                  "category": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Produto atualizado" }
-        }
-      },
-      "delete": {
-        "tags": ["Products"],
-        "summary": "Deletar produto",
-        "parameters": [
-          { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "200": { "description": "Produto removido" }
-        }
-      }
-    },
-    "/api/profile": {
-      "get": {
-        "tags": ["Profile"],
-        "summary": "Obter perfil do usuário",
-        "responses": {
-          "200": { "description": "Dados do perfil" }
-        }
-      },
-      "put": {
-        "tags": ["Profile"],
-        "summary": "Atualizar perfil",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["name", "email"],
-                "properties": {
-                  "name": { "type": "string" },
-                  "email": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Perfil atualizado" }
-        }
-      }
-    },
-    "/api/profile/photo": {
-      "post": {
-        "tags": ["Profile"],
-        "summary": "Upload foto de perfil",
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "photo": { "type": "string", "format": "binary" }
-                }
-              }
+          servers: [
+            {
+              url: "http://localhost:3000",
+              description: "Servidor Local",
             },
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "photo": { "type": "string", "description": "Base64 image" },
-                  "mimeType": { "type": "string" },
-                  "fileName": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Foto atualizada" }
-        }
-      },
-      "delete": {
-        "tags": ["Profile"],
-        "summary": "Remover foto de perfil",
-        "responses": {
-          "200": { "description": "Foto removida" }
-        }
-      }
-    },
-    "/api/sales": {
-      "get": {
-        "tags": ["Sales"],
-        "summary": "Obter vendas do usuário",
-        "responses": {
-          "200": { "description": "Lista de vendas" }
-        }
-      },
-      "post": {
-        "tags": ["Sales"],
-        "summary": "Criar venda",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["items"],
-                "properties": {
-                  "items": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "required": ["productId", "quantity"],
-                      "properties": {
-                        "productId": { "type": "string" },
-                        "quantity": { "type": "integer" }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": { "description": "Venda criada" }
-        }
-      }
-    },
-    "/api/notifications": {
-      "get": {
-        "tags": ["Notifications"],
-        "summary": "Obter notificações",
-        "responses": {
-          "200": { "description": "Lista de notificações" }
-        }
-      },
-      "delete": {
-        "tags": ["Notifications"],
-        "summary": "Limpar todas as notificações",
-        "responses": {
-          "200": { "description": "Notificações removidas" }
-        }
-      }
-    },
-    "/api/notifications/{id}/read": {
-      "put": {
-        "tags": ["Notifications"],
-        "summary": "Marcar notificação como lida",
-        "parameters": [
-          { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "200": { "description": "Notificação lida" }
-        }
-      }
-    },
-    "/api/home/summary": {
-      "get": {
-        "tags": ["Home"],
-        "summary": "Resumo da home page",
-        "responses": {
-          "200": { "description": "Dados de resumo" }
-        }
-      }
-    },
-    "/health": {
-      "get": {
-        "tags": ["Server"],
-        "summary": "Verificar status da API",
-        "security": [],
-        "responses": {
-          "200": { "description": "API funcionando" }
-        }
-      }
-    },
-    "/api/seed": {
-      "post": {
-        "tags": ["Server"],
-        "summary": "Criar dados de teste iniciais",
-        "security": [],
-        "responses": {
-          "200": { "description": "Dados criados" },
-          "500": { "description": "Erro ao criar dados" }
-        }
-      }
-    },
-    "/venda": {
-      "get": {
-        "tags": ["Server"],
-        "summary": "Listar todas as vendas (teste)",
-        "security": [],
-        "responses": {
-          "200": { "description": "Lista de vendas" },
-          "500": { "description": "Erro na busca" }
-        }
-      }
-    }
-  }
-};
-
-            window.ui = SwaggerUIBundle({
-                spec: spec,
-                dom_id: '#swagger-ui',
-                deepLinking: true,
-                presets: [
-                    SwaggerUIBundle.presets.apis,
-                    SwaggerUIStandalonePreset
+          ],
+          components: {
+            securitySchemes: {
+              bearerAuth: {
+                type: "http",
+                scheme: "bearer",
+                bearerFormat: "JWT",
+              },
+            },
+            schemas: {
+              User: {
+                type: "object",
+                properties: {
+                  id: { type: "string" },
+                  email: { type: "string" },
+                  name: { type: "string" },
+                  url: { type: "string", nullable: true },
+                },
+              },
+              Product: {
+                type: "object",
+                properties: {
+                  id: { type: "string" },
+                  name: { type: "string" },
+                  price: { type: "number" },
+                  stock: { type: "integer" },
+                  category: { type: "string" },
+                  createdAt: { type: "string" },
+                  ativo: { type: "boolean" },
+                },
+              },
+              SaleItem: {
+                type: "object",
+                properties: {
+                  productId: { type: "string" },
+                  productName: { type: "string" },
+                  quantity: { type: "integer" },
+                  unitPrice: { type: "number" },
+                },
+              },
+              Sale: {
+                type: "object",
+                properties: {
+                  id: { type: "string" },
+                  userId: { type: "string" },
+                  items: {
+                    type: "array",
+                    items: { $ref: "#/components/schemas/SaleItem" },
+                  },
+                  totalPrice: { type: "number" },
+                  createdAt: { type: "string", format: "date-time" },
+                },
+              },
+              Notification: {
+                type: "object",
+                properties: {
+                  id: { type: "integer" },
+                  title: { type: "string" },
+                  description: { type: "string" },
+                  read: { type: "boolean" },
+                  date: { type: "string", format: "date-time" },
+                },
+              },
+              VendaReportItem: {
+                type: "object",
+                properties: {
+                  idvenda: { type: "integer" },
+                  idusuario: { type: "integer" },
+                  quantproduto: { type: "integer" },
+                  precototal: { type: "number" },
+                  datavenda: { type: "string", example: "2026-05-20" },
+                },
+              },
+              ReportSummary: {
+                type: "object",
+                properties: {
+                  totalVendas: { type: "number" },
+                  itensVendidos: { type: "integer" },
+                  numeroVendas: { type: "integer" },
+                  ticketMedio: { type: "number" },
+                },
+              },
+            },
+          },
+          security: [{ bearerAuth: [] }],
+          paths: {
+            "/api/auth/register/request": {
+              post: {
+                tags: ["Auth"],
+                summary: "Solicitar registro",
+                security: [],
+                requestBody: {
+                  required: true,
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        required: ["email", "password", "name"],
+                        properties: {
+                          email: { type: "string" },
+                          password: { type: "string", minLength: 6 },
+                          name: { type: "string" },
+                        },
+                      },
+                    },
+                  },
+                },
+                responses: {
+                  200: { description: "Código de verificação enviado" },
+                },
+              },
+            },
+            "/api/auth/register/verify": {
+              post: {
+                tags: ["Auth"],
+                summary: "Verificar código de registro",
+                security: [],
+                requestBody: {
+                  required: true,
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        required: ["email", "code"],
+                        properties: {
+                          email: { type: "string" },
+                          code: { type: "string", minLength: 6, maxLength: 6 },
+                        },
+                      },
+                    },
+                  },
+                },
+                responses: {
+                  201: { description: "Usuário registrado" },
+                },
+              },
+            },
+            "/api/auth/login": {
+              post: {
+                tags: ["Auth"],
+                summary: "Login do usuário",
+                security: [],
+                requestBody: {
+                  required: true,
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        required: ["email", "password"],
+                        properties: {
+                          email: { type: "string" },
+                          password: { type: "string" },
+                        },
+                      },
+                    },
+                  },
+                },
+                responses: {
+                  200: { description: "Login realizado com sucesso" },
+                },
+              },
+            },
+            "/api/auth/forgot-password": {
+              post: {
+                tags: ["Auth"],
+                summary: "Esqueci a senha",
+                security: [],
+                requestBody: {
+                  required: true,
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        required: ["email"],
+                        properties: {
+                          email: { type: "string" },
+                        },
+                      },
+                    },
+                  },
+                },
+                responses: {
+                  200: { description: "Código enviado" },
+                },
+              },
+            },
+            "/api/auth/reset-password": {
+              post: {
+                tags: ["Auth"],
+                summary: "Redefinir senha",
+                security: [],
+                requestBody: {
+                  required: true,
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        required: ["email", "code", "newPassword"],
+                        properties: {
+                          email: { type: "string" },
+                          code: { type: "string" },
+                          newPassword: { type: "string" },
+                        },
+                      },
+                    },
+                  },
+                },
+                responses: {
+                  200: { description: "Senha redefinida" },
+                },
+              },
+            },
+            "/api/products": {
+              get: {
+                tags: ["Products"],
+                summary: "Listar produtos",
+                parameters: [
+                  { in: "query", name: "page", schema: { type: "integer" } },
+                  { in: "query", name: "limit", schema: { type: "integer" } },
                 ],
-                layout: "StandaloneLayout"
-            });
+                responses: {
+                  200: { description: "Lista de produtos" },
+                },
+              },
+              post: {
+                tags: ["Products"],
+                summary: "Criar produto",
+                requestBody: {
+                  required: true,
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        required: ["name", "price", "stock"],
+                        properties: {
+                          name: { type: "string" },
+                          price: { type: "number" },
+                          stock: { type: "integer" },
+                          category: { type: "string" },
+                        },
+                      },
+                    },
+                  },
+                },
+                responses: {
+                  201: { description: "Produto criado" },
+                },
+              },
+            },
+            "/api/products/{id}": {
+              get: {
+                tags: ["Products"],
+                summary: "Buscar produto por ID",
+                parameters: [
+                  {
+                    in: "path",
+                    name: "id",
+                    required: true,
+                    schema: { type: "string" },
+                  },
+                ],
+                responses: {
+                  200: { description: "Detalhes do produto" },
+                },
+              },
+              put: {
+                tags: ["Products"],
+                summary: "Atualizar produto",
+                parameters: [
+                  {
+                    in: "path",
+                    name: "id",
+                    required: true,
+                    schema: { type: "string" },
+                  },
+                ],
+                requestBody: {
+                  required: true,
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: { type: "string" },
+                          price: { type: "number" },
+                          stock: { type: "integer" },
+                          category: { type: "string" },
+                        },
+                      },
+                    },
+                  },
+                },
+                responses: {
+                  200: { description: "Produto atualizado" },
+                },
+              },
+              delete: {
+                tags: ["Products"],
+                summary: "Deletar produto",
+                parameters: [
+                  {
+                    in: "path",
+                    name: "id",
+                    required: true,
+                    schema: { type: "string" },
+                  },
+                ],
+                responses: {
+                  200: { description: "Produto removido" },
+                },
+              },
+            },
+            "/api/profile": {
+              get: {
+                tags: ["Profile"],
+                summary: "Obter perfil do usuário",
+                responses: {
+                  200: { description: "Dados do perfil" },
+                },
+              },
+              put: {
+                tags: ["Profile"],
+                summary: "Atualizar perfil",
+                requestBody: {
+                  required: true,
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        required: ["name", "email"],
+                        properties: {
+                          name: { type: "string" },
+                          email: { type: "string" },
+                        },
+                      },
+                    },
+                  },
+                },
+                responses: {
+                  200: { description: "Perfil atualizado" },
+                },
+              },
+            },
+            "/api/profile/photo": {
+              post: {
+                tags: ["Profile"],
+                summary: "Upload foto de perfil",
+                requestBody: {
+                  content: {
+                    "multipart/form-data": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          photo: { type: "string", format: "binary" },
+                        },
+                      },
+                    },
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          photo: {
+                            type: "string",
+                            description: "Base64 image",
+                          },
+                          mimeType: { type: "string" },
+                          fileName: { type: "string" },
+                        },
+                      },
+                    },
+                  },
+                },
+                responses: {
+                  200: { description: "Foto atualizada" },
+                },
+              },
+              delete: {
+                tags: ["Profile"],
+                summary: "Remover foto de perfil",
+                responses: {
+                  200: { description: "Foto removida" },
+                },
+              },
+            },
+            "/api/sales": {
+              get: {
+                tags: ["Sales"],
+                summary: "Obter vendas do usuário",
+                responses: {
+                  200: { description: "Lista de vendas" },
+                },
+              },
+              post: {
+                tags: ["Sales"],
+                summary: "Criar venda",
+                requestBody: {
+                  required: true,
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        required: ["items"],
+                        properties: {
+                          items: {
+                            type: "array",
+                            items: {
+                              type: "object",
+                              required: ["productId", "quantity"],
+                              properties: {
+                                productId: { type: "string" },
+                                quantity: { type: "integer" },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                responses: {
+                  201: { description: "Venda criada" },
+                },
+              },
+            },
+            "/api/notifications": {
+              get: {
+                tags: ["Notifications"],
+                summary: "Obter notificações",
+                responses: {
+                  200: { description: "Lista de notificações" },
+                },
+              },
+              delete: {
+                tags: ["Notifications"],
+                summary: "Limpar todas as notificações",
+                responses: {
+                  200: { description: "Notificações removidas" },
+                },
+              },
+            },
+            "/api/notifications/{id}/read": {
+              put: {
+                tags: ["Notifications"],
+                summary: "Marcar notificação como lida",
+                parameters: [
+                  {
+                    in: "path",
+                    name: "id",
+                    required: true,
+                    schema: { type: "string" },
+                  },
+                ],
+                responses: {
+                  200: { description: "Notificação lida" },
+                },
+              },
+            },
+            "/api/home/summary": {
+              get: {
+                tags: ["Home"],
+                summary: "Resumo da home page",
+                responses: {
+                  200: { description: "Dados de resumo" },
+                },
+              },
+            },
+            "/health": {
+              get: {
+                tags: ["Server"],
+                summary: "Verificar status da API",
+                security: [],
+                responses: {
+                  200: { description: "API funcionando" },
+                },
+              },
+            },
+            "/api/seed": {
+              post: {
+                tags: ["Server"],
+                summary: "Criar dados de teste iniciais",
+                security: [],
+                responses: {
+                  200: { description: "Dados criados" },
+                  500: { description: "Erro ao criar dados" },
+                },
+              },
+            },
+            "/venda": {
+              get: {
+                tags: ["Server"],
+                summary: "Listar todas as vendas (teste)",
+                security: [],
+                responses: {
+                  200: { description: "Lista de vendas" },
+                  500: { description: "Erro na busca" },
+                },
+              },
+            },
+            "/api/report/vendas": {
+              get: {
+                tags: ["Report"],
+                summary: "Obter relatório de vendas",
+                responses: {
+                  200: {
+                    description: "Lista de vendas do usuário para o relatório",
+                    content: {
+                      "application/json": {
+                        schema: {
+                          type: "object",
+                          properties: {
+                            venda: {
+                              type: "array",
+                              items: {
+                                $ref: "#/components/schemas/VendaReportItem",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            "/api/report/summary": {
+              get: {
+                tags: ["Report"],
+                summary: "Obter resumo do relatório de vendas",
+                responses: {
+                  200: {
+                    description: "Dados de resumo do relatório",
+                    content: {
+                      "application/json": {
+                        schema: {
+                          $ref: "#/components/schemas/ReportSummary",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         };
+
+        window.ui = SwaggerUIBundle({
+          spec: spec,
+          dom_id: "#swagger-ui",
+          deepLinking: true,
+          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+          layout: "StandaloneLayout",
+        });
+      };
     </script>
-</body>
+  </body>
 </html>
