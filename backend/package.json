@@ -9,6 +9,7 @@
     "start": "node dist/server.js"
   },
   "dependencies": {
+    "@google/genai": "^2.6.0",
     "@supabase/supabase-js": "^2.103.3",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",

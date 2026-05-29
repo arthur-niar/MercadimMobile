@@ -33,6 +33,24 @@ class HomeService {
       throw new Error('Erro ao carregar dados da home. Tente novamente.');
     }
   }
+
+  async getHomeInsights(lang?: string): Promise<{ insights: string[] }> {
+    try {
+      const response = await api.get<{ insights: string[] }>('/home/insights', {
+        headers: lang ? { 'Accept-Language': lang } : undefined
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Erro ao buscar insights da home:', error);
+      
+      if (error.response?.status === 401) {
+        throw new Error('Sessão expirada. Faça login novamente.');
+      }
+      
+      throw new Error('Erro ao carregar insights da home. Tente novamente.');
+    }
+  }
 }
 
 export const homeService = new HomeService();
+

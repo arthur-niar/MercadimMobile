@@ -100,6 +100,11 @@ export const pt = {
     lowStockTitle: 'Estoque baixo',
     lowStockMsg: 'O produto {{name}} está com poucas unidades disponíveis. Verifique o estoque para evitar falta de produto.',
     loadError: 'Erro ao carregar dados',
+    insightsTitle: 'Insights do Negócio com IA',
+    insightsLoading: 'Analisando suas vendas e estoque...',
+    insightsTapToSee: 'Toque para ver todos os {{count}} insights →',
+    insightsNone: 'Nenhum insight disponível no momento.',
+    insightsPopupTitle: 'Insight do Negócio ({{current}}/{{total}})',
   },
 
   report: {
@@ -347,5 +352,7 @@ export const pt = {
     save: 'Salvar',
     confirm: 'Confirmar',
     loading: 'Carregando...',
+    next: 'Próximo',
+    close: 'Fechar',
   },
 };

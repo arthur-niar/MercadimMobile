@@ -23,11 +23,28 @@ export const useHomeViewModel = () => {
   const [notificationShown, setNotificationShown] = useState<number | null>(
     null,
   );
+  const [insights, setInsights] = useState<string[]>([]);
+  const [insightsLoading, setInsightsLoading] = useState(false);
+
+  const loadInsights = async () => {
+    try {
+      setInsightsLoading(true);
+      const res = await homeService.getHomeInsights(i18n.language);
+      setInsights(res.insights || []);
+    } catch (err: any) {
+      console.error("Erro ao carregar insights:", err);
+    } finally {
+      setInsightsLoading(false);
+    }
+  };
 
   const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
+
+      // Dispara a busca de insights em segundo plano de forma assíncrona
+      loadInsights();
 
       const [homeData, notifications] = await Promise.all([
         homeService.getHomeSummary(),
@@ -96,5 +113,7 @@ export const useHomeViewModel = () => {
     error,
     refresh: loadData,
     markNotificationAsRead,
+    insights,
+    insightsLoading,
   };
 };
