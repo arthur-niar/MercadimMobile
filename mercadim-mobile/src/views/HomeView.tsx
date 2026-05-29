@@ -36,6 +36,7 @@ interface HomeViewProps {
     id: number;
     title: string;
     description: string;
+    type?: string;
   } | null;
   loading?: boolean;
   error?: string | null;
@@ -43,6 +44,8 @@ interface HomeViewProps {
   onSettingsPress: () => void;
   onReportPress: () => void;
   onMarkNotificationAsRead?: (notificationId: number) => void;
+  insights?: string[];
+  insightsLoading?: boolean;
 }
 
 const UserIcon = ({ color = "#9CA3AF" }: { color?: string }) => (
@@ -157,7 +160,10 @@ const SummaryCard = ({
   </View>
 );
 
-export const HomeView: React.FC<HomeViewProps> = ({
+// Controle de exibição automática de insights por sessão de uso do app
+let hasSeenInsightsThisSession = false;
+
+export const HomeView = ({
   username,
   profilePhotoUrl,
   totalSales,
@@ -166,14 +172,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
   averageTicket,
   salesItems,
   unreadCount = 0,
-  latestNotification = null,
+  latestNotification,
   loading = false,
   error = null,
   onRefresh,
   onSettingsPress,
   onReportPress,
   onMarkNotificationAsRead,
-}) => {
+  insights = [],
+  insightsLoading = false,
+}: HomeViewProps) => {
   const { isDark, fontScale } = useSettings();
   const { t } = useTranslation();
 
@@ -181,6 +189,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   const [showNotificationPopup, setShowNotificationPopup] =
     React.useState(false);
+  const [currentInsightIndex, setCurrentInsightIndex] = React.useState(0);
 
   const handleCloseNotification = React.useCallback(() => {
     if (latestNotification && onMarkNotificationAsRead) {
@@ -189,15 +198,38 @@ export const HomeView: React.FC<HomeViewProps> = ({
     setShowNotificationPopup(false);
   }, [latestNotification, onMarkNotificationAsRead]);
 
+  const handleNextInsight = () => {
+    if (insights && currentInsightIndex < insights.length - 1) {
+      setCurrentInsightIndex((prev: number) => prev + 1);
+    } else {
+      setShowNotificationPopup(false);
+    }
+  };
+
+  const handleOpenInsightsManually = () => {
+    if (insights && insights.length > 0) {
+      setCurrentInsightIndex(0);
+      setShowNotificationPopup(true);
+    }
+  };
+
   React.useEffect(() => {
-    if (latestNotification) {
+    if (insights && insights.length > 0 && !hasSeenInsightsThisSession) {
+      setShowNotificationPopup(true);
+      setCurrentInsightIndex(0);
+      hasSeenInsightsThisSession = true;
+    }
+  }, [insights]);
+
+  React.useEffect(() => {
+    if (latestNotification && (!insights || insights.length === 0)) {
       setShowNotificationPopup(true);
       const timer = setTimeout(() => {
         handleCloseNotification();
       }, 10000);
       return () => clearTimeout(timer);
     }
-  }, [latestNotification, handleCloseNotification]);
+  }, [latestNotification, insights, handleCloseNotification]);
 
   const screenBg = isDark ? "#0B0B0D" : "#fff";
   const contentBg = isDark ? "#0B0B0D" : "#F5F5F5";
@@ -212,9 +244,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const emptyIconBg = isDark ? "#3A2412" : "#FFF7ED";
 
   const hasSales =
-    salesItems.length > 0 && salesItems.some((i) => i.quantity > 0);
+    salesItems.length > 0 && salesItems.some((i: SaleItem) => i.quantity > 0);
   const totalQuantity = salesItems.reduce(
-    (sum, item) => sum + item.quantity,
+    (sum: number, item: SaleItem) => sum + item.quantity,
     0,
   );
 
@@ -223,6 +255,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const handleRefresh = async () => {
     if (onRefresh) {
       setRefreshing(true);
+      hasSeenInsightsThisSession = false;
       await onRefresh();
       setRefreshing(false);
     }
@@ -434,6 +467,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 borderRadius: 14,
                 alignItems: "center",
                 justifyContent: "center",
+                zIndex: 10,
               }}
               activeOpacity={0.7}
             >
@@ -448,43 +482,104 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </Text>
             </TouchableOpacity>
 
-            <Text
-              style={{
-                color: textColor,
-                fontSize: 16 * fontScale,
-                fontWeight: "800",
-                marginBottom: 8,
-                paddingRight: 28,
-              }}
-            >
-              {latestNotification?.type === "venda"
-                ? t("notifications.saleTitle")
-                : latestNotification?.type === "estoque_baixo"
-                  ? t("notifications.lowStockTitle")
-                  : latestNotification?.type === "estoque_entrada"
-                    ? t("notifications.estoqueEntradaTitle")
-                    : latestNotification?.title}
-            </Text>
+            {insights && insights.length > 0 ? (
+              <View style={{ width: "100%" }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <Path
+                      d="M9.812 18.062a1 1 0 0 1-.707-.293l-4.243-4.243a1 1 0 1 1 1.414-1.414l3.536 3.536 7.778-7.778a1 1 0 1 1 1.414 1.414l-8.485 8.485a1 1 0 0 1-.707.293z"
+                      fill="#FF662A"
+                    />
+                  </Svg>
+                  <Text
+                    style={{
+                      color: "#FF662A",
+                      fontSize: 12 * fontScale,
+                      fontWeight: "800",
+                      textTransform: "uppercase",
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    {t("home.insightsPopupTitle", { current: currentInsightIndex + 1, total: insights.length })}
+                  </Text>
+                </View>
 
-            <Text
-              style={{
-                color: subTextColor,
-                fontSize: 13 * fontScale,
-                lineHeight: 20,
-              }}
-            >
-              {latestNotification?.type === "venda"
-                ? t("notifications.saleDesc")
-                : latestNotification?.type === "estoque_baixo"
-                  ? t("notifications.lowStockDesc", {
-                      name: latestNotification?.description,
-                    })
-                  : latestNotification?.type === "estoque_entrada"
-                    ? t("notifications.estoqueEntradaDesc", {
-                        name: latestNotification?.description,
-                      })
-                    : latestNotification?.description}
-            </Text>
+                <Text
+                  style={{
+                    color: textColor,
+                    fontSize: 14 * fontScale,
+                    lineHeight: 22,
+                    marginBottom: 16,
+                    fontWeight: "600",
+                  }}
+                >
+                  {insights[currentInsightIndex]}
+                </Text>
+
+                <TouchableOpacity
+                  onPress={handleNextInsight}
+                  style={{
+                    backgroundColor: "#FF662A",
+                    borderRadius: 12,
+                    paddingVertical: 12,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "100%",
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    style={{
+                      color: "#fff",
+                      fontSize: 14 * fontScale,
+                      fontWeight: "700",
+                    }}
+                  >
+                    {currentInsightIndex < insights.length - 1 ? t("common.next") : t("common.close")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={{ width: "100%" }}>
+                <Text
+                  style={{
+                    color: textColor,
+                    fontSize: 16 * fontScale,
+                    fontWeight: "800",
+                    marginBottom: 8,
+                    paddingRight: 28,
+                  }}
+                >
+                  {latestNotification?.type === "venda"
+                    ? t("notifications.saleTitle")
+                    : latestNotification?.type === "estoque_baixo"
+                      ? t("notifications.lowStockTitle")
+                      : latestNotification?.type === "estoque_entrada"
+                        ? t("notifications.estoqueEntradaTitle")
+                        : latestNotification?.title}
+                </Text>
+
+                <Text
+                  style={{
+                    color: subTextColor,
+                    fontSize: 13 * fontScale,
+                    lineHeight: 20,
+                  }}
+                >
+                  {latestNotification?.type === "venda"
+                    ? t("notifications.saleDesc")
+                    : latestNotification?.type === "estoque_baixo"
+                      ? t("notifications.lowStockDesc", {
+                          name: latestNotification?.description,
+                        })
+                      : latestNotification?.type === "estoque_entrada"
+                        ? t("notifications.estoqueEntradaDesc", {
+                            name: latestNotification?.description,
+                          })
+                        : latestNotification?.description}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
       )}
@@ -568,6 +663,95 @@ export const HomeView: React.FC<HomeViewProps> = ({
           />
         </Animated.View>
 
+        {/* Card Premium de Insights da IA */}
+        <Animated.View entering={FadeInDown.delay(250)}>
+          <TouchableOpacity
+            onPress={handleOpenInsightsManually}
+            disabled={insights.length === 0 && !insightsLoading}
+            style={{
+              backgroundColor: isDark ? "#1E140C" : "#FFF7ED",
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 16,
+              borderWidth: 1,
+              borderColor: isDark ? "#FF662A" : "#FFE3D5",
+              position: "relative",
+              overflow: "hidden",
+            }}
+            activeOpacity={0.8}
+          >
+            {/* Efeito de Gradiente/Brilho sutil no canto */}
+            <View
+              style={{
+                position: "absolute",
+                right: -20,
+                top: -20,
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: "rgba(255, 102, 42, 0.12)",
+              }}
+            />
+
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <Path
+                  d="M9 21h6a1 1 0 001-1v-1H8v1a1 1 0 001 1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16H10v-2.3l-.85-.6A4.996 4.996 0 017 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.78 3.1-2.15 4.1z"
+                  fill="#FF662A"
+                />
+              </Svg>
+              <Text
+                style={{
+                  color: "#FF662A",
+                  fontSize: 12 * fontScale,
+                  fontWeight: "800",
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                }}
+              >
+                {t("home.insightsTitle")}
+              </Text>
+              {insightsLoading && (
+                <ActivityIndicator size="small" color="#FF662A" style={{ marginLeft: 4 }} />
+              )}
+            </View>
+
+            {insightsLoading ? (
+              <Text style={{ fontSize: 13 * fontScale, color: subTextColor, fontStyle: "italic" }}>
+                {t("home.insightsLoading")}
+              </Text>
+            ) : insights.length > 0 ? (
+              <View>
+                <Text
+                  numberOfLines={2}
+                  style={{
+                    color: textColor,
+                    fontSize: 13 * fontScale,
+                    fontWeight: "600",
+                    lineHeight: 18,
+                    marginBottom: 6,
+                  }}
+                >
+                  "{insights[0]}"
+                </Text>
+                <Text
+                  style={{
+                    color: "#FF662A",
+                    fontSize: 11 * fontScale,
+                    fontWeight: "700",
+                  }}
+                >
+                  {t("home.insightsTapToSee", { count: insights.length })}
+                </Text>
+              </View>
+            ) : (
+              <Text style={{ fontSize: 13 * fontScale, color: subTextColor }}>
+                {t("home.insightsNone")}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </Animated.View>
+
         <Animated.View entering={FadeInDown.delay(300)}>
           <TouchableOpacity
             onPress={onReportPress}
@@ -627,7 +811,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   marginBottom: 10,
                 }}
               >
-                {salesItems.map((item, index) => (
+                {salesItems.map((item: SaleItem, index: number) => (
                   <View
                     key={index}
                     style={{
@@ -645,7 +829,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   marginBottom: 12,
                 }}
               >
-                {salesItems.map((item, index) => (
+                {salesItems.map((item: SaleItem, index: number) => (
                   <View
                     key={index}
                     style={{
@@ -671,7 +855,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 ))}
               </View>
               <View style={{ borderTopWidth: 1, borderTopColor: dividerColor }}>
-                {salesItems.map((item, index) => (
+                {salesItems.map((item: SaleItem, index: number) => (
                   <View
                     key={index}
                     style={{

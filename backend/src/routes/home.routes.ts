@@ -5,5 +5,7 @@ import * as homeController from '../controllers/home.controller';
 const router = Router();
 
 router.get('/summary', authMiddleware, homeController.getHomeSummary);
+router.get('/insights', authMiddleware, homeController.getHomeInsights);
+
 
 export default router;

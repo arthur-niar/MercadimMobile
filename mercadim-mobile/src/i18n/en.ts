@@ -101,6 +101,11 @@ export const en = {
     lowStockTitle: 'Low stock',
     lowStockMsg: 'The product {{name}} has few units available. Check the stock to avoid running out of product.',
     loadError: 'Error loading data',
+    insightsTitle: 'AI Business Insights',
+    insightsLoading: 'Analyzing your sales and stock...',
+    insightsTapToSee: 'Tap to see all {{count}} insights →',
+    insightsNone: 'No insights available at the moment.',
+    insightsPopupTitle: 'Business Insight ({{current}}/{{total}})',
   },
 
   sales: {
@@ -321,6 +326,8 @@ export const en = {
     save: 'Save',
     confirm: 'Confirm',
     loading: 'Loading...',
+    next: 'Next',
+    close: 'Close',
   },
   report: {
     title: 'Report',

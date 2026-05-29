@@ -24,6 +24,8 @@ export default function HomeScreen() {
       onSettingsPress={() => router.push("/configuracoes" as any)}
       onReportPress={() => router.push("/relatorio" as any)}
       onMarkNotificationAsRead={viewModel.markNotificationAsRead}
+      insights={viewModel.insights}
+      insightsLoading={viewModel.insightsLoading}
     />
   );
 }
