@@ -354,6 +354,8 @@ export const en = {
       week: 'Last 7 days',
       month: 'Last 30 days',
     },
+    salesShort: 'sales',
+   chartHint: 'Press and hold a bar to see details',
   },
 
   

@@ -1,13 +1,12 @@
-// View da tela de Relatório
-// Local final: src/views/ReportView.tsx
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
@@ -163,36 +162,101 @@ const MovementRow = ({
   );
 };
 
-// ── Gráfico de barras (vendas por dia) ───────────────────────────────────────
+// ── Gráfico de barras (vendas por dia) — AGORA INTERATIVO ────────────────────
+//
+// Como funciona o tooltip:
+// - Cada barra é um Pressable
+// - onPressIn  → seta o índice ativo → mostra o balãozinho
+// - onPressOut → limpa o índice → esconde o balãozinho
+// - O balão fica posicionado absolutamente em cima da barra ativa
 
 interface ChartBarsProps {
-  data: { label: string; total: number }[];
+  data: { label: string; total: number; count: number }[];
   subColor: string;
   fontScale: number;
+  salesLabel: string;
 }
-const ChartBars = ({ data, subColor, fontScale }: ChartBarsProps) => {
+const ChartBars = ({ data, subColor, fontScale, salesLabel }: ChartBarsProps) => {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
   const maxValue = Math.max(1, ...data.map((d) => d.total));
   const CHART_HEIGHT = 64;
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 80, gap: 6 }}>
-      {data.map((day) => {
+    <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 110, gap: 6 }}>
+      {data.map((day, index) => {
         const barHeight = (day.total / maxValue) * CHART_HEIGHT;
+        const isActive = activeIndex === index;
+        const hasData = day.total > 0;
+
         return (
-          <View key={day.label} style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+          <Pressable
+            key={day.label}
+            onPressIn={() => setActiveIndex(index)}
+            onPressOut={() => setActiveIndex(null)}
+            style={{ flex: 1, alignItems: 'center', gap: 4 }}
+          >
+            {/* Área da barra com espaço para o tooltip em cima */}
             <View style={{
               width: '100%',
-              height: CHART_HEIGHT,
+              height: CHART_HEIGHT + 36, // espaço extra em cima pro tooltip caber
               justifyContent: 'flex-end',
+              position: 'relative',
             }}>
+              {/* Tooltip — só aparece quando essa barra está ativa */}
+              {isActive && (
+                <View style={{
+                  position: 'absolute',
+                  bottom: barHeight + 8, // 8px acima do topo da barra
+                  left: '50%',
+                  transform: [{ translateX: -45 }], // centraliza (largura do balão ~90)
+                  width: 90,
+                  backgroundColor: '#111827',
+                  paddingVertical: 5,
+                  paddingHorizontal: 8,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  zIndex: 10,
+                }}>
+                  <Text style={{ fontSize: 11 * fontScale, fontWeight: '700', color: '#fff' }} numberOfLines={1}>
+                    {hasData ? formatCurrency(day.total) : '—'}
+                  </Text>
+                  <Text style={{ fontSize: 9 * fontScale, color: 'rgba(255,255,255,0.85)', marginTop: 1 }}>
+                    {day.count} {salesLabel}
+                  </Text>
+                  {/* Setinha do balão apontando pra barra */}
+                  <View style={{
+                    position: 'absolute',
+                    bottom: -4,
+                    left: '50%',
+                    marginLeft: -4,
+                    width: 0,
+                    height: 0,
+                    borderLeftWidth: 4,
+                    borderRightWidth: 4,
+                    borderTopWidth: 4,
+                    borderLeftColor: 'transparent',
+                    borderRightColor: 'transparent',
+                    borderTopColor: '#111827',
+                  }} />
+                </View>
+              )}
+
+              {/* A barra */}
               <View style={{
-                height: Math.max(barHeight, day.total > 0 ? 4 : 0),
-                backgroundColor: '#FF662A',
+                height: Math.max(barHeight, hasData ? 4 : 0),
+                backgroundColor: isActive ? '#C04E1F' : '#FF662A', // escurece quando ativa
                 borderRadius: 4,
               }} />
             </View>
-            <Text style={{ fontSize: 8 * fontScale, color: subColor }}>{day.label}</Text>
-          </View>
+            <Text style={{
+              fontSize: 8 * fontScale,
+              color: isActive ? '#FF662A' : subColor,
+              fontWeight: isActive ? '600' : '400',
+            }}>
+              {day.label}
+            </Text>
+          </Pressable>
         );
       })}
     </View>
@@ -222,12 +286,39 @@ export const ReportView: React.FC = () => {
     mes: t('report.periods.month'),
   };
 
-  // Label da faixa de data (vem do i18n — corrige o bug do texto fixo em PT)
+  // Label da faixa de data
   const periodSubtitleLabels: Record<PeriodFilter, string> = {
     hoje: t('report.periodLabels.today'),
     semana: t('report.periodLabels.week'),
     mes: t('report.periodLabels.month'),
   };
+
+  // Dados enriquecidos do gráfico — adiciona "count" (nº de vendas) por dia
+  // O service só guarda o "total" (R$) por dia. Aqui a gente calcula o "count"
+  // a partir das movimentações, pra mostrar no tooltip junto com o valor.
+  const chartData = useMemo(() => {
+    if (!vm.reportData) return [];
+
+    const dayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const orderedLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
+    // Conta quantas vendas em cada dia
+    const countMap: Record<string, number> = {};
+    orderedLabels.forEach((l) => { countMap[l] = 0; });
+
+    vm.reportData.movements.forEach((mv) => {
+      const [year, month, day] = mv.date.split('-').map(Number);
+      const d = new Date(year, (month || 1) - 1, day || 1);
+      const label = dayLabels[d.getDay()];
+      countMap[label] = (countMap[label] || 0) + 1;
+    });
+
+    return vm.reportData.dailySales.map((ds) => ({
+      label: ds.label,
+      total: ds.total,
+      count: countMap[ds.label] || 0,
+    }));
+  }, [vm.reportData]);
 
   // ── Loading com Skeleton ──────────────────────────────────────────────────
   if (vm.loading && !vm.reportData) {
@@ -372,7 +463,7 @@ export const ReportView: React.FC = () => {
               </View>
             </Animated.View>
 
-            {/* Gráfico de vendas por dia */}
+            {/* Gráfico de vendas por dia — agora interativo! */}
             <Animated.View entering={FadeInDown.delay(300)}>
               <View style={{
                 marginHorizontal: 12, marginBottom: 12,
@@ -388,7 +479,23 @@ export const ReportView: React.FC = () => {
                   </Text>
                 </View>
 
-                <ChartBars data={data.dailySales} subColor={subColor} fontScale={fontScale} />
+                <ChartBars
+                  data={chartData}
+                  subColor={subColor}
+                  fontScale={fontScale}
+                  salesLabel={t('report.salesShort')}
+                />
+
+                {/* Dica abaixo do gráfico */}
+                <Text style={{
+                  fontSize: 9 * fontScale,
+                  color: subColor,
+                  textAlign: 'center',
+                  marginTop: 8,
+                  fontStyle: 'italic',
+                }}>
+                  {t('report.chartHint')}
+                </Text>
               </View>
             </Animated.View>
 

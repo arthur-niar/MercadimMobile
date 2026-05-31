@@ -131,7 +131,9 @@ export const pt = {
       today: 'Hoje',
       week: 'Últimos 7 dias',
       month: 'Últimos 30 dias',
-    },
+      },
+      salesShort: 'vendas',
+   chartHint: 'Toque e segure uma barra para ver detalhes',
   },
 
   sales: {
