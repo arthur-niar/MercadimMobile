@@ -11,50 +11,77 @@ export interface PendingUser {
   expiresAt: Date;
 }
 
-const pendingUsers: PendingUser[] = [];
+// ---------------------------------------------------------------------------
+// Supabase-backed verification code helpers (replaces the old in-memory array)
+// ---------------------------------------------------------------------------
 
-export const savePendingUser = (
+export const savePendingUser = async (
   email: string,
   password?: string,
   name?: string,
   code?: string,
-): void => {
-  const expiresAt = new Date();
-  expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+): Promise<void> => {
+  const expira_em = new Date();
+  expira_em.setMinutes(expira_em.getMinutes() + 15);
 
-  const existingIndex = pendingUsers.findIndex((pu) => pu.email === email);
-  if (existingIndex !== -1) {
-    pendingUsers.splice(existingIndex, 1);
+  // Remove any existing code for this email + type before inserting a fresh one
+  await supabase
+    .from('codigo_verificacao')
+    .delete()
+    .eq('email', email)
+    .eq('tipo', 'registro');
+
+  const { error } = await supabase.from('codigo_verificacao').insert([
+    {
+      email,
+      codigo: code || '',
+      tipo: 'registro',
+      dados_adicionais: { password, name },
+      expira_em: expira_em.toISOString(),
+    },
+  ]);
+
+  if (error) {
+    console.error('Erro ao salvar código de registro no Supabase:', error);
+    throw error;
   }
-
-  pendingUsers.push({
-    email,
-    password,
-    name,
-    url: "0",
-    code: code || "",
-    expiresAt,
-  });
 };
 
-export const getPendingUser = (
+export const getPendingUser = async (
   email: string,
   code: string,
-): PendingUser | undefined => {
-  const pendingUser = pendingUsers.find(
-    (pu) => pu.email === email && pu.code === code,
-  );
+): Promise<PendingUser | undefined> => {
+  const { data, error } = await supabase
+    .from('codigo_verificacao')
+    .select('*')
+    .eq('email', email)
+    .eq('codigo', code)
+    .eq('tipo', 'registro')
+    .single();
 
-  if (!pendingUser) return undefined;
-  if (new Date() > pendingUser.expiresAt) return undefined;
+  if (error || !data) return undefined;
 
-  return pendingUser;
+  // Check expiry
+  if (new Date() > new Date(data.expira_em)) return undefined;
+
+  return {
+    email: data.email,
+    code: data.codigo,
+    password: data.dados_adicionais?.password,
+    name: data.dados_adicionais?.name,
+    expiresAt: new Date(data.expira_em),
+  };
 };
 
-export const deletePendingUser = (email: string): void => {
-  const index = pendingUsers.findIndex((pu) => pu.email === email);
-  if (index !== -1) {
-    pendingUsers.splice(index, 1);
+export const deletePendingUser = async (email: string): Promise<void> => {
+  const { error } = await supabase
+    .from('codigo_verificacao')
+    .delete()
+    .eq('email', email)
+    .eq('tipo', 'registro');
+
+  if (error) {
+    console.error('Erro ao deletar código de registro no Supabase:', error);
   }
 };
 
@@ -260,14 +287,58 @@ export const removeUserProfilePhoto = async (
   };
 };
 
-export const saveResetCode = (email: string, code: string): void => {
-  savePendingUser(email, undefined, undefined, code);
+export const saveResetCode = async (email: string, code: string): Promise<void> => {
+  const expira_em = new Date();
+  expira_em.setMinutes(expira_em.getMinutes() + 15);
+
+  // Remove any existing reset code for this email
+  await supabase
+    .from('codigo_verificacao')
+    .delete()
+    .eq('email', email)
+    .eq('tipo', 'redefinicao');
+
+  const { error } = await supabase.from('codigo_verificacao').insert([
+    {
+      email,
+      codigo: code,
+      tipo: 'redefinicao',
+      dados_adicionais: null,
+      expira_em: expira_em.toISOString(),
+    },
+  ]);
+
+  if (error) {
+    console.error('Erro ao salvar código de redefinição no Supabase:', error);
+    throw error;
+  }
 };
 
-export const verifyResetCode = (email: string, code: string): boolean => {
-  return getPendingUser(email, code) !== undefined;
+export const verifyResetCode = async (email: string, code: string): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from('codigo_verificacao')
+    .select('*')
+    .eq('email', email)
+    .eq('codigo', code)
+    .eq('tipo', 'redefinicao')
+    .single();
+
+  if (error || !data) return false;
+
+  // Check expiry
+  if (new Date() > new Date(data.expira_em)) return false;
+
+  return true;
 };
 
-export const deleteResetCode = (email: string): void => {
-  deletePendingUser(email);
+export const deleteResetCode = async (email: string): Promise<void> => {
+  const { error } = await supabase
+    .from('codigo_verificacao')
+    .delete()
+    .eq('email', email)
+    .eq('tipo', 'redefinicao');
+
+  if (error) {
+    console.error('Erro ao deletar código de redefinição no Supabase:', error);
+  }
 };
