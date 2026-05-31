@@ -8,10 +8,11 @@ export type PeriodFilter = 'hoje' | 'semana' | 'mes';
 // Backend retorna: { idvenda, idusuario, quantproduto, precototal, datavenda }
 export interface SaleMovement {
   id: string;          // Ex: "MV-0002" (montado a partir do idvenda)
-  saleNumber: number;  // idvenda — o número da venda
+  saleNumber: number;  // o número sequencial da venda
   quantity: number;    // quantproduto — total de itens nessa venda
   value: number;       // precototal — valor total da venda em R$
   date: string;        // datavenda — ex: "2026-04-19"
+  productNames?: string; // Nomes dos produtos vendidos
 }
 
 // Resumo agregado do período

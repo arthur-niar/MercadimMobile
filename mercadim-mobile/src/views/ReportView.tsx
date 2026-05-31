@@ -148,11 +148,11 @@ const MovementRow = ({
       </View>
 
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={{ fontSize: 12 * fontScale, fontWeight: '600', color: textColor }} numberOfLines={1}>
-          {saleLabel} #{movement.saleNumber}
+        <Text style={{ fontSize: 13 * fontScale, fontWeight: '700', color: textColor }} numberOfLines={1}>
+          {movement.productNames || 'Produto Desconhecido'}
         </Text>
-        <Text style={{ fontSize: 9 * fontScale, color: subColor, marginTop: 2 }}>
-          {movement.quantity} {itemsLabel} · {formatShortDate(movement.date)}
+        <Text style={{ fontSize: 10 * fontScale, color: subColor, marginTop: 2 }}>
+          {saleLabel} #{movement.saleNumber} · {movement.quantity} {itemsLabel} · {formatShortDate(movement.date)}
         </Text>
       </View>
 

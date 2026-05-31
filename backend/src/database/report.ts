@@ -13,12 +13,32 @@ export interface VendaRow {
   quantproduto: number;
   precototal: number;
   datavenda: string;
+  produtovenda?: {
+    quantidade: number;
+    precounitario: number;
+    produto?: {
+      nome: string;
+    };
+  }[];
 }
 
 export async function getVendasByUserId(userId: string): Promise<VendaRow[]> {
   const { data, error } = await supabase
     .from('venda')
-    .select('idvenda, idusuario, quantproduto, precototal, datavenda')
+    .select(`
+      idvenda,
+      idusuario,
+      quantproduto,
+      precototal,
+      datavenda,
+      produtovenda (
+        quantidade,
+        precounitario,
+        produto (
+          nome
+        )
+      )
+    `)
     .eq('idusuario', parseInt(userId))
     .order('datavenda', { ascending: false });
 
@@ -26,7 +46,23 @@ export async function getVendasByUserId(userId: string): Promise<VendaRow[]> {
     throw new Error(`Erro ao buscar vendas: ${error.message}`);
   }
 
-  return (data || []) as VendaRow[];
+  const mappedData: VendaRow[] = (data || []).map((v: any) => ({
+    idvenda: v.idvenda,
+    idusuario: v.idusuario,
+    quantproduto: v.quantproduto,
+    precototal: v.precototal,
+    datavenda: v.datavenda,
+    produtovenda: (v.produtovenda || []).map((pv: any) => {
+      const prod = Array.isArray(pv.produto) ? pv.produto[0] : pv.produto;
+      return {
+        quantidade: pv.quantidade,
+        precounitario: pv.precounitario,
+        produto: prod ? { nome: prod.nome } : undefined
+      };
+    })
+  }));
+
+  return mappedData;
 }
 
 export async function getReportSummaryByUserId(userId: string): Promise<ReportSummary> {

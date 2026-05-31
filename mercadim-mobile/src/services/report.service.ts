@@ -10,6 +10,13 @@ interface VendaApiItem {
   quantproduto: number;
   precototal: number;
   datavenda: string; // "2026-04-19"
+  produtovenda?: {
+    quantidade: number;
+    precounitario: number;
+    produto?: {
+      nome: string;
+    };
+  }[];
 }
 
 // Converte "2026-04-19" em Date local (evita problema de fuso horário,
@@ -80,17 +87,38 @@ class ReportService {
     const response = await api.get<{ venda: VendaApiItem[] }>('/report/vendas');
     const allVendas = response.data?.venda ?? [];
 
-    const allMovements: SaleMovement[] = allVendas.map((v) => ({
-      id: `MV-${String(v.idvenda).padStart(4, '0')}`,
-      saleNumber: v.idvenda,
-      quantity: v.quantproduto,
-      value: v.precototal,
-      date: v.datavenda,
-    }));
+    // 1. Ordena todas as vendas do banco do menor ID para o maior ID (ordem cronológica de criação)
+    const sortedAllVendas = [...allVendas].sort((a, b) => a.idvenda - b.idvenda);
 
+    // 2. Mapeia para os movimentos atribuindo numeração cronológica absoluta de 1 a N e extraindo nomes dos produtos
+    const allMovements: SaleMovement[] = sortedAllVendas.map((v, index) => {
+      const seqNumber = index + 1;
+      const productNames = v.produtovenda && v.produtovenda.length > 0
+        ? v.produtovenda
+            .map((pv) => {
+              if (pv.produto?.nome) {
+                return `${pv.produto.nome} (${pv.quantidade}x)`;
+              }
+              return `Produto Desconhecido (${pv.quantidade}x)`;
+            })
+            .join(', ')
+        : 'Sem produtos';
+
+      return {
+        id: `MV-${String(seqNumber).padStart(4, '0')}`,
+        saleNumber: seqNumber,
+        quantity: v.quantproduto,
+        value: v.precototal,
+        date: v.datavenda,
+        productNames,
+      };
+    });
+
+    // 3. Aplica o filtro de período nas vendas com numeração absoluta
     const filtered = filterByPeriod(allMovements, period);
 
-    filtered.sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
+    // 4. Ordena o relatório em ordem decrescente (mais recente primeiro / Venda de maior número primeiro)
+    filtered.sort((a, b) => b.saleNumber - a.saleNumber);
 
     return buildReportData(filtered);
   }

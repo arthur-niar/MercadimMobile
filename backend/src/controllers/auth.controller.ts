@@ -3,6 +3,7 @@ import { validationResult } from 'express-validator';
 import { findUserByEmail, saveResetCode, verifyResetCode, deleteResetCode, updateUserPassword, createUser, savePendingUser, getPendingUser, deletePendingUser } from '../database/users';
 import { comparePassword, generateResetCode } from '../utils/password';
 import { generateToken } from '../config/jwt';
+import { sendRegisterVerificationEmail, sendPasswordResetEmail } from '../utils/mail';
 
 export const requestRegister = async (req: Request, res: Response) => {
   try {
@@ -19,12 +20,15 @@ export const requestRegister = async (req: Request, res: Response) => {
     }
 
     const code = generateResetCode();
-    savePendingUser(email, password, name, code);
+    await savePendingUser(email, password, name, code);
 
     console.log(` CÓDIGO DE VERIFICAÇÃO - REGISTRO`);
     console.log(`Email: ${email}`);
     console.log(`Nome: ${name}`);
     console.log(`Código: ${code}`);
+
+    // Send register verification email via Brevo SMTP
+    await sendRegisterVerificationEmail(email, name, code);
     
     return res.status(200).json({ message: 'Código de verificação enviado' });
   } catch (error) {
@@ -42,13 +46,13 @@ export const verifyRegister = async (req: Request, res: Response) => {
 
     const { email, code } = req.body;
 
-    const pendingUser = getPendingUser(email, code);
+    const pendingUser = await getPendingUser(email, code);
     if (!pendingUser) {
       return res.status(400).json({ message: 'Código inválido ou expirado' });
     }
 
     const user = await createUser(pendingUser.email, pendingUser.password, pendingUser.name);
-    deletePendingUser(email);
+    await deletePendingUser(email);
 
     console.log(` Novo usuário registrado: ${user.email} - ${user.name}`);
 
@@ -120,9 +124,12 @@ export const forgotPassword = async (req: Request, res: Response) => {
     }
 
     const code = generateResetCode();
-    saveResetCode(email, code);
+    await saveResetCode(email, code);
 
     console.log(`Código de recuperação para ${email}: ${code}`);
+
+    // Send password reset email via Brevo SMTP (using user name or email prefix as fallback)
+    await sendPasswordResetEmail(email, user.name || 'Usuário', code);
 
     return res.json({ message: 'Código enviado para o email' });
   } catch (error) {
@@ -145,13 +152,13 @@ export const resetPassword = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Email não encontrado' });
     }
 
-    const isCodeValid = verifyResetCode(email, code);
+    const isCodeValid = await verifyResetCode(email, code);
     if (!isCodeValid) {
       return res.status(400).json({ message: 'Código inválido ou expirado' });
     }
 
     await updateUserPassword(email, newPassword);
-    deleteResetCode(email);
+    await deleteResetCode(email);
 
     return res.json({ message: 'Senha redefinida com sucesso' });
   } catch (error) {
