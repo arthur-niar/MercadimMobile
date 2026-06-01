@@ -192,12 +192,12 @@ export const HomeView = ({
   const [currentInsightIndex, setCurrentInsightIndex] = React.useState(0);
 
   const handleCloseNotification = React.useCallback(() => {
+    setShowNotificationPopup(false);
+
     if (latestNotification && onMarkNotificationAsRead) {
       onMarkNotificationAsRead(latestNotification.id);
     }
-    setShowNotificationPopup(false);
   }, [latestNotification, onMarkNotificationAsRead]);
-
   const handleNextInsight = () => {
     if (insights && currentInsightIndex < insights.length - 1) {
       setCurrentInsightIndex((prev: number) => prev + 1);
@@ -224,12 +224,14 @@ export const HomeView = ({
   React.useEffect(() => {
     if (latestNotification && (!insights || insights.length === 0)) {
       setShowNotificationPopup(true);
+
       const timer = setTimeout(() => {
-        handleCloseNotification();
+        setShowNotificationPopup(false);
       }, 10000);
+
       return () => clearTimeout(timer);
     }
-  }, [latestNotification, insights, handleCloseNotification]);
+  }, [latestNotification?.id]);
 
   const screenBg = isDark ? "#0B0B0D" : "#fff";
   const contentBg = isDark ? "#0B0B0D" : "#F5F5F5";
@@ -458,6 +460,14 @@ export const HomeView = ({
           >
             <TouchableOpacity
               onPress={handleCloseNotification}
+
+               hitSlop={{
+                top: 12,
+                bottom: 12,
+                left: 12,
+                right: 12,
+              }}
+              
               style={{
                 position: "absolute",
                 top: 12,
