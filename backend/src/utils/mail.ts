@@ -1,37 +1,36 @@
-import nodemailer from 'nodemailer';
+import { BrevoClient } from '@getbrevo/brevo';
 
-// Helper to check if email credentials are configured
+// Helper to check if Brevo API key is configured
 const isEmailConfigured = (): boolean => {
-  return !!(
-    process.env.EMAIL_HOST &&
-    process.env.EMAIL_PORT &&
-    process.env.EMAIL_USER &&
-    process.env.EMAIL_PASS
-  );
+  return !!(process.env.BREVO_API_KEY);
 };
 
-// Create a transporter lazy-loader
-let transporter: nodemailer.Transporter | null = null;
+// Brevo client (lazy-loaded)
+let brevoClient: BrevoClient | null = null;
 
-const getTransporter = (): nodemailer.Transporter => {
-  if (!transporter) {
+const getBrevoClient = (): BrevoClient => {
+  if (!brevoClient) {
     if (!isEmailConfigured()) {
       throw new Error(
-        'Configurações de e-mail incompletas no arquivo .env. Verifique EMAIL_HOST, EMAIL_PORT, EMAIL_USER e EMAIL_PASS.'
+        'Configuração de e-mail incompleta no arquivo .env. Adicione a variável BREVO_API_KEY.'
       );
     }
-
-    transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: parseInt(process.env.EMAIL_PORT || '587', 10),
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    brevoClient = new BrevoClient({ apiKey: process.env.BREVO_API_KEY! });
   }
-  return transporter;
+  return brevoClient;
+};
+
+const sendEmail = async (to: string, subject: string, html: string): Promise<void> => {
+  const result = await getBrevoClient().transactionalEmails.sendTransacEmail({
+    subject,
+    htmlContent: html,
+    sender: {
+      name: 'Mercadim',
+      email: process.env.BREVO_SENDER_EMAIL || 'no-reply@mercadim.com',
+    },
+    to: [{ email: to }],
+  });
+  console.log(`[Brevo] E-mail enviado para ${to}. MessageId: ${(result as any)?.messageId ?? 'OK'}`);
 };
 
 /**
@@ -43,7 +42,7 @@ export const sendRegisterVerificationEmail = async (
   code: string
 ): Promise<void> => {
   if (!isEmailConfigured()) {
-    console.warn(`[SMTP AVISO] E-mail não configurado. Código de registro para ${email}: ${code}`);
+    console.warn(`[Brevo AVISO] E-mail não configurado. Código de registro para ${email}: ${code}`);
     return;
   }
 
@@ -175,8 +174,7 @@ export const sendRegisterVerificationEmail = async (
 `,
   };
 
-  const info = await getTransporter().sendMail(mailOptions);
-  console.log(`[SMTP] E-mail de registro enviado para ${email}. ID: ${info.messageId}`);
+  await sendEmail(email, mailOptions.subject, mailOptions.html);
 };
 
 /**
@@ -188,7 +186,7 @@ export const sendPasswordResetEmail = async (
   code: string
 ): Promise<void> => {
   if (!isEmailConfigured()) {
-    console.warn(`[SMTP AVISO] E-mail não configurado. Código de reset de senha para ${email}: ${code}`);
+    console.warn(`[Brevo AVISO] E-mail não configurado. Código de reset de senha para ${email}: ${code}`);
     return;
   }
 
@@ -320,6 +318,5 @@ export const sendPasswordResetEmail = async (
 `,
   };
 
-  const info = await getTransporter().sendMail(mailOptions);
-  console.log(`[SMTP] E-mail de redefinição de senha enviado para ${email}. ID: ${info.messageId}`);
+  await sendEmail(email, mailOptions.subject, mailOptions.html);
 };
