@@ -36,7 +36,7 @@ export const authService = {
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      throw new Error('Erro ao fazer login. Tente novamente.');
+      throw new Error(`Erro ao fazer login: ${error.message || 'Tente novamente.'}`);
     }
   },
 

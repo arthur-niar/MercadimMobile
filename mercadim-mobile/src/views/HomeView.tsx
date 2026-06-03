@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Image,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path, Rect, Circle } from "react-native-svg";
@@ -434,164 +435,166 @@ export const HomeView = ({
       </View>
 
       {showNotificationPopup && (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.4)",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 999,
-            paddingHorizontal: 24,
-          }}
-        >
+        <TouchableWithoutFeedback onPress={handleCloseNotification}>
           <View
             style={{
-              width: "100%",
-              backgroundColor: cardBg,
-              borderRadius: 20,
-              padding: 20,
-              borderWidth: 1,
-              borderColor: cardBorder,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0,0,0,0.4)",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 999,
+              paddingHorizontal: 24,
             }}
           >
-            <TouchableOpacity
-              onPress={handleCloseNotification}
-
-               hitSlop={{
-                top: 12,
-                bottom: 12,
-                left: 12,
-                right: 12,
-              }}
-              
-              style={{
-                position: "absolute",
-                top: 12,
-                right: 12,
-                width: 28,
-                height: 28,
-                borderRadius: 14,
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 10,
-              }}
-              activeOpacity={0.7}
-            >
-              <Text
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View
                 style={{
-                  color: subTextColor,
-                  fontSize: 18 * fontScale,
-                  fontWeight: "700",
+                  width: "100%",
+                  backgroundColor: cardBg,
+                  borderRadius: 20,
+                  padding: 20,
+                  borderWidth: 1,
+                  borderColor: cardBorder,
                 }}
               >
-                ×
-              </Text>
-            </TouchableOpacity>
-
-            {insights && insights.length > 0 ? (
-              <View style={{ width: "100%" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <Path
-                      d="M9.812 18.062a1 1 0 0 1-.707-.293l-4.243-4.243a1 1 0 1 1 1.414-1.414l3.536 3.536 7.778-7.778a1 1 0 1 1 1.414 1.414l-8.485 8.485a1 1 0 0 1-.707.293z"
-                      fill="#FF662A"
-                    />
-                  </Svg>
-                  <Text
-                    style={{
-                      color: "#FF662A",
-                      fontSize: 12 * fontScale,
-                      fontWeight: "800",
-                      textTransform: "uppercase",
-                      letterSpacing: 0.5,
-                    }}
-                  >
-                    {t("home.insightsPopupTitle", { current: currentInsightIndex + 1, total: insights.length })}
-                  </Text>
-                </View>
-
-                <Text
-                  style={{
-                    color: textColor,
-                    fontSize: 14 * fontScale,
-                    lineHeight: 22,
-                    marginBottom: 16,
-                    fontWeight: "600",
-                  }}
-                >
-                  {insights[currentInsightIndex]}
-                </Text>
-
                 <TouchableOpacity
-                  onPress={handleNextInsight}
+                  onPress={handleCloseNotification}
+                  hitSlop={{
+                    top: 12,
+                    bottom: 12,
+                    left: 12,
+                    right: 12,
+                  }}
                   style={{
-                    backgroundColor: "#FF662A",
-                    borderRadius: 12,
-                    paddingVertical: 12,
+                    position: "absolute",
+                    top: 12,
+                    right: 12,
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
                     alignItems: "center",
                     justifyContent: "center",
-                    width: "100%",
+                    zIndex: 10,
                   }}
-                  activeOpacity={0.8}
+                  activeOpacity={0.7}
                 >
                   <Text
                     style={{
-                      color: "#fff",
-                      fontSize: 14 * fontScale,
+                      color: subTextColor,
+                      fontSize: 18 * fontScale,
                       fontWeight: "700",
                     }}
                   >
-                    {currentInsightIndex < insights.length - 1 ? t("common.next") : t("common.close")}
+                    ×
                   </Text>
                 </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={{ width: "100%" }}>
-                <Text
-                  style={{
-                    color: textColor,
-                    fontSize: 16 * fontScale,
-                    fontWeight: "800",
-                    marginBottom: 8,
-                    paddingRight: 28,
-                  }}
-                >
-                  {latestNotification?.type === "venda"
-                    ? t("notifications.saleTitle")
-                    : latestNotification?.type === "estoque_baixo"
-                      ? t("notifications.lowStockTitle")
-                      : latestNotification?.type === "estoque_entrada"
-                        ? t("notifications.estoqueEntradaTitle")
-                        : latestNotification?.title}
-                </Text>
 
-                <Text
-                  style={{
-                    color: subTextColor,
-                    fontSize: 13 * fontScale,
-                    lineHeight: 20,
-                  }}
-                >
-                  {latestNotification?.type === "venda"
-                    ? t("notifications.saleDesc")
-                    : latestNotification?.type === "estoque_baixo"
-                      ? t("notifications.lowStockDesc", {
-                          name: latestNotification?.description,
-                        })
-                      : latestNotification?.type === "estoque_entrada"
-                        ? t("notifications.estoqueEntradaDesc", {
-                            name: latestNotification?.description,
-                          })
-                        : latestNotification?.description}
-                </Text>
+                {insights && insights.length > 0 ? (
+                  <View style={{ width: "100%" }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                      <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <Path
+                          d="M9.812 18.062a1 1 0 0 1-.707-.293l-4.243-4.243a1 1 0 1 1 1.414-1.414l3.536 3.536 7.778-7.778a1 1 0 1 1 1.414 1.414l-8.485 8.485a1 1 0 0 1-.707.293z"
+                          fill="#FF662A"
+                        />
+                      </Svg>
+                      <Text
+                        style={{
+                          color: "#FF662A",
+                          fontSize: 12 * fontScale,
+                          fontWeight: "800",
+                          textTransform: "uppercase",
+                          letterSpacing: 0.5,
+                        }}
+                      >
+                        {t("home.insightsPopupTitle", { current: currentInsightIndex + 1, total: insights.length })}
+                      </Text>
+                    </View>
+
+                    <Text
+                      style={{
+                        color: textColor,
+                        fontSize: 14 * fontScale,
+                        lineHeight: 22,
+                        marginBottom: 16,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {insights[currentInsightIndex]}
+                    </Text>
+
+                    <TouchableOpacity
+                      onPress={handleNextInsight}
+                      style={{
+                        backgroundColor: "#FF662A",
+                        borderRadius: 12,
+                        paddingVertical: 12,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "100%",
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <Text
+                        style={{
+                          color: "#fff",
+                          fontSize: 14 * fontScale,
+                          fontWeight: "700",
+                        }}
+                      >
+                        {currentInsightIndex < insights.length - 1 ? t("common.next") : t("common.close")}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={{ width: "100%" }}>
+                    <Text
+                      style={{
+                        color: textColor,
+                        fontSize: 16 * fontScale,
+                        fontWeight: "800",
+                        marginBottom: 8,
+                        paddingRight: 28,
+                      }}
+                    >
+                      {latestNotification?.type === "venda"
+                        ? t("notifications.saleTitle")
+                        : latestNotification?.type === "estoque_baixo"
+                          ? t("notifications.lowStockTitle")
+                          : latestNotification?.type === "estoque_entrada"
+                            ? t("notifications.estoqueEntradaTitle")
+                            : latestNotification?.title}
+                    </Text>
+
+                    <Text
+                      style={{
+                        color: subTextColor,
+                        fontSize: 13 * fontScale,
+                        lineHeight: 20,
+                      }}
+                    >
+                      {latestNotification?.type === "venda"
+                        ? t("notifications.saleDesc")
+                        : latestNotification?.type === "estoque_baixo"
+                          ? t("notifications.lowStockDesc", {
+                              name: latestNotification?.description,
+                            })
+                          : latestNotification?.type === "estoque_entrada"
+                            ? t("notifications.estoqueEntradaDesc", {
+                                name: latestNotification?.description,
+                              })
+                            : latestNotification?.description}
+                    </Text>
+                  </View>
+                )}
               </View>
-            )}
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       )}
 
       <ScrollView
