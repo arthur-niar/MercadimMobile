@@ -164,17 +164,22 @@ export const uploadProfilePhoto = async (req: AuthRequest, res: Response) => {
 
     // Enviar nova foto
     const fileName = `${userId}/profile-${Date.now()}.${fileExtension}`;
+    const fileBody = new Uint8Array(buffer);
 
     const { data, error } = await supabase.storage
       .from("profile-photos")
-      .upload(fileName, buffer, {
+      .upload(fileName, fileBody, {
         contentType: mimeType,
         upsert: true,
       });
 
     if (error) {
       console.error("Upload error:", error);
-      return res.status(500).json({ message: "Erro ao enviar foto" });
+      return res.status(500).json({
+        message: "Erro ao enviar foto",
+        error: error.message || error,
+        details: error
+      });
     }
 
     // Receber URL pública da foto
@@ -202,11 +207,14 @@ export const uploadProfilePhoto = async (req: AuthRequest, res: Response) => {
         url: updatedUser.url,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro ao atualizar foto de perfil:", error);
     return res
       .status(500)
-      .json({ message: "Erro ao atualizar foto de perfil" });
+      .json({
+        message: "Erro ao atualizar foto de perfil",
+        error: error?.message || error
+      });
   }
 };
 
