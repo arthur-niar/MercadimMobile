@@ -117,10 +117,10 @@ export const useProfileViewModel = () => {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         await handleUploadPhoto(result.assets[0].uri);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error picking image:', error);
       setPhotoSheetVisible(false);
-      setErrorMessage(t('profile.selectImageError'));
+      setErrorMessage(`${t('profile.selectImageError')} (${error?.message || error})`);
     }
   };
 
@@ -148,10 +148,10 @@ export const useProfileViewModel = () => {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         await handleUploadPhoto(result.assets[0].uri);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error taking photo:', error);
       setPhotoSheetVisible(false);
-      setErrorMessage(t('profile.selectImageError'));
+      setErrorMessage(`${t('profile.selectImageError')} (${error?.message || error})`);
     }
   };
 
@@ -168,7 +168,8 @@ export const useProfileViewModel = () => {
       
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error: any) {
-      const message = error.response?.data?.message || t('profile.photoError');
+      const serverMessage = error.response?.data?.message || error.response?.data?.error;
+      const message = serverMessage || `${t('profile.photoError')} (${error?.message || error})`;
       setErrorMessage(message);
       console.error('Upload photo error:', error);
     } finally {
