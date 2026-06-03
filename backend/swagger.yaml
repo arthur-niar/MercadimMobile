@@ -5,6 +5,8 @@ info:
 
   version: 1.0.0
 servers:
+  - url: https://mercadim-backend.onrender.com
+    description: Servidor de Produção (Render)
   - url: http://localhost:3000
     description: Servidor Local
 components:
@@ -462,6 +464,26 @@ paths:
       responses:
         "200":
           description: Dados de resumo
+
+  /api/home/insights:
+    get:
+      tags:
+        - Home
+      summary: Obter insights de IA para a home page
+      responses:
+        "200":
+          description: Insights gerados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  insights:
+                    type: array
+                    items:
+                      type: string
+                  cached:
+                    type: boolean
   /health:
     get:
       tags:
